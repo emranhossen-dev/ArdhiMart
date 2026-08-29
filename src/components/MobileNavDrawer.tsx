@@ -164,7 +164,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               {categories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => handleNav('/products')}
+                  onClick={() => handleNav(`/products?category=${encodeURIComponent(cat.name)}`)}
                   className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-3">

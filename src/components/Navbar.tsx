@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import Image from "next/image";
@@ -14,6 +15,7 @@ import {
 } from "react-icons/hi2";
 
 export const Navbar: React.FC = () => {
+  const router = useRouter();
   const {
     totalItems,
     searchQuery,
@@ -34,6 +36,16 @@ export const Navbar: React.FC = () => {
     "Lifestyle",
     "Fashion",
   ];
+
+  const handleCategorySelect = (cat: string) => {
+    setSelectedCategory(cat);
+    setMobileMenuOpen(false);
+    if (cat === "All") {
+      router.push("/products");
+    } else {
+      router.push(`/products?category=${encodeURIComponent(cat)}`);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 text-zinc-100 shadow-lg">
@@ -158,13 +170,8 @@ export const Navbar: React.FC = () => {
               {categoriesList.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => {
-                    setSelectedCategory(cat);
-                    setMobileMenuOpen(false);
-                    const catalog = document.getElementById("product-catalog");
-                    if (catalog) catalog.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className={`text-left py-1.5 px-3 rounded-lg border text-xs ${
+                  onClick={() => handleCategorySelect(cat)}
+                  className={`text-left py-1.5 px-3 rounded-lg border text-xs cursor-pointer ${
                     selectedCategory === cat
                       ? "bg-[#0F396F] border-[#164685] text-white font-bold"
                       : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white"
@@ -186,11 +193,7 @@ export const Navbar: React.FC = () => {
             return (
               <button
                 key={cat}
-                onClick={() => {
-                  setSelectedCategory(cat);
-                  const catalog = document.getElementById("product-catalog");
-                  if (catalog) catalog.scrollIntoView({ behavior: "smooth" });
-                }}
+                onClick={() => handleCategorySelect(cat)}
                 className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${
                   isSelected
                     ? "bg-[#0F396F] border-[#164685] text-white shadow-sm font-bold"
@@ -206,3 +209,5 @@ export const Navbar: React.FC = () => {
     </header>
   );
 };
+
+export default Navbar;

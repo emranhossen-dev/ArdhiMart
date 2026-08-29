@@ -24,9 +24,21 @@ export interface Product {
   reviewsCount?: number;
   badge?: string;
   image: string;
+  galleryImages?: string[];
   category: string;
   isNew?: boolean;
   isFeatured?: boolean;
+  color?: string;
+  variantName?: string;
+  shortDescription?: string;
+  description?: string;
+  usability?: string;
+  material?: string;
+  warranty?: string;
+  deliveryInsideDhaka?: number;
+  deliveryOutsideDhaka?: number;
+  sku?: string;
+  urlSlug?: string;
 }
 
 export interface HeroBanner {
@@ -43,4 +55,5 @@ export interface HeroBanner {
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedVariant?: string;
 }

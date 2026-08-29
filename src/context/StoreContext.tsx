@@ -24,7 +24,7 @@ interface StoreContextType {
   setIsSearchOpen: (open: boolean) => void;
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, selectedVariant?: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, delta: number) => void;
   toggleWishlist: (productId: string) => void;
@@ -43,7 +43,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            // Filter out old legacy dummy items if present
             const clean = parsed.filter((p: any) => p.id && !p.id.startsWith('prod-') && p.title !== 'Ceramic Minimalist Vase');
             if (clean.length > 0) return clean;
           }
@@ -78,10 +77,21 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               price: Number(item.price || 0),
               comparePrice: item.comparePrice ? Number(item.comparePrice) : undefined,
               rating: typeof item.rating === 'number' ? item.rating : 5.0,
-              reviewsCount: typeof item.reviewsCount === 'number' ? item.reviewsCount : 8,
+              reviewsCount: typeof item.reviewsCount === 'number' ? item.reviewsCount : 0,
               badge: item.badge || 'New',
               image: item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
-              category: item.category || 'Electronics'
+              galleryImages: item.galleryImages && Array.isArray(item.galleryImages) ? item.galleryImages : [],
+              category: item.category || 'Electronics',
+              color: item.color || item.variantOptions || '',
+              shortDescription: item.shortDescription || '',
+              description: item.description || '',
+              usability: item.usability || '',
+              material: item.material || '',
+              warranty: item.warranty || '',
+              deliveryInsideDhaka: item.deliveryInsideDhaka ? Number(item.deliveryInsideDhaka) : 80,
+              deliveryOutsideDhaka: item.deliveryOutsideDhaka ? Number(item.deliveryOutsideDhaka) : 120,
+              sku: item.sku || '',
+              urlSlug: item.urlSlug || '',
             }));
             setProducts(mapped);
             setIsLoading(false);
@@ -119,17 +129,17 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
+  const addToCart = (product: Product, quantity: number = 1, selectedVariant?: string) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
+      const existing = prev.find((item) => item.product.id === product.id && item.selectedVariant === selectedVariant);
       if (existing) {
         return prev.map((item) =>
-          item.product.id === product.id
+          item.product.id === product.id && item.selectedVariant === selectedVariant
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      return [...prev, { product, quantity }];
+      return [...prev, { product, quantity, selectedVariant }];
     });
 
     notifySuccess('Added to Shopping Bag!', product.title);

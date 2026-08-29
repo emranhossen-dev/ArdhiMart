@@ -63,6 +63,21 @@ h1, h2, h3, h4, h5, h6 {
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 .animate-on-scroll {
   opacity: 0;
   transform: translateY(20px);
@@ -74,12 +89,13 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(0);
 }
 
+/* CONTINUOUS SLIDING LIGHT SHIMMER GLOW ANIMATION FOR BUTTONS */
 @keyframes btnShimmer {
   0% {
-    transform: translateX(-150%);
+    transform: translateX(-150%) skewX(-25deg);
   }
-  60%, 100% {
-    transform: translateX(250%);
+  45%, 100% {
+    transform: translateX(280%) skewX(-25deg);
   }
 }
 
@@ -98,11 +114,11 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.45) 50%,
     transparent 100%
   );
-  transform: translateX(-150%);
-  animation: btnShimmer 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform: translateX(-150%) skewX(-25deg);
+  animation: btnShimmer 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
   z-index: 10;
 }
