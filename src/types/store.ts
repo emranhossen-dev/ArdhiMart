@@ -33,6 +33,7 @@ export interface Product {
   shortDescription?: string;
   description?: string;
   usability?: string;
+  features?: string[];
   material?: string;
   warranty?: string;
   deliveryInsideDhaka?: number;

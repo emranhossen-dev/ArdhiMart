@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Sparkles } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface AnnouncementBarProps {
   text?: string;
@@ -16,7 +16,6 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
 
   return (
     <div className="bg-black dark:bg-white text-white dark:text-black py-2 px-4 text-center text-xs font-bold relative flex items-center justify-center gap-2 tracking-wide transition-all">
-      <Sparkles className="w-3.5 h-3.5 text-amber-400 dark:text-amber-600 animate-spin-slow shrink-0" />
       <span className="truncate">{text}</span>
       <button
         onClick={() => setIsVisible(false)}

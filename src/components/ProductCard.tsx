@@ -23,10 +23,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const isWishlisted = wishlistIds.includes(product.id);
 
   return (
-    <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300">
+    <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300">
       {/* Product Thumbnail Container - Full Width Edge to Edge */}
       <div className="relative w-full aspect-[4/3] sm:aspect-square bg-gray-50 dark:bg-slate-800 overflow-hidden shrink-0">
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/products/${product.urlSlug || product.id}`}>
           <img
             src={product.image}
             alt={product.title}
@@ -52,15 +52,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Card Details Body */}
-      <div className="p-2.5 sm:p-3 flex flex-col flex-1 justify-between">
+      <div className="p-2 sm:p-2.5 flex flex-col flex-1 justify-between">
         <div>
-          <Link href={`/products/${product.id}`}>
-            <h3 className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white line-clamp-1 hover:underline">
+          <Link href={`/products/${product.urlSlug || product.id}`}>
+            <h3 className="font-semibold text-xs text-gray-900 dark:text-white text-justify line-clamp-2 sm:line-clamp-3 hover:underline leading-snug">
               {product.title}
             </h3>
           </Link>
 
-          <div className="flex items-center gap-1 mt-0.5 mb-1.5 text-amber-500 font-semibold">
+          <div className="flex items-center gap-1 mt-0.5 mb-1 text-amber-500 font-semibold">
             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
             <span className="text-[11px] text-gray-600 dark:text-gray-400 font-semibold">
               {product.rating.toFixed(1)}
@@ -69,8 +69,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
           {/* Stock Bar for Flash Deals */}
           {showStockBar && (
-            <div className="my-1.5 space-y-1">
-              <div className="flex justify-between text-[10px] font-bold text-gray-500">
+            <div className="my-1 space-y-0.5">
+              <div className="flex justify-between text-[9px] font-bold text-gray-500">
                 <span>Sold: {stockSoldPercent}%</span>
                 <span className="text-red-500">Only {stockLeftCount} Left!</span>
               </div>
@@ -84,9 +84,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
 
-        {/* Price & Add to Cart Action */}
-        <div className="flex items-center justify-between pt-1.5 border-t border-gray-100 dark:border-slate-800 mt-1">
-          <div className="flex flex-col">
+        {/* Price & Full Width Add to Cart Action (No divider line) */}
+        <div className="mt-1 flex flex-col justify-end">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
             <span className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white">
               {storeConfig.currency}
               {product.price.toLocaleString()}
@@ -102,9 +102,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <button
             onClick={() => addToCart(product)}
             aria-label="Add to Cart"
-            className="btn-shimmer p-1.5 sm:p-2 bg-[#0F396F] hover:bg-[#164685] text-white rounded-lg active:scale-95 transition-all shadow-xs flex items-center justify-center cursor-pointer"
+            className="btn-shimmer w-full mt-2 py-1.5 px-2 bg-[#0F396F] hover:bg-[#164685] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <ShoppingCart className="w-3.5 h-3.5" />
+            <span>Add to Cart</span>
           </button>
         </div>
       </div>

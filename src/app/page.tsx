@@ -14,33 +14,38 @@ import BottomNavBar from '@/components/BottomNavBar';
 import { useStore } from '@/context/StoreContext';
 
 export default function Home() {
-  const { storeConfig, heroBanner, categories } = useStore();
+  const { storeConfig, heroBanner, categories, products } = useStore();
+
+  const newArrivals = products.filter((p) => p.isNew || p.isFeatured).slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+    <div className="min-h-screen bg-white dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col">
       {/* Top Announcement Bar */}
       <AnnouncementBar text={storeConfig.announcementText} />
 
       {/* Top Navigation Header */}
       <Header siteName={storeConfig.name} />
 
-      <main className="flex-1 w-full pb-6">
-        {/* Editorial Hero Banner */}
+      <main className="flex-1 w-full pb-6 space-y-2">
+        {/* 1. Hero Banner */}
         <HeroSection banner={heroBanner} />
 
-        {/* Value Proposition Trust Badges Bar */}
+        {/* 2. Trust Badges Bar */}
         <TrustBadgesBar />
 
-        {/* Shop By Category Showcase */}
-        <CategoryGrid categories={categories} />
-
-        {/* Flash Sale Limited Time Deals with Countdown */}
+        {/* 3. Flash Sale Section (Requirement 16) */}
         <FlashSaleSection />
 
-        {/* Featured Products Showcase Grid */}
-        <FeaturedProducts title="Trending Collections" />
+        {/* 4. Trending Collections Section (Requirement 16) */}
+        <FeaturedProducts title="Trending Collections" viewAllLink="/products?sort=trending" />
 
-        {/* Verified Customer Reviews & Testimonials */}
+        {/* 5. New Arrivals Section (Requirement 16) */}
+        <FeaturedProducts title="New Arrivals" products={newArrivals.length > 0 ? newArrivals : undefined} viewAllLink="/products?sort=newest" />
+
+        {/* 6. Shop By Category Showcase (Requirement 16) */}
+        <CategoryGrid categories={categories} />
+
+        {/* 7. Customer Reviews & Testimonials (Requirement 16) */}
         <TestimonialsSection />
       </main>
 

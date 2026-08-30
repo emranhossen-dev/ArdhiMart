@@ -11,7 +11,7 @@ export const ProductGrid: React.FC = () => {
     useCart();
   const [sortBy, setSortBy] = useState<"featured" | "low" | "high" | "rating">("featured");
 
-  let filteredProducts = PRODUCTS_DATA.filter((product) => {
+  const filteredProducts = PRODUCTS_DATA.filter((product) => {
     // Category Filter
     if (selectedCategory === "Wishlist") {
       if (!wishlist.includes(product.id)) return false;
@@ -85,7 +85,7 @@ export const ProductGrid: React.FC = () => {
 
       {/* Grid of Product Cards - Identical 2-col (mobile) / 3-col (sm) / 4-col (md+) layout */}
       {filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {filteredProducts.map((product: any) => (
             <ProductCard
               key={product.id}

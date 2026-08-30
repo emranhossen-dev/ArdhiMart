@@ -26,15 +26,15 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-slate-900 text-white pt-12 pb-20 sm:pb-8 border-t border-slate-800">
+    <footer className="bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 pt-12 pb-20 sm:pb-8 border-t border-gray-200/80 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 space-y-12">
         {/* Newsletter Banner */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+        <div className="bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
           <div className="space-y-1 text-center md:text-left">
-            <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
               Join Our VIP Newsletter
             </h3>
-            <p className="text-xs sm:text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400">
               Get exclusive promo discount codes, new arrivals & flash sale alerts straight to your inbox.
             </p>
           </div>
@@ -46,11 +46,11 @@ export const Footer: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address..."
-              className="h-12 bg-slate-950 border border-slate-700 rounded-xl px-4 text-xs text-white placeholder-slate-500 outline-none focus:border-white transition-colors w-full sm:w-72"
+              className="h-12 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-700 rounded-xl px-4 text-xs text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#FF6B00] transition-colors w-full sm:w-72"
             />
             <button
               type="submit"
-              className="h-12 px-6 bg-white text-black font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+              className="h-12 px-6 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-xs"
             >
               Subscribe
               <Send className="w-4 h-4" />
@@ -71,20 +71,20 @@ export const Footer: React.FC = () => {
                 className="h-10 w-auto object-contain"
               />
             </Link>
-            <p className="text-xs text-slate-400 leading-relaxed font-medium">
+            <p className="text-xs text-gray-600 dark:text-slate-400 leading-relaxed font-medium">
               Curated minimalist essentials and modern luxury e-commerce experience across Bangladesh.
             </p>
-            <div className="space-y-2 text-xs text-slate-300">
+            <div className="space-y-2 text-xs text-gray-700 dark:text-slate-300">
               <div className="flex items-center gap-2.5">
-                <PhoneCall className="w-4 h-4 text-slate-400 shrink-0" />
+                <PhoneCall className="w-4 h-4 text-[#FF6B00] shrink-0" />
                 <span>+880 1700-000000 (10 AM - 10 PM)</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                <Mail className="w-4 h-4 text-[#FF6B00] shrink-0" />
                 <span>support@domain.com</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                <MapPin className="w-4 h-4 text-[#FF6B00] shrink-0" />
                 <span>Gulshan-2, Dhaka-1212, Bangladesh</span>
               </div>
             </div>
@@ -92,32 +92,32 @@ export const Footer: React.FC = () => {
 
           {/* Col 2: Quick Links */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-200 border-b border-gray-200 dark:border-slate-800 pb-2">
               Quick Links
             </h4>
-            <ul className="space-y-2 text-xs text-slate-400">
+            <ul className="space-y-2 text-xs text-gray-600 dark:text-slate-400">
               <li>
-                <Link href="/products" className="hover:text-white transition-colors">
+                <Link href="/products" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Shop All Products
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="hover:text-white transition-colors">
+                <Link href="/products" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   New Arrivals
                 </Link>
               </li>
               <li>
-                <Link href="/cart" className="hover:text-white transition-colors">
+                <Link href="/cart" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Shopping Cart
                 </Link>
               </li>
               <li>
-                <Link href="/account" className="hover:text-white transition-colors">
+                <Link href="/account" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   My Account
                 </Link>
               </li>
               <li>
-                <Link href="/account/orders/8849201A/track" className="hover:text-white transition-colors">
+                <Link href="/account/orders/8849201A/track" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Track Your Order
                 </Link>
               </li>
@@ -126,27 +126,27 @@ export const Footer: React.FC = () => {
 
           {/* Col 3: Customer Care & Policies */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-200 border-b border-gray-200 dark:border-slate-800 pb-2">
               Customer Care & Policies
             </h4>
-            <ul className="space-y-2 text-xs text-slate-400">
+            <ul className="space-y-2 text-xs text-gray-600 dark:text-slate-400">
               <li>
-                <Link href="/return-policy" className="hover:text-white transition-colors">
+                <Link href="/return-policy" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   7-Day Return & Refund Policy
                 </Link>
               </li>
               <li>
-                <Link href="/privacy-policy" className="hover:text-white transition-colors">
+                <Link href="/privacy-policy" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms-and-conditions" className="hover:text-white transition-colors">
+                <Link href="/terms-and-conditions" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Terms & Conditions
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="hover:text-white transition-colors">
+                <Link href="/faq" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Frequently Asked Questions (FAQ)
                 </Link>
               </li>
@@ -155,39 +155,39 @@ export const Footer: React.FC = () => {
 
           {/* Col 4: Payments & Courier Partners */}
           <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-200 border-b border-gray-200 dark:border-slate-800 pb-2">
               Accepted Payments & Couriers
             </h4>
             
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                 Payment Partners
               </p>
               <div className="flex flex-wrap gap-2 text-xs font-bold">
-                <span className="px-2.5 py-1 bg-pink-950 text-pink-300 rounded border border-pink-900">
+                <span className="px-2.5 py-1 bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300 rounded border border-pink-200 dark:border-pink-900">
                   bKash
                 </span>
-                <span className="px-2.5 py-1 bg-orange-950 text-orange-300 rounded border border-orange-900">
+                <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 rounded border border-orange-200 dark:border-orange-900">
                   Nagad
                 </span>
-                <span className="px-2.5 py-1 bg-slate-800 text-slate-200 rounded border border-slate-700">
+                <span className="px-2.5 py-1 bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 rounded border border-gray-200 dark:border-slate-700">
                   COD (Cash on Delivery)
                 </span>
-                <span className="px-2.5 py-1 bg-blue-950 text-blue-300 rounded border border-blue-900">
+                <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-900">
                   Visa / MasterCard
                 </span>
               </div>
             </div>
 
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                 Logistics Partners
               </p>
-              <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-300">
-                <span className="px-2.5 py-1 bg-slate-800 rounded border border-slate-700">
+              <div className="flex flex-wrap gap-2 text-xs font-semibold text-gray-700 dark:text-slate-300">
+                <span className="px-2.5 py-1 bg-gray-100 dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700">
                   Steadfast Courier
                 </span>
-                <span className="px-2.5 py-1 bg-slate-800 rounded border border-slate-700">
+                <span className="px-2.5 py-1 bg-gray-100 dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700">
                   Pathao Courier
                 </span>
               </div>
@@ -196,7 +196,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Copyright & Agency Credit Bar */}
-        <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div className="pt-8 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 dark:text-slate-500 gap-4">
           <p>© {new Date().getFullYear()} {storeConfig.name}. All Rights Reserved.</p>
           <div className="flex items-center gap-1.5 font-medium">
             <span>Developed with</span>
@@ -206,7 +206,7 @@ export const Footer: React.FC = () => {
                 href="https://nextstation26.asia/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-blue-400 font-bold tracking-wide transition-colors underline decoration-slate-600 hover:decoration-blue-400"
+                className="text-gray-900 dark:text-white hover:text-[#FF6B00] dark:hover:text-blue-400 font-bold tracking-wide transition-colors underline decoration-gray-400 dark:decoration-slate-600"
               >
                 Next Station 26
               </a>

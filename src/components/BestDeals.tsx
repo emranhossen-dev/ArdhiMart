@@ -39,9 +39,9 @@ export const BestDeals: React.FC = () => {
         </button>
       </div>
 
-      {/* Best Deals Grid - Render identical 2-col (mobile) / 3-col (sm) / 4-col (md+) ProductCard layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
-        {deals.slice(0, 4).map((product: any) => (
+      {/* Best Deals Grid - Render 2-col (mobile) / 3-col (sm) / 4-col (md) / 6-col (lg+) ProductCard layout */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+        {deals.slice(0, 6).map((product: any) => (
           <ProductCard
             key={product.id}
             product={{

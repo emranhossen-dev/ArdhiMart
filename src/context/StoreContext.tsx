@@ -8,9 +8,12 @@ import {
   defaultProducts,
   defaultHeroBanner,
 } from '@/config/storeConfig';
-import { notifySuccess, notifyInfo } from '@/lib/sweetalert';
+import { notifySuccess, notifyInfo, showAddToCartModal } from '@/lib/sweetalert';
 
 interface StoreContextType {
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
   storeConfig: StoreConfig;
   categories: Category[];
   products: Product[];
@@ -34,6 +37,42 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ardhimart_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+    }
+    return 'light'; // DEFAULT LIGHT MODE!
+  });
+
+  const applyTheme = (t: 'light' | 'dark') => {
+    if (typeof window !== 'undefined') {
+      if (t === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
+      }
+    }
+  };
+
+  const setTheme = (newTheme: 'light' | 'dark') => {
+    setThemeState(newTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ardhimart_theme', newTheme);
+      applyTheme(newTheme);
+    }
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
+  React.useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
   const [storeConfig] = useState<StoreConfig>(defaultStoreConfig);
   const [categories] = useState<Category[]>(defaultCategories);
   const [products, setProducts] = useState<Product[]>(() => {
@@ -86,12 +125,13 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               shortDescription: item.shortDescription || '',
               description: item.description || '',
               usability: item.usability || '',
+              features: item.features && Array.isArray(item.features) ? item.features : [],
               material: item.material || '',
               warranty: item.warranty || '',
               deliveryInsideDhaka: item.deliveryInsideDhaka ? Number(item.deliveryInsideDhaka) : 80,
               deliveryOutsideDhaka: item.deliveryOutsideDhaka ? Number(item.deliveryOutsideDhaka) : 120,
               sku: item.sku || '',
-              urlSlug: item.urlSlug || '',
+              urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
             }));
             setProducts(mapped);
             setIsLoading(false);
@@ -142,8 +182,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       return [...prev, { product, quantity, selectedVariant }];
     });
 
-    notifySuccess('Added to Shopping Bag!', product.title);
-    setIsCartOpen(true);
+    showAddToCartModal(product.title, product.image, () => setIsCartOpen(true));
   };
 
   const removeFromCart = (productId: string) => {
@@ -184,6 +223,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   return (
     <StoreContext.Provider
       value={{
+        theme,
+        setTheme,
+        toggleTheme,
         storeConfig,
         categories,
         products,

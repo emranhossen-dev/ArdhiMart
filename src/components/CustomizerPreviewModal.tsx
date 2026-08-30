@@ -89,7 +89,7 @@ export const CustomizerPreviewModal: React.FC<CustomizerPreviewModalProps> = ({
                   style={{ color: selectedColor }}
                   className={`text-xl sm:text-2xl font-black drop-shadow-md break-words max-w-[85%] ${selectedFont}`}
                 >
-                  "{customText}"
+                  &quot;{customText}&quot;
                 </p>
               </div>
             )}

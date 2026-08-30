@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { ExtendedProduct } from "../data/products";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { showAddToCartModal } from "../lib/sweetalert";
 
 export interface Product {
   id: string;
@@ -125,32 +126,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // Modern Toast Notification for Add to Cart
-    toast.custom((t: any) => (
-      <div
-        className={`${
-          t.visible ? "animate-in fade-in slide-in-from-top-2" : "animate-out fade-out slide-out-to-top-2"
-        } max-w-sm w-full bg-zinc-900 border border-blue-500/40 shadow-2xl rounded-2xl p-3.5 flex items-center gap-3 text-white pointer-events-auto`}
-      >
-        <div className="relative w-12 h-12 rounded-xl bg-zinc-950 overflow-hidden shrink-0 border border-zinc-800">
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1 text-emerald-400 font-bold text-xs">
-            <span>✓ কার্টে যোগ করা হয়েছে!</span>
-          </div>
-          <h4 className="text-xs font-bold text-white truncate mt-0.5">{product.name}</h4>
-          <span className="text-[11px] text-blue-400 font-black">৳{product.price.toLocaleString()}</span>
-        </div>
-        <a
-          href="/cart"
-          onClick={() => toast.dismiss(t.id)}
-          className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shrink-0 transition-all"
-        >
-          কার্ট দেখুন
-        </a>
-      </div>
-    ));
+    showAddToCartModal(product.name, product.image, () => setIsCartOpen(true));
   };
 
   const removeFromCart = (cartItemId: string) => {

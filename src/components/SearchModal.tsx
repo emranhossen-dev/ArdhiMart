@@ -33,8 +33,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     : products.slice(0, 3); // Default show top products
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs p-4 sm:p-6 md:p-20 flex justify-center items-start">
-      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden animate-scale-in">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs p-4 sm:p-6 md:p-20 flex justify-center items-start cursor-pointer animate-fade-in"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden animate-scale-in cursor-default"
+      >
         {/* Search Input Bar */}
         <div className="p-4 border-b border-gray-200 dark:border-slate-800 flex items-center gap-3">
           <Search className="w-5 h-5 text-gray-400" />

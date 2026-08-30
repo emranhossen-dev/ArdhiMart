@@ -21,11 +21,13 @@ import {
   LogOut,
   ChevronRight,
   Truck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export default function AccountPage() {
   const router = useRouter();
-  const { products } = useStore();
+  const { products, theme, toggleTheme } = useStore();
   const [storeConfig] = useState(defaultStoreConfig);
   const [activeTab, setActiveTab] = useState('account');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -192,6 +194,35 @@ export default function AccountPage() {
                 </span>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
+
+            {/* App Theme Switcher (Light / Dark Mode) */}
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors text-left cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5 text-amber-500" />
+                ) : (
+                  <Moon className="w-5 h-5 text-indigo-600" />
+                )}
+                <div>
+                  <span className="font-semibold text-sm text-gray-900 dark:text-white block">
+                    App Theme
+                  </span>
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400 block font-medium">
+                    Currently: {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                  </span>
+                </div>
+              </div>
+              <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                theme === 'dark'
+                  ? 'bg-slate-800 text-amber-400 border-slate-700'
+                  : 'bg-orange-50 text-[#FF6B00] border-orange-200'
+              }`}>
+                {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
+              </span>
             </button>
           </div>
         </section>
