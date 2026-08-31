@@ -182,9 +182,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const res = await fetch(`${baseUrl}/categories`);
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) {
+          // Array হলে সরাসরি use করো
+          const dataArr = Array.isArray(data) ? data : (data && data.id ? [data] : null);
+          if (dataArr && dataArr.length > 0) {
             setDbCategories(
-              data.map((c: any) => ({
+              dataArr.map((c: any) => ({
                 id: c.id || `cat-${c.slug}`,
                 name: c.name,
                 slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
@@ -199,7 +201,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     fetchLiveCategories();
-    const interval = setInterval(fetchLiveCategories, 4000);
+    const interval = setInterval(fetchLiveCategories, 10000); // 10s এ একবার refresh
     return () => clearInterval(interval);
   }, []);
 
@@ -318,9 +320,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               const catRes = await fetch(`${baseUrl}/categories`);
               if (catRes.ok) {
                 const catData = await catRes.json();
-                if (Array.isArray(catData) && catData.length > 0 && isMounted) {
+                const catArr = Array.isArray(catData) ? catData : (catData && catData.id ? [catData] : null);
+                if (catArr && catArr.length > 0 && isMounted) {
                   setDbCategories(
-                    catData.map((c: any) => ({
+                    catArr.map((c: any) => ({
                       id: c.id || `cat-${c.slug}`,
                       name: c.name,
                       slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
