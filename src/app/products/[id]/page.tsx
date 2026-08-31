@@ -110,6 +110,17 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     setIsDragging(false);
   };
 
+  // Interactive Mouse Hover Zoom Lens State
+  const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - left) / width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - top) / height) * 100));
+    setZoomOrigin({ x, y });
+  };
+
   // Full-Screen Image Lightbox Modal State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -171,11 +182,24 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     new Set([product.image, ...parsedGallery].filter(Boolean))
   );
 
-  // Auto-slide gallery images every 3.5 seconds when multiple images exist
+  const displayGalleryImages = galleryImages.length > 1 ? [...galleryImages, galleryImages[0]] : galleryImages;
+  const [isResetting, setIsResetting] = useState(false);
+
+  // Infinite 1-Way Auto-slide: Never reverses direction when reaching the end!
   useEffect(() => {
     if (galleryImages.length <= 1 || isDragging) return;
     const interval = setInterval(() => {
-      setActiveImageIndex((prev) => (prev + 1) % galleryImages.length);
+      setActiveImageIndex((prev) => {
+        const next = prev + 1;
+        if (next === galleryImages.length) {
+          setTimeout(() => {
+            setIsResetting(true);
+            setActiveImageIndex(0);
+            setTimeout(() => setIsResetting(false), 50);
+          }, 360);
+        }
+        return next;
+      });
     }, 3500);
     return () => clearInterval(interval);
   }, [galleryImages.length, isDragging]);
@@ -303,21 +327,30 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
               onTouchEnd={handleTouchEnd}
               className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 rounded-md border border-gray-200/80 dark:border-slate-800 overflow-hidden group shadow-xs touch-pan-y"
             >
-              {/* Native Horizontal Track: Side-by-Side Images Sliding Together */}
+              {/* Native 1-Way Infinite Track: Always Slides Left, Never Reverses */}
               <div
                 className="w-full h-full flex"
                 style={{
                   transform: `translateX(calc(-${activeImageIndex * 100}% + ${dragOffset}px))`,
-                  transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)'
+                  transition: isResetting || isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)'
                 }}
               >
-                {galleryImages.map((img, idx) => (
-                  <div key={idx} className="w-full h-full shrink-0 flex items-center justify-center">
+                {displayGalleryImages.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="w-full h-full shrink-0 flex items-center justify-center overflow-hidden cursor-zoom-in group/zoom"
+                    onMouseMove={handleMouseMove}
+                    onMouseEnter={() => setIsZoomed(true)}
+                    onMouseLeave={() => setIsZoomed(false)}
+                    onClick={() => openLightbox(idx % galleryImages.length)}
+                  >
                     <img
                       src={img}
-                      alt={`${product.title} - view ${idx + 1}`}
-                      className="w-full h-full object-contain cursor-zoom-in select-none"
-                      onClick={() => openLightbox(idx)}
+                      alt={`${product.title} - view ${(idx % galleryImages.length) + 1}`}
+                      className="w-full h-full object-contain select-none transition-transform duration-300 group-hover/zoom:scale-175"
+                      style={{
+                        transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`
+                      }}
                     />
                   </div>
                 ))}

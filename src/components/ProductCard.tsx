@@ -32,21 +32,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   }
   const images = Array.from(new Set([product.image, ...parsedGallery].filter(Boolean)));
   const [currentImgIndex, setCurrentImgIndex] = useState<number>(0);
-
-  // Touch Swipe Gesture State for Card Multi-Image Gallery
   const [touchStartX, setTouchStartX] = useState<number>(0);
   const [touchEndX, setTouchEndX] = useState<number>(0);
+  const displayImages = images.length > 1 ? [...images, images[0]] : images;
+  const [isResetting, setIsResetting] = useState(false);
 
-  // Auto-slide image on hover if multiple images exist
-  const [isHovered, setIsHovered] = useState(false);
-
+  // ALWAYS 1-Way Auto-slide images every 3 seconds: Never reverses direction!
   React.useEffect(() => {
-    if (!isHovered || images.length <= 1) return;
+    if (images.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentImgIndex((prev: number) => (prev + 1) % images.length);
-    }, 2200);
+      setCurrentImgIndex((prev: number) => {
+        const next = prev + 1;
+        if (next === images.length) {
+          setTimeout(() => {
+            setIsResetting(true);
+            setCurrentImgIndex(0);
+            setTimeout(() => setIsResetting(false), 50);
+          }, 310);
+        }
+        return next;
+      });
+    }, 3000);
     return () => clearInterval(interval);
-  }, [isHovered, images.length]);
+  }, [images.length]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (images.length > 1) {
@@ -82,8 +90,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300">
       {/* Product Thumbnail Container - Full Width Edge to Edge */}
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -91,14 +97,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       >
         <Link href={`/products/${product.urlSlug || product.id}`} className="block w-full h-full overflow-hidden">
           <div
-            className="w-full h-full flex transition-transform duration-300 ease-out"
-            style={{ transform: `translateX(-${currentImgIndex * 100}%)` }}
+            className="w-full h-full flex"
+            style={{
+              transform: `translateX(-${currentImgIndex * 100}%)`,
+              transition: isResetting ? 'none' : 'transform 0.3s ease-out'
+            }}
           >
-            {images.map((img, idx) => (
+            {displayImages.map((img, idx) => (
               <img
                 key={idx}
                 src={img}
-                alt={`${product.title} - ${idx + 1}`}
+                alt={`${product.title} - ${(idx % images.length) + 1}`}
                 className="w-full h-full object-cover shrink-0 group-hover/img:scale-105 transition-transform duration-500"
               />
             ))}
