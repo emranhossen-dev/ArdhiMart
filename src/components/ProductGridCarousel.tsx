@@ -16,10 +16,14 @@ export const ProductGridCarousel: React.FC<ProductGridCarouselProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInteracting, setIsInteracting] = useState(false);
 
-  // Group products into 2-row column pairs: [[P0, P1], [P2, P3], [P4, P5], ...]
+  // Group products into 2-row column pairs: [[P0, P1], [P2, P3], ...]
+  // If total products is odd, wrap around to fill the bottom row so NO BLANK CARD appears!
   const baseColumns: Product[][] = [];
-  for (let i = 0; i < products.length; i += 2) {
-    baseColumns.push(products.slice(i, i + 2));
+  if (products.length > 0) {
+    const list = products.length > 1 && products.length % 2 !== 0 ? [...products, products[0]] : products;
+    for (let i = 0; i < list.length; i += 2) {
+      baseColumns.push(list.slice(i, i + 2));
+    }
   }
 
   // Triple columns for 100% seamless forward-only endless looping
@@ -63,7 +67,7 @@ export const ProductGridCarousel: React.FC<ProductGridCarouselProps> = ({
       {displayColumns.map((colPair, cIdx) => (
         <div key={cIdx} className="w-[160px] sm:w-[190px] md:w-[210px] shrink-0 flex flex-col gap-3 sm:gap-4">
           {colPair.map((product, pIdx) => (
-            <div key={product.id} className="w-full">
+            <div key={`${product.id}-${cIdx}-${pIdx}`} className="w-full">
               <ProductCard
                 product={product}
                 showStockBar={showStockBar}
