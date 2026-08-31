@@ -66,15 +66,19 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {/* Col 1: Brand Info */}
           <div className="space-y-4">
-            <Link href="/" className="inline-block">
+            <Link href="/" className="inline-flex items-center gap-2 group">
               <Image
                 src="/logo.png?v=2"
                 alt="ArdhiMart Logo"
-                width={160}
-                height={48}
+                width={140}
+                height={40}
                 unoptimized
-                className="h-11 sm:h-12 w-auto object-contain"
+                className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105"
               />
+              <span className="font-black text-xl sm:text-2xl tracking-tight leading-none">
+                <span className="text-[#FF6B00]">Ardhi</span>
+                <span className="text-[#0F396F] dark:text-blue-400">Mart</span>
+              </span>
             </Link>
             <p className="text-xs text-gray-600 dark:text-slate-400 leading-relaxed font-medium">
               Curated minimalist essentials and modern luxury e-commerce experience across Bangladesh.

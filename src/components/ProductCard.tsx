@@ -33,28 +33,38 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const images = Array.from(new Set([product.image, ...parsedGallery].filter(Boolean)));
   const [currentImgIndex, setCurrentImgIndex] = useState<number>(0);
 
-  // Touch Swipe Gesture State
+  // Touch Swipe Gesture State for Card Multi-Image Gallery
   const [touchStartX, setTouchStartX] = useState<number>(0);
   const [touchEndX, setTouchEndX] = useState<number>(0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.targetTouches[0].clientX);
+    if (images.length > 1) {
+      e.stopPropagation();
+      setTouchStartX(e.targetTouches[0].clientX);
+    }
   };
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.targetTouches[0].clientX);
-  };
-  const handleTouchEnd = () => {
-    if (!touchStartX || !touchEndX || images.length <= 1) return;
-    const distance = touchStartX - touchEndX;
-    if (distance > 30) {
-      // Swiped Left -> Next image
-      setCurrentImgIndex((prev: number) => (prev < images.length - 1 ? prev + 1 : 0));
-    } else if (distance < -30) {
-      // Swiped Right -> Previous image
-      setCurrentImgIndex((prev: number) => (prev > 0 ? prev - 1 : images.length - 1));
+    if (images.length > 1) {
+      e.stopPropagation();
+      setTouchEndX(e.targetTouches[0].clientX);
     }
-    setTouchStartX(0);
-    setTouchEndX(0);
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (images.length > 1) {
+      e.stopPropagation();
+      if (touchStartX && touchEndX) {
+        const distance = touchStartX - touchEndX;
+        if (distance > 30) {
+          // Swiped Left -> Next image inside this card
+          setCurrentImgIndex((prev: number) => (prev < images.length - 1 ? prev + 1 : 0));
+        } else if (distance < -30) {
+          // Swiped Right -> Previous image inside this card
+          setCurrentImgIndex((prev: number) => (prev > 0 ? prev - 1 : images.length - 1));
+        }
+      }
+      setTouchStartX(0);
+      setTouchEndX(0);
+    }
   };
 
   return (
