@@ -292,21 +292,26 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 rounded-md border border-gray-200/80 dark:border-slate-800 overflow-hidden group shadow-xs flex items-center justify-center touch-pan-y"
+              className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 rounded-md border border-gray-200/80 dark:border-slate-800 overflow-hidden group shadow-xs touch-pan-y"
             >
+              {/* Native Horizontal Track: Side-by-Side Images Sliding Together */}
               <div
-                className="w-full h-full flex items-center justify-center"
+                className="w-full h-full flex"
                 style={{
-                  transform: `translateX(${dragOffset}px)`,
-                  transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                  transform: `translateX(calc(-${activeImageIndex * 100}% + ${dragOffset}px))`,
+                  transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)'
                 }}
               >
-                <img
-                  src={galleryImages[activeImageIndex] || product.image}
-                  alt={product.title}
-                  className="w-full h-full object-contain cursor-zoom-in transition-all duration-300 group-hover:scale-102 select-none"
-                  onClick={() => openLightbox(activeImageIndex)}
-                />
+                {galleryImages.map((img, idx) => (
+                  <div key={idx} className="w-full h-full shrink-0 flex items-center justify-center">
+                    <img
+                      src={img}
+                      alt={`${product.title} - view ${idx + 1}`}
+                      className="w-full h-full object-contain cursor-zoom-in select-none"
+                      onClick={() => openLightbox(idx)}
+                    />
+                  </div>
+                ))}
               </div>
 
               <button

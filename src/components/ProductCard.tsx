@@ -76,12 +76,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         onTouchEnd={handleTouchEnd}
         className="relative w-full aspect-[4/3] sm:aspect-square bg-gray-50 dark:bg-slate-800 overflow-hidden shrink-0 group/img select-none"
       >
-        <Link href={`/products/${product.urlSlug || product.id}`}>
-          <img
-            src={images[currentImgIndex] || product.image}
-            alt={product.title}
-            className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
-          />
+        <Link href={`/products/${product.urlSlug || product.id}`} className="block w-full h-full overflow-hidden">
+          <div
+            className="w-full h-full flex transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${currentImgIndex * 100}%)` }}
+          >
+            {images.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`${product.title} - ${idx + 1}`}
+                className="w-full h-full object-cover shrink-0 group-hover/img:scale-105 transition-transform duration-500"
+              />
+            ))}
+          </div>
         </Link>
 
         {/* Swipe Indicators / Dots if Multiple Images Exist (ZERO Arrow Buttons) */}
