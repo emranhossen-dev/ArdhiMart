@@ -174,7 +174,36 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return [];
   });
 
-  // Dynamically compute unique categories from Admin/API categories + defaultCategories + products
+  // Sync categories directly from NestJS PostgreSQL REST API
+  React.useEffect(() => {
+    const fetchLiveCategories = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+        const res = await fetch(`${baseUrl}/categories`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setDbCategories(
+              data.map((c: any) => ({
+                id: c.id || `cat-${c.slug}`,
+                name: c.name,
+                slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+                image: c.image || '/images/ardhimart-smart-pen-holder.webp',
+                description: c.description || '',
+                itemCount: c.productCount || 0
+              }))
+            );
+          }
+        }
+      } catch (e) {}
+    };
+
+    fetchLiveCategories();
+    const interval = setInterval(fetchLiveCategories, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Dynamically compute unique categories from Admin/API categories + products
   const categories = React.useMemo(() => {
     const existingMap = new Map<string, Category>();
 
@@ -183,15 +212,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       existingMap.set(c.name.toLowerCase().trim(), c);
     });
 
-    // 2. Add defaultCategories if not already added
-    defaultCategories.forEach((c) => {
-      const key = c.name.toLowerCase().trim();
-      if (!existingMap.has(key)) {
-        existingMap.set(key, c);
-      }
-    });
-
-    // 3. Dynamically add from database products
+    // 2. Dynamically add from database products
     products.forEach((p) => {
       if (p.category) {
         const key = p.category.toLowerCase().trim();

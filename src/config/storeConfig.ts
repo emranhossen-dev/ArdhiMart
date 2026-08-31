@@ -22,35 +22,6 @@ export const defaultHeroBanner: HeroBanner = {
   ctaSecondaryLink: "/products",
 };
 
-export const defaultCategories: Category[] = [
-  {
-    id: "cat-1",
-    name: "Clothing & Gifts",
-    slug: "clothing",
-    image: "/images/ardhimart-giftbox-valentine-set.webp",
-    itemCount: 42,
-  },
-  {
-    id: "cat-2",
-    name: "Electronics & Tech",
-    slug: "electronics",
-    image: "/images/ardhimart-smart-pen-holder.webp",
-    itemCount: 28,
-  },
-  {
-    id: "cat-3",
-    name: "Accessories & Decor",
-    slug: "accessories",
-    image: "/images/ardhimart-giftbox-set.webp",
-    itemCount: 34,
-  },
-  {
-    id: "cat-4",
-    name: "Luxury Hampers",
-    slug: "gifts",
-    image: "/images/ardhimart-giftbox-valentine-set.webp",
-    itemCount: 19,
-  },
-];
+export const defaultCategories: Category[] = [];
 
 export const defaultProducts: Product[] = [];
