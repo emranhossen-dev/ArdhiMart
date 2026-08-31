@@ -107,11 +107,47 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const [heroBanner] = useState(defaultHeroBanner);
 
-  // Dynamically compute unique categories from database products + defaultCategories
+  // Dynamic categories synced from Admin / Backend database API
+  const [dbCategories, setDbCategories] = useState<Category[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ardhimart_admin_categories') || localStorage.getItem('ardhimart_categories');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map((c: any) => ({
+              id: c.id || `cat-${c.slug}`,
+              name: c.name,
+              slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+              image: c.image || '/images/ardhimart-smart-pen-holder.webp',
+              description: c.description || '',
+              itemCount: c.productCount || 0
+            }));
+          }
+        }
+      } catch (e) {}
+    }
+    return [];
+  });
+
+  // Dynamically compute unique categories from Admin/API categories + defaultCategories + products
   const categories = React.useMemo(() => {
     const existingMap = new Map<string, Category>();
-    defaultCategories.forEach((c) => existingMap.set(c.name.toLowerCase().trim(), c));
 
+    // 1. Add categories created in Admin / Database
+    dbCategories.forEach((c) => {
+      existingMap.set(c.name.toLowerCase().trim(), c);
+    });
+
+    // 2. Add defaultCategories if not already added
+    defaultCategories.forEach((c) => {
+      const key = c.name.toLowerCase().trim();
+      if (!existingMap.has(key)) {
+        existingMap.set(key, c);
+      }
+    });
+
+    // 3. Dynamically add from database products
     products.forEach((p) => {
       if (p.category) {
         const key = p.category.toLowerCase().trim();
@@ -128,7 +164,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     });
 
     return Array.from(existingMap.values());
-  }, [products]);
+  }, [dbCategories, products]);
 
   // Fetch real database products from NestJS REST API with resilient retry logic
   React.useEffect(() => {
@@ -211,6 +247,27 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 localStorage.setItem('ardhimart_cached_products', JSON.stringify(mapped));
               } catch (e) {}
             }
+
+            // Fetch categories REST API
+            try {
+              const catRes = await fetch(`${baseUrl}/categories`);
+              if (catRes.ok) {
+                const catData = await catRes.json();
+                if (Array.isArray(catData) && catData.length > 0 && isMounted) {
+                  setDbCategories(
+                    catData.map((c: any) => ({
+                      id: c.id || `cat-${c.slug}`,
+                      name: c.name,
+                      slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+                      image: c.image || '/images/ardhimart-smart-pen-holder.webp',
+                      description: c.description || '',
+                      itemCount: c.productCount || 0
+                    }))
+                  );
+                }
+              }
+            } catch (e) {}
+
             return;
           }
         }
