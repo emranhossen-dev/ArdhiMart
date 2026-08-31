@@ -105,14 +105,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 text-gray-900 dark:text-white shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-1.5 sm:gap-3">
         
         {/* Left Group: Hamburger Menu + Logo + Brand Name Text */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={handleMenuClick}
             aria-label="Open Mobile Menu"
-            className="lg:hidden p-1 text-gray-800 dark:text-gray-100 hover:text-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors cursor-pointer group flex flex-col justify-center gap-1.5 items-start"
+            className="lg:hidden p-0.5 text-gray-800 dark:text-gray-100 hover:text-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors cursor-pointer group flex flex-col justify-center gap-1.5 items-start"
           >
             <span className="w-5 sm:w-6 h-0.5 bg-current rounded-full transition-all group-hover:w-6 group-hover:bg-[#FF6B00]" />
             <span className="w-3.5 sm:w-4 h-0.5 bg-current rounded-full transition-all group-hover:w-6 group-hover:bg-[#FF6B00]" />
@@ -121,20 +121,20 @@ export const Header: React.FC<HeaderProps> = ({
 
           <Link
             href="/"
-            className="flex items-center gap-2 sm:gap-3 group shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2 group shrink-0"
             title="ArdhiMart"
           >
             <Image
               src="/logo.png?v=2"
               alt="ArdhiMart Logo"
-              width={180}
-              height={55}
+              width={140}
+              height={40}
               priority
               unoptimized
-              className="h-9 sm:h-12 lg:h-14 w-auto object-contain transition-transform group-hover:scale-105"
+              className="h-7 sm:h-9 lg:h-10 w-auto object-contain transition-transform group-hover:scale-105"
             />
-            {/* Brand Name Text: VISIBLE ON ALL SCREENS - BIGGER & BOLDER */}
-            <span className="font-black text-xl sm:text-2xl lg:text-3xl tracking-tight leading-none">
+            {/* Brand Name Text: PERFECT BALANCED SIZING */}
+            <span className="font-black text-lg sm:text-xl lg:text-2xl tracking-tight leading-none">
               <span className="text-[#FF6B00]">Ardhi</span>
               <span className="text-[#0F396F] dark:text-blue-400">Mart</span>
             </span>

@@ -70,10 +70,10 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               <Image
                 src="/logo.png?v=2"
                 alt="ArdhiMart Logo"
-                width={220}
-                height={60}
+                width={160}
+                height={48}
                 unoptimized
-                className="h-14 sm:h-16 w-auto object-contain"
+                className="h-11 sm:h-12 w-auto object-contain"
               />
             </Link>
             <p className="text-xs text-gray-600 dark:text-slate-400 leading-relaxed font-medium">
