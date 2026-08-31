@@ -9,6 +9,7 @@ import {
   defaultHeroBanner,
 } from '@/config/storeConfig';
 import { notifySuccess, notifyInfo, showAddToCartModal } from '@/lib/sweetalert';
+import { useAuth } from '@/context/AuthContext';
 
 interface StoreContextType {
   theme: 'light' | 'dark';
@@ -37,13 +38,7 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('ardhimart_theme');
-      if (saved === 'dark' || saved === 'light') return saved;
-    }
-    return 'light'; // DEFAULT LIGHT MODE!
-  });
+  const [theme, setThemeState] = useState<'light' | 'dark'>('light');
 
   const applyTheme = (t: 'light' | 'dark') => {
     if (typeof window !== 'undefined') {
@@ -61,20 +56,28 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setThemeState(newTheme);
     if (typeof window !== 'undefined') {
       localStorage.setItem('ardhimart_theme', newTheme);
-      applyTheme(newTheme);
     }
+    applyTheme(newTheme);
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
   };
 
   React.useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ardhimart_theme');
+      if (saved === 'dark' || saved === 'light') {
+        setThemeState(saved);
+        applyTheme(saved);
+      }
+    }
+  }, []);
 
   const [storeConfig] = useState<StoreConfig>(defaultStoreConfig);
-  const [categories] = useState<Category[]>(defaultCategories);
+  
+  // Instant product state initialized from localStorage cache (0ms delay)
   const [products, setProducts] = useState<Product[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -82,18 +85,50 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const clean = parsed.filter((p: any) => p.id && !p.id.startsWith('prod-') && p.title !== 'Ceramic Minimalist Vase');
-            if (clean.length > 0) return clean;
+            return parsed;
           }
         }
-      } catch (e) {
-        console.warn('Cache read error:', e);
-      }
+      } catch (e) {}
     }
-    return [];
+    return defaultProducts;
   });
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('ardhimart_cached_products');
+        if (cached && JSON.parse(cached).length > 0) {
+          return false; // Cached products ready immediately!
+        }
+      } catch (e) {}
+    }
+    return true;
+  });
+
   const [heroBanner] = useState(defaultHeroBanner);
+
+  // Dynamically compute unique categories from database products + defaultCategories
+  const categories = React.useMemo(() => {
+    const existingMap = new Map<string, Category>();
+    defaultCategories.forEach((c) => existingMap.set(c.name.toLowerCase().trim(), c));
+
+    products.forEach((p) => {
+      if (p.category) {
+        const key = p.category.toLowerCase().trim();
+        if (!existingMap.has(key)) {
+          existingMap.set(key, {
+            id: `cat-${key.replace(/[^a-z0-9]/g, '-')}`,
+            name: p.category,
+            slug: key.replace(/[^a-z0-9]/g, '-'),
+            image: p.image || '/images/ardhimart-smart-pen-holder.webp',
+            itemCount: 1
+          });
+        }
+      }
+    });
+
+    return Array.from(existingMap.values());
+  }, [products]);
 
   // Fetch real database products from NestJS REST API with resilient retry logic
   React.useEffect(() => {
@@ -109,30 +144,66 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && isMounted) {
-            const mapped = data.map((item: any) => ({
-              ...item,
-              id: String(item.id),
-              title: item.title || item.name || 'Untitled Product',
-              price: Number(item.price || 0),
-              comparePrice: item.comparePrice ? Number(item.comparePrice) : undefined,
-              rating: typeof item.rating === 'number' ? item.rating : 5.0,
-              reviewsCount: typeof item.reviewsCount === 'number' ? item.reviewsCount : 0,
-              badge: item.badge || 'New',
-              image: item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
-              galleryImages: item.galleryImages && Array.isArray(item.galleryImages) ? item.galleryImages : [],
-              category: item.category || 'Electronics',
-              color: item.color || item.variantOptions || '',
-              shortDescription: item.shortDescription || '',
-              description: item.description || '',
-              usability: item.usability || '',
-              features: item.features && Array.isArray(item.features) ? item.features : [],
-              material: item.material || '',
-              warranty: item.warranty || '',
-              deliveryInsideDhaka: item.deliveryInsideDhaka ? Number(item.deliveryInsideDhaka) : 80,
-              deliveryOutsideDhaka: item.deliveryOutsideDhaka ? Number(item.deliveryOutsideDhaka) : 120,
-              sku: item.sku || '',
-              urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
-            }));
+            const mapped = data.map((item: any) => {
+              const tagsArray = Array.isArray(item.tags)
+                ? item.tags
+                : typeof item.tags === 'string'
+                ? item.tags.split(',').map((s: string) => s.trim())
+                : [];
+
+              const keywordsArray = Array.isArray(item.keywords)
+                ? item.keywords
+                : typeof item.keywords === 'string'
+                ? item.keywords.split(',').map((s: string) => s.trim())
+                : [];
+
+              const isFlashSaleVal =
+                tagsArray.includes('flash_sale') ||
+                keywordsArray.includes('flash_sale') ||
+                Boolean(item.isFlashSale);
+
+              const mainBadgeTag =
+                tagsArray.find((t: string) => t !== 'flash_sale') || item.badge || '';
+
+              const finalBadge =
+                mainBadgeTag === 'None' || mainBadgeTag === 'none' ? '' : mainBadgeTag;
+
+              return {
+                ...item,
+                id: String(item.id),
+                title: item.title || item.name || 'Untitled Product',
+                price: Number(item.price || 0),
+                comparePrice: item.comparePrice ? Number(item.comparePrice) : undefined,
+                rating: typeof item.rating === 'number' ? item.rating : 5.0,
+                reviewsCount: typeof item.reviewsCount === 'number' ? item.reviewsCount : 0,
+                badge: finalBadge,
+                isNew: finalBadge === 'New' || finalBadge === 'Hot',
+                isFeatured: finalBadge === 'Featured' || finalBadge === 'Trending',
+                isFlashSale: isFlashSaleVal,
+                image: item.image || '/images/ardhimart-smart-pen-holder.webp',
+                galleryImages: Array.isArray(item.galleryImages)
+                  ? item.galleryImages
+                  : typeof item.galleryImages === 'string' && item.galleryImages.trim()
+                  ? item.galleryImages.split(',').map((s: string) => s.trim()).filter(Boolean)
+                  : [],
+                category: item.category || 'Electronics',
+                color: item.color || item.variantOptions || '',
+                shortDescription: item.shortDescription || '',
+                description: item.description || '',
+                usability: item.usability || '',
+                features: Array.isArray(item.features)
+                  ? item.features
+                  : typeof item.features === 'string' && item.features.trim()
+                  ? item.features.split('\n').map((s: string) => s.trim()).filter(Boolean)
+                  : [],
+                material: item.material || '',
+                warranty: item.warranty || '',
+                deliveryInsideDhaka: item.deliveryInsideDhaka ? Number(item.deliveryInsideDhaka) : 80,
+                deliveryOutsideDhaka: item.deliveryOutsideDhaka ? Number(item.deliveryOutsideDhaka) : 120,
+                sku: item.sku || '',
+                urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
+              };
+            });
             setProducts(mapped);
             setIsLoading(false);
             if (typeof window !== 'undefined') {
@@ -164,6 +235,32 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
+  const { user } = useAuth();
+
+  // Auto-sync active cart items to backend for admin tracking
+  React.useEffect(() => {
+    if (user) {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+      fetch(`${baseUrl}/customers/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: user.uid,
+          name: user.displayName || 'Customer',
+          email: user.email || '',
+          avatar: user.photoURL || '',
+          provider: user.providerData[0]?.providerId || 'password',
+          cartItems: cartItems.map((i) => ({
+            id: i.product.id,
+            title: i.product.title,
+            price: i.product.price,
+            quantity: i.quantity,
+            image: i.product.image,
+          })),
+        }),
+      }).catch((e) => console.warn('Cart sync error:', e));
+    }
+  }, [user, cartItems]);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);

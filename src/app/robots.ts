@@ -7,8 +7,17 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: ['/', '/_next/static/', '/_next/image/', '/images/', '/logo.png', '/favicon.ico'],
+        disallow: ['/checkout', '/checkout/*', '/account/*', '/cart', '/api/*'],
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: ['/', '/_next/static/', '/_next/image/', '/images/', '/logo.png', '/favicon.ico'],
         disallow: ['/checkout', '/checkout/*', '/account/*', '/cart'],
+      },
+      {
+        userAgent: 'Googlebot-Image',
+        allow: ['/', '/_next/static/', '/_next/image/', '/images/', '/logo.png'],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

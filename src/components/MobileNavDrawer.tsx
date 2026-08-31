@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   X,
@@ -127,7 +128,13 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
                 className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 text-sm font-bold text-gray-900 dark:text-white transition-colors text-left cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <ShoppingBag className="w-4 h-4 text-gray-500" />
+                  <Image
+                    src="/ardhimart-bag.svg"
+                    alt="My Cart"
+                    width={22}
+                    height={22}
+                    className="w-5 h-5 object-contain dark:brightness-0 dark:invert"
+                  />
                   <span>My Cart</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-gray-400" />

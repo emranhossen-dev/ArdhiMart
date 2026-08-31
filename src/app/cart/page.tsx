@@ -213,7 +213,7 @@ export default function CartPage() {
         )}
       </main>
 
-      <Footer />
+      <Footer className="hidden md:block" />
       <BottomNavBar />
     </div>
   );

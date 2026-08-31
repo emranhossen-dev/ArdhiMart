@@ -1,30 +1,35 @@
 "use client";
 
 import React, { useState } from "react";
-import { PRODUCTS_DATA } from "../data/products";
 import { ProductCard } from "./ProductCard";
 import { useCart } from "../context/CartContext";
+import { useStore } from "../context/StoreContext";
 import { HiOutlineAdjustmentsHorizontal, HiOutlineArchiveBoxXMark } from "react-icons/hi2";
 
 export const ProductGrid: React.FC = () => {
   const { selectedCategory, setSelectedCategory, searchQuery, setSearchQuery, wishlist } =
     useCart();
+  const { products } = useStore();
   const [sortBy, setSortBy] = useState<"featured" | "low" | "high" | "rating">("featured");
 
-  const filteredProducts = PRODUCTS_DATA.filter((product) => {
+  const filteredProducts = products.filter((product: any) => {
+    const productName = product.name || product.title || "";
+    const productCategory = product.category || "";
+    const productBrand = product.brand || "";
+
     // Category Filter
     if (selectedCategory === "Wishlist") {
       if (!wishlist.includes(product.id)) return false;
     } else if (selectedCategory !== "All") {
-      if (product.category.toLowerCase() !== selectedCategory.toLowerCase()) return false;
+      if (productCategory.toLowerCase() !== selectedCategory.toLowerCase()) return false;
     }
 
     // Search Query Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const nameMatch = product.name.toLowerCase().includes(q);
-      const catMatch = product.category.toLowerCase().includes(q);
-      const brandMatch = product.brand.toLowerCase().includes(q);
+      const nameMatch = productName.toLowerCase().includes(q);
+      const catMatch = productCategory.toLowerCase().includes(q);
+      const brandMatch = productBrand.toLowerCase().includes(q);
       if (!nameMatch && !catMatch && !brandMatch) return false;
     }
 
@@ -95,7 +100,7 @@ export const ProductGrid: React.FC = () => {
                 price: product.price || 0,
                 rating: product.rating || 5.0,
                 badge: product.badge || 'New',
-                image: product.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
+                image: product.image || '/images/ardhimart-smart-pen-holder.webp',
                 category: product.category || 'General',
               }}
             />

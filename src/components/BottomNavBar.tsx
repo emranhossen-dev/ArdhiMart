@@ -2,9 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, LayoutGrid, Search, ShoppingBag, User, LucideIcon } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface BottomNavBarProps {
   activeTab?: string;
@@ -33,6 +35,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { cartItems, wishlistIds, setIsSearchOpen } = useStore();
+  const { user } = useAuth();
 
   const totalCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const effectiveWishlistCount = wishlistCount !== undefined ? wishlistCount : wishlistIds.length;
@@ -80,7 +83,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 h-16 flex items-center justify-around px-2 sm:hidden transition-colors shadow-lg">
+    <nav className="fixed bottom-0 left-0 w-full z-40 bg-[#FF6B00] border-t border-[#e05e00] h-16 flex items-center justify-around px-2 sm:hidden transition-colors shadow-2xl text-white">
       {tabs.map((tab) => {
         const IconComponent = tab.icon;
         const active = tab.isActive;
@@ -95,14 +98,35 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
               }}
               className={`flex flex-col items-center justify-center w-14 py-1 relative transition-all active:scale-90 ${
                 active
-                  ? 'text-black dark:text-white font-bold'
-                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium'
+                  ? 'text-white font-black scale-105'
+                  : 'text-orange-100/90 hover:text-white font-medium'
               }`}
             >
               <div className="relative">
-                <IconComponent className={`w-5 h-5 ${active ? 'stroke-[2.5px]' : 'stroke-2'}`} />
+                {tab.id === 'account' && user?.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt="Account Avatar"
+                    referrerPolicy="no-referrer"
+                    className={`w-5.5 h-5.5 rounded-full object-cover border ${
+                      active ? 'border-white ring-2 ring-white/60' : 'border-orange-200'
+                    }`}
+                  />
+                ) : tab.id === 'cart' ? (
+                  <Image
+                    src="/ardhimart-bag.svg"
+                    alt="Cart"
+                    width={26}
+                    height={26}
+                    className={`w-6.5 h-6.5 object-contain transition-all brightness-0 invert ${
+                      active ? 'opacity-100 scale-105' : 'opacity-85'
+                    }`}
+                  />
+                ) : (
+                  <IconComponent className={`w-5 h-5 ${active ? 'stroke-[2.5px] text-white' : 'stroke-2 text-orange-100'}`} />
+                )}
                 {tab.badge !== undefined && (
-                  <span className="absolute -top-1.5 -right-2.5 bg-black dark:bg-white text-white dark:text-black font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                  <span className="absolute -top-1.5 -right-2.5 bg-white text-[#FF6B00] font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-md">
                     {tab.badge}
                   </span>
                 )}
@@ -120,14 +144,26 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
             href={tab.href!}
             className={`flex flex-col items-center justify-center w-14 py-1 relative transition-all active:scale-90 ${
               active
-                ? 'text-black dark:text-white font-bold'
-                : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium'
+                ? 'text-white font-black scale-105'
+                : 'text-orange-100/90 hover:text-white font-medium'
             }`}
           >
             <div className="relative">
-              <IconComponent className={`w-5 h-5 ${active ? 'stroke-[2.5px]' : 'stroke-2'}`} />
+              {tab.id === 'cart' ? (
+                <Image
+                  src="/ardhimart-bag.svg"
+                  alt="Cart"
+                  width={26}
+                  height={26}
+                  className={`w-6.5 h-6.5 object-contain transition-all brightness-0 invert ${
+                    active ? 'opacity-100 scale-105' : 'opacity-85'
+                  }`}
+                />
+              ) : (
+                <IconComponent className={`w-5 h-5 ${active ? 'stroke-[2.5px] text-white' : 'stroke-2 text-orange-100'}`} />
+              )}
               {tab.badge !== undefined && (
-                <span className="absolute -top-1.5 -right-2.5 bg-black dark:bg-white text-white dark:text-black font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute -top-1.5 -right-2.5 bg-white text-[#FF6B00] font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-md">
                   {tab.badge}
                 </span>
               )}

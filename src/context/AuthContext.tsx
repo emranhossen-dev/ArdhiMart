@@ -27,10 +27,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const syncCustomerToBackend = async (currentUser: FirebaseUser | null) => {
+    if (!currentUser) return;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+      await fetch(`${baseUrl}/customers/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: currentUser.uid,
+          name: currentUser.displayName || 'Customer',
+          email: currentUser.email || '',
+          avatar: currentUser.photoURL || '',
+          provider: currentUser.providerData[0]?.providerId || 'password',
+        }),
+      });
+    } catch (e) {
+      console.warn('Backend customer sync fallback:', e);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      if (currentUser) {
+        syncCustomerToBackend(currentUser);
+      }
     });
     return () => unsubscribe();
   }, []);

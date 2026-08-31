@@ -11,8 +11,7 @@ export const TestimonialsSection: React.FC = () => {
       rating: 5,
       comment:
         'Outstanding product quality and packaging! Delivered inside Dhaka within 24 hours via Steadfast Courier. Highly recommended storefront!',
-      avatar:
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+      avatar: '/logo.png',
     },
     {
       name: 'Nusrat Jahan',
@@ -20,8 +19,7 @@ export const TestimonialsSection: React.FC = () => {
       rating: 5,
       comment:
         'The minimalist ceramic vase looks even better in real life. Smooth checkout experience and fast customer service support.',
-      avatar:
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop',
+      avatar: '/logo.png',
     },
     {
       name: 'Tanvir Hossain',
@@ -29,8 +27,7 @@ export const TestimonialsSection: React.FC = () => {
       rating: 5,
       comment:
         'Cash on delivery was smooth and the rider let me inspect product before paying. Best e-commerce shopping experience in BD!',
-      avatar:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
+      avatar: '/logo.png',
     },
   ];
 

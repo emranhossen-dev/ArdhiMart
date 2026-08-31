@@ -11,18 +11,24 @@ import FeaturedProducts from '@/components/FeaturedProducts';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import Footer from '@/components/Footer';
 import BottomNavBar from '@/components/BottomNavBar';
+import PromotionalEntryModal from '@/components/PromotionalEntryModal';
 import { useStore } from '@/context/StoreContext';
 
 export default function Home() {
   const { storeConfig, heroBanner, categories, products } = useStore();
 
-  const newArrivals = products.filter((p) => p.isNew || p.isFeatured).slice(0, 6);
+  const trendingProducts = products.filter(
+    (p) => p.badge === 'Trending' || p.badge === 'Featured' || p.badge === 'Best Seller' || p.isFeatured
+  );
+
+  // New Arrivals includes all items tagged New/Hot or recently added database products
+  const newArrivals = products.filter(
+    (p) => p.badge === 'New' || p.badge === 'Hot' || p.isNew
+  );
+  const displayNewArrivals = newArrivals.length >= 4 ? newArrivals : [...products].reverse();
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col">
-      {/* Top Announcement Bar */}
-      <AnnouncementBar text={storeConfig.announcementText} />
-
       {/* Top Navigation Header */}
       <Header siteName={storeConfig.name} />
 
@@ -30,22 +36,47 @@ export default function Home() {
         {/* 1. Hero Banner */}
         <HeroSection banner={heroBanner} />
 
-        {/* 2. Trust Badges Bar */}
+        {/* 2. Trust Badges Bar (24/7 Delivery) */}
         <TrustBadgesBar />
 
-        {/* 3. Flash Sale Section (Requirement 16) */}
-        <FlashSaleSection />
-
-        {/* 4. Trending Collections Section (Requirement 16) */}
-        <FeaturedProducts title="Trending Collections" viewAllLink="/products?sort=trending" />
-
-        {/* 5. New Arrivals Section (Requirement 16) */}
-        <FeaturedProducts title="New Arrivals" products={newArrivals.length > 0 ? newArrivals : undefined} viewAllLink="/products?sort=newest" />
-
-        {/* 6. Shop By Category Showcase (Requirement 16) */}
+        {/* 3. Shop By Category Showcase (Moved UP right under 24/7 Delivery Bar) */}
         <CategoryGrid categories={categories} />
 
-        {/* 7. Customer Reviews & Testimonials (Requirement 16) */}
+        {/* 4. Flash Sale Section */}
+        <FlashSaleSection />
+
+        {/* 5. Trending Collections Section */}
+        <FeaturedProducts
+          title="Trending Collections"
+          products={trendingProducts.length > 0 ? trendingProducts : products.slice(0, 10)}
+          viewAllLink="/products?sort=trending"
+        />
+
+        {/* 6. New Arrivals Section */}
+        <FeaturedProducts
+          title="New Arrivals"
+          products={displayNewArrivals}
+          viewAllLink="/products?sort=newest"
+        />
+
+        {/* 7. Category-Wise Product Card Showcase Sections (Before Footer) */}
+        {categories.map((cat) => {
+          const catProducts = products.filter(
+            (p) => p.category && p.category.toLowerCase().trim() === cat.name.toLowerCase().trim()
+          );
+          if (catProducts.length === 0) return null;
+
+          return (
+            <FeaturedProducts
+              key={cat.id}
+              title={`${cat.name} Showcase`}
+              products={catProducts}
+              viewAllLink={`/products?category=${encodeURIComponent(cat.name)}`}
+            />
+          );
+        })}
+
+        {/* 8. Customer Reviews & Testimonials */}
         <TestimonialsSection />
       </main>
 
@@ -54,6 +85,9 @@ export default function Home() {
 
       {/* Sticky Mobile Bottom Navigation Bar */}
       <BottomNavBar />
+
+      {/* Promotional Entry Modal (Masks background loading & delivers special offer) */}
+      <PromotionalEntryModal />
     </div>
   );
 }

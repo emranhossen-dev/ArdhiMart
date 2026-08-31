@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HeroBanner } from '@/types/store';
 
 interface HeroSectionProps {
@@ -13,33 +12,33 @@ interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
   const slides = [
     {
-      badge: banner?.badge || 'New Collection 2026',
-      title: banner?.title || "Find something you'll love",
-      subtitle: banner?.subtitle || 'Curated minimalist essentials, premium electronics & handcrafted luxury lifestyle products.',
-      imageUrl: banner?.imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop',
-      ctaPrimaryText: banner?.ctaPrimaryText || 'Shop Collection',
+      badge: banner?.badge || 'Smart Tech Collection ⚡',
+      title: banner?.title || 'Smart LED Digital Pen Holder',
+      subtitle: banner?.subtitle || 'Premium desk organizer with digital clock, alarm & ambient LED light. Elevate your workspace with a modern touch!',
+      imageUrl: banner?.imageUrl || '/images/ardhimart-smart-pen-holder.webp',
+      ctaPrimaryText: banner?.ctaPrimaryText || 'Order Now',
       ctaPrimaryLink: banner?.ctaPrimaryLink || '/products',
-      ctaSecondaryText: banner?.ctaSecondaryText || 'Explore Categories',
+      ctaSecondaryText: banner?.ctaSecondaryText || 'Explore Gadgets',
       ctaSecondaryLink: banner?.ctaSecondaryLink || '/products',
     },
     {
-      badge: 'Limited Flash Deals',
-      title: 'Up to 50% Off Electronics & Gadgets',
-      subtitle: 'Discover high-performance wireless audio, smartwatches & modern gadgets.',
-      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1600&auto=format&fit=crop',
-      ctaPrimaryText: 'Shop Collection',
+      badge: 'Mega Gift Hampers 🎁',
+      title: 'Surprise Gift Box for Your Loved Ones',
+      subtitle: 'Make birthdays, anniversaries & special moments unforgettable with our curated luxury gift combos.',
+      imageUrl: '/images/ardhimart-giftbox-valentine-set.webp',
+      ctaPrimaryText: 'Shop Gift Combos',
       ctaPrimaryLink: '/products',
-      ctaSecondaryText: 'Explore Categories',
+      ctaSecondaryText: 'Explore Collection',
       ctaSecondaryLink: '/products',
     },
     {
-      badge: 'Premium Lifestyle Essentials',
-      title: 'Elevate Your Everyday Style',
-      subtitle: 'Handcrafted luxury accessories, minimalist apparel & premium home decor.',
-      imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1600&auto=format&fit=crop',
-      ctaPrimaryText: 'Shop Collection',
+      badge: 'Exclusive Gift Deals 🌟',
+      title: 'Unique Gifts & Trending Decor Items',
+      subtitle: 'Special discounts on illuminated glass flower domes, cute plush dolls & trending aesthetic home decor!',
+      imageUrl: '/images/ardhimart-giftbox-set.webp',
+      ctaPrimaryText: 'View Collection',
       ctaPrimaryLink: '/products',
-      ctaSecondaryText: 'Explore Categories',
+      ctaSecondaryText: 'All Products',
       ctaSecondaryLink: '/products',
     },
   ];
@@ -54,16 +53,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : slides.length - 1));
-  };
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
   return (
-    <section className="relative w-full h-[520px] sm:h-[600px] bg-slate-950 overflow-hidden group select-none">
+    <section className="relative w-full h-[calc(100dvh-128px)] sm:h-[calc(100vh-80px)] min-h-[440px] bg-slate-950 overflow-hidden group select-none">
       {/* Slide Images */}
       {slides.map((slide, idx) => (
         <div
@@ -83,35 +74,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
       ))}
 
       {/* Slide Content Overlay */}
-      <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 flex flex-col justify-end pb-12 sm:pb-16">
-        <div className="max-w-xl space-y-4">
-          {/* Badge Pill */}
-          <div className="inline-flex items-center bg-[#FF6B00] text-white px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md">
-            {slides[currentSlide].badge}
-          </div>
-
-          {/* Headline */}
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight drop-shadow-md">
+      <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-end text-center pb-8 sm:pb-14">
+        <div className="max-w-2xl mx-auto space-y-3.5 flex flex-col items-center text-center">
+          {/* Headline (Center Aligned) */}
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight drop-shadow-md text-center">
             {slides[currentSlide].title}
           </h2>
 
-          {/* Subtitle */}
-          <p className="text-gray-200 text-sm sm:text-base font-medium line-clamp-2 max-w-md">
+          {/* Subtitle (Center Aligned) */}
+          <p className="text-gray-200 text-sm sm:text-base font-medium line-clamp-2 max-w-lg mx-auto text-center">
             {slides[currentSlide].subtitle}
           </p>
 
-          {/* Action Buttons styled with Logo Brand Colors (#FF6B00 & #0F396F) */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full sm:w-auto">
+          {/* Action Buttons (Center Aligned) */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
             <Link
               href={slides[currentSlide].ctaPrimaryLink}
-              className="btn-shimmer w-full sm:w-auto px-8 h-12 bg-[#FF6B00] hover:bg-[#E56000] text-white font-extrabold text-sm rounded-xl flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
+              className="btn-shimmer w-full sm:w-auto px-6 h-10 bg-[#FF6B00] hover:bg-[#E56000] text-white font-extrabold text-xs sm:text-sm rounded-md flex items-center justify-center transition-all shadow-md active:scale-95 cursor-pointer"
             >
               {slides[currentSlide].ctaPrimaryText}
             </Link>
 
             <Link
               href={slides[currentSlide].ctaSecondaryLink}
-              className="btn-shimmer w-full sm:w-auto px-8 h-12 bg-[#0F396F] hover:bg-[#164685] text-white font-bold text-sm rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95 cursor-pointer"
+              className="btn-shimmer w-full sm:w-auto px-6 h-10 bg-[#0F396F] hover:bg-[#164685] text-white font-bold text-xs sm:text-sm rounded-md flex items-center justify-center transition-all shadow-md active:scale-95 cursor-pointer"
             >
               {slides[currentSlide].ctaSecondaryText}
             </Link>
@@ -119,22 +105,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
         </div>
       </div>
 
-      {/* Prev / Next Navigation Chevron Buttons */}
-      <button
-        onClick={prevSlide}
-        aria-label="Previous Slide"
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/40 hover:bg-black/80 text-white backdrop-blur-md transition-all opacity-80 hover:opacity-100 active:scale-90 cursor-pointer hidden sm:flex"
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
 
-      <button
-        onClick={nextSlide}
-        aria-label="Next Slide"
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/40 hover:bg-black/80 text-white backdrop-blur-md transition-all opacity-80 hover:opacity-100 active:scale-90 cursor-pointer hidden sm:flex"
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
 
       {/* Slide Navigation Pagination Dots */}
       <div className="absolute bottom-4 left-0 w-full z-30 flex justify-center gap-2">

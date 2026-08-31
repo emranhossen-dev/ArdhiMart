@@ -1,0 +1,49 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- White Sticker Outline Background -->
+  <path 
+    d="M36 4L10 35H30L20 60L54 27H34L44 4H36Z" 
+    fill="white" 
+    stroke="white" 
+    stroke-width="7" 
+    stroke-linejoin="round" 
+    stroke-linecap="round"
+  />
+
+  <!-- Dark Burgundy 3D Shadow -->
+  <path 
+    d="M37 7L13 36H31L22 59L53 29H35L43 7H37Z" 
+    fill="#5C0000"
+  />
+
+  <!-- Red Outer Border Accent -->
+  <path 
+    d="M36 6L11 35H30L21 59L53 28H34L43 6H36Z" 
+    fill="#D50000"
+  />
+
+  <!-- Main Comic Yellow Lightning Bolt Body -->
+  <path 
+    d="M35 5L10 34H29L19 57L52 27H33L42 5H35Z" 
+    fill="#FFD600"
+  />
+
+  <!-- Comic Pink/Red Flash Streak Highlight -->
+  <path 
+    d="M38 10L27 26H38L27 45L45 25H34L38 10Z" 
+    fill="#FF0055"
+  />
+
+  <!-- Inner Yellow Core Streak -->
+  <path 
+    d="M37 9L26 25H37L26 42L44 24H33L37 9Z" 
+    fill="#FFEA00"
+  />
+
+  <!-- Comic Pop Dots (Halftone Effect) -->
+  <circle cx="28" cy="22" r="1" fill="#E65100" opacity="0.6"/>
+  <circle cx="32" cy="20" r="1" fill="#E65100" opacity="0.6"/>
+  <circle cx="30" cy="26" r="1" fill="#E65100" opacity="0.6"/>
+  <circle cx="34" cy="24" r="1" fill="#E65100" opacity="0.6"/>
+  <circle cx="26" cy="32" r="1" fill="#E65100" opacity="0.6"/>
+  <circle cx="28" cy="36" r="1" fill="#E65100" opacity="0.6"/>
+</svg>

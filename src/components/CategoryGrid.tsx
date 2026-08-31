@@ -66,7 +66,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
             {/* ROUNDED CIRCULAR AVATAR ICON */}
             <div className="w-13 h-13 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-gray-100 dark:bg-slate-800 mb-1.5 border-2 border-transparent group-hover:border-[#FF6B00] shadow-sm transition-all group-hover:scale-108 group-hover:shadow-md flex items-center justify-center p-0.5">
               <img
-                src={cat.image}
+                src={cat.image || '/images/ardhimart-giftbox-set.webp'}
                 alt={cat.name}
                 className="w-full h-full object-cover rounded-full"
               />

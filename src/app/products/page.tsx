@@ -20,6 +20,7 @@ import { ProductCard, ProductSkeletonCard } from '@/components/ProductCard';
 function ProductsContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
+  const searchQueryParam = searchParams.get('search');
 
   const {
     products,
@@ -47,7 +48,13 @@ function ProductsContent() {
         selectedCategory === 'All' ||
         prod.category.toLowerCase() === selectedCategory.toLowerCase();
       const matchPrice = prod.price <= maxPrice;
-      return matchCategory && matchPrice;
+      const matchSearch = searchQueryParam
+        ? prod.title.toLowerCase().includes(searchQueryParam.toLowerCase()) ||
+          prod.category.toLowerCase().includes(searchQueryParam.toLowerCase()) ||
+          (prod.brand && prod.brand.toLowerCase().includes(searchQueryParam.toLowerCase())) ||
+          (prod.description && prod.description.toLowerCase().includes(searchQueryParam.toLowerCase()))
+        : true;
+      return matchCategory && matchPrice && matchSearch;
     })
     .sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
@@ -65,14 +72,22 @@ function ProductsContent() {
         </Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-gray-900 dark:text-white font-semibold">
-          {selectedCategory !== 'All' ? selectedCategory : 'All Products'}
+          {searchQueryParam
+            ? `Search: "${searchQueryParam}"`
+            : selectedCategory !== 'All'
+            ? selectedCategory
+            : 'All Products'}
         </span>
       </nav>
 
       {/* Page Header */}
       <div className="mb-4">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-          {selectedCategory !== 'All' ? `${selectedCategory} Collection` : 'All Products & Collections'}
+          {searchQueryParam
+            ? `Results for "${searchQueryParam}"`
+            : selectedCategory !== 'All'
+            ? `${selectedCategory} Collection`
+            : 'All Products & Collections'}
         </h1>
         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
           Showing {filteredProducts.length} of {products.length} products

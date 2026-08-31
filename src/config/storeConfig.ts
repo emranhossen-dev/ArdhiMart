@@ -6,46 +6,49 @@ export const defaultStoreConfig: StoreConfig = {
   currency: "৳",
   logoUrl: "/logo.png",
   announcementText: "Free Delivery on orders over ৳5000 | Use Code: FIRST50",
+  phone: "01895627138",
+  email: "martardhi@gmail.com",
+  address: "Mohammadpur, Dhaka-1207",
 };
 
 export const defaultHeroBanner: HeroBanner = {
-  badge: "New Collection 2026",
-  title: "Find something you'll love",
-  subtitle: "Curated minimalist essentials, premium electronics & handcrafted luxury lifestyle products.",
-  imageUrl: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop",
-  ctaPrimaryText: "Shop Collection",
+  badge: "Smart Tech Collection ⚡",
+  title: "Smart LED Digital Pen Holder",
+  subtitle: "Premium desk organizer with digital clock, alarm & ambient LED light. Elevate your workspace with a modern touch!",
+  imageUrl: "/images/ardhimart-smart-pen-holder.webp",
+  ctaPrimaryText: "Order Now",
   ctaPrimaryLink: "/products",
-  ctaSecondaryText: "Explore Categories",
+  ctaSecondaryText: "Explore Gadgets",
   ctaSecondaryLink: "/products",
 };
 
 export const defaultCategories: Category[] = [
   {
     id: "cat-1",
-    name: "Clothing",
+    name: "Clothing & Gifts",
     slug: "clothing",
-    image: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=600&auto=format&fit=crop",
+    image: "/images/ardhimart-giftbox-valentine-set.webp",
     itemCount: 42,
   },
   {
     id: "cat-2",
-    name: "Electronics",
+    name: "Electronics & Tech",
     slug: "electronics",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop",
+    image: "/images/ardhimart-smart-pen-holder.webp",
     itemCount: 28,
   },
   {
     id: "cat-3",
-    name: "Accessories",
+    name: "Accessories & Decor",
     slug: "accessories",
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop",
+    image: "/images/ardhimart-giftbox-set.webp",
     itemCount: 34,
   },
   {
     id: "cat-4",
-    name: "Gifts & Living",
+    name: "Luxury Hampers",
     slug: "gifts",
-    image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=600&auto=format&fit=crop",
+    image: "/images/ardhimart-giftbox-valentine-set.webp",
     itemCount: 19,
   },
 ];

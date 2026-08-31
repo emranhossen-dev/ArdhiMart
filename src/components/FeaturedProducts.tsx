@@ -7,6 +7,8 @@ import { useStore } from '@/context/StoreContext';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 import { ProductCard, ProductSkeletonCard } from '@/components/ProductCard';
 
+import ProductGridCarousel from '@/components/ProductGridCarousel';
+
 interface FeaturedProductsProps {
   products?: Product[];
   title?: string;
@@ -23,11 +25,15 @@ export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
   className = '',
 }) => {
   const { products: defaultProds, isLoading } = useStore();
-  const productsList = customProducts || defaultProds;
+  const productsList = customProducts !== undefined ? customProducts : defaultProds;
+
+  if (!isLoading && productsList.length === 0) {
+    return null;
+  }
 
   return (
-    <section className={`py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none ${className}`}>
-      {/* Section Header: Single line title + View All Link on the Right (Requirements 4 & 14) */}
+    <section className={`py-4 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none ${className}`}>
+      {/* Section Header: Single line title + View All Link on the Right */}
       <div className="flex items-center justify-between mb-3 border-b border-gray-200/80 dark:border-slate-800 pb-2.5">
         <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight truncate whitespace-nowrap">
           {title}
@@ -50,25 +56,16 @@ export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <ProductSkeletonCard key={n} />
+        <div className="flex flex-row overflow-x-auto gap-3 sm:gap-4 no-scrollbar">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="w-[160px] sm:w-[190px] shrink-0">
+              <ProductSkeletonCard />
+            </div>
           ))}
-        </div>
-      ) : productsList.length === 0 ? (
-        <div className="py-10 text-center space-y-2">
-          <div className="w-10 h-10 mx-auto rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-400">
-            <ShoppingCart className="w-5 h-5" />
-          </div>
-          <h4 className="text-xs font-bold text-gray-900 dark:text-white">No products found</h4>
         </div>
       ) : (
-        /* 6 PRODUCTS PER ROW SHOWCASE ON DESKTOP */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-          {productsList.slice(0, 6).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        /* 2-ROW HORIZONTAL AUTO-CAROUSEL WITHOUT ARROW BUTTONS */
+        <ProductGridCarousel products={productsList} />
       )}
     </section>
   );

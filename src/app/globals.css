@@ -36,13 +36,19 @@ body {
   margin: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Manrope', sans-serif;
 }
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -53,6 +59,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -68,6 +75,7 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -94,7 +102,9 @@ h1, h2, h3, h4, h5, h6 {
   0% {
     transform: translateX(-150%) skewX(-25deg);
   }
-  45%, 100% {
+
+  45%,
+  100% {
     transform: translateX(280%) skewX(-25deg);
   }
 }
@@ -111,12 +121,10 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   width: 60%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.45) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 100%);
   transform: translateX(-150%) skewX(-25deg);
   animation: btnShimmer 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;

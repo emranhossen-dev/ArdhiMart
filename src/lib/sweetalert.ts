@@ -42,6 +42,21 @@ export const notifyError = (title: string, message?: string) => {
   });
 };
 
+export const showErrorModal = (title: string, message?: string) => {
+  return Swal.fire({
+    title: title,
+    text: message,
+    icon: 'error',
+    confirmButtonText: 'Try Again',
+    confirmButtonColor: '#FF6B00',
+    customClass: {
+      popup: 'font-sans rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-900 dark:text-white',
+      title: 'text-base font-extrabold text-gray-900 dark:text-white',
+      confirmButton: 'px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-md cursor-pointer',
+    },
+  });
+};
+
 export const showConfirmModal = (
   title: string,
   text: string,

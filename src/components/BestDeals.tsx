@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
-import { PRODUCTS_DATA } from "../data/products";
 import { ProductCard } from "./ProductCard";
 import { useCart } from "../context/CartContext";
+import { useStore } from "../context/StoreContext";
 import { HiOutlineChevronRight } from "react-icons/hi2";
 
 export const BestDeals: React.FC = () => {
   const { setSelectedCategory } = useCart();
+  const { products } = useStore();
 
-  const deals = PRODUCTS_DATA.filter((p) => p.isBestDeal || p.discountPercent);
+  const deals = products.filter((p: any) => p.isBestDeal || p.discountPercent || p.comparePrice);
 
   return (
     <section id="best-deals" className="py-4 sm:py-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -50,7 +51,7 @@ export const BestDeals: React.FC = () => {
               price: product.price || 0,
               rating: product.rating || 5.0,
               badge: product.badge || 'Deal',
-              image: product.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
+              image: product.image || '/images/ardhimart-smart-pen-holder.webp',
               category: product.category || 'General',
             }}
           />

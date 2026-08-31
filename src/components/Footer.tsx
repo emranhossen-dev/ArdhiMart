@@ -13,7 +13,11 @@ import {
   Heart,
 } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  className?: string;
+}
+
+export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   const { storeConfig } = useStore();
   const [email, setEmail] = useState('');
 
@@ -26,10 +30,10 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 pt-12 pb-20 sm:pb-8 border-t border-gray-200/80 dark:border-slate-800 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 space-y-12">
+    <footer className={`bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 pt-8 pb-24 md:pt-12 md:pb-8 border-t border-gray-200/80 dark:border-slate-800 transition-colors ${className}`}>
+      <div className="max-w-7xl mx-auto px-4 space-y-8 md:space-y-12">
         {/* Newsletter Banner */}
-        <div className="bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="flex bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
           <div className="space-y-1 text-center md:text-left">
             <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
               Join Our VIP Newsletter
@@ -64,10 +68,11 @@ export const Footer: React.FC = () => {
           <div className="space-y-4">
             <Link href="/" className="inline-block">
               <Image
-                src="/logo.png"
+                src="/logo.png?v=2"
                 alt="ArdhiMart Logo"
                 width={180}
                 height={45}
+                unoptimized
                 className="h-10 w-auto object-contain"
               />
             </Link>
@@ -77,15 +82,19 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 text-xs text-gray-700 dark:text-slate-300">
               <div className="flex items-center gap-2.5">
                 <PhoneCall className="w-4 h-4 text-[#FF6B00] shrink-0" />
-                <span>+880 1700-000000 (10 AM - 10 PM)</span>
+                <a href={`tel:${storeConfig.phone || '01895627138'}`} className="hover:text-[#FF6B00] transition-colors">
+                  {storeConfig.phone || '01895627138'} (10 AM - 10 PM)
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#FF6B00] shrink-0" />
-                <span>support@domain.com</span>
+                <a href={`mailto:${storeConfig.email || 'martardhi@gmail.com'}`} className="hover:text-[#FF6B00] transition-colors">
+                  {storeConfig.email || 'martardhi@gmail.com'}
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <MapPin className="w-4 h-4 text-[#FF6B00] shrink-0" />
-                <span>Gulshan-2, Dhaka-1212, Bangladesh</span>
+                <span>{storeConfig.address || 'Mohammadpur, Dhaka-1207'}</span>
               </div>
             </div>
           </div>
@@ -158,7 +167,7 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-200 border-b border-gray-200 dark:border-slate-800 pb-2">
               Accepted Payments & Couriers
             </h4>
-            
+
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                 Payment Partners
@@ -195,8 +204,8 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Copyright & Agency Credit Bar */}
-        <div className="pt-8 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 dark:text-slate-500 gap-4">
+        {/* Bottom Copyright & Agency Credit Bar (Single Divider Line) */}
+        <div className="pt-1 md:pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 dark:text-slate-500 gap-2 sm:gap-4">
           <p>© {new Date().getFullYear()} {storeConfig.name}. All Rights Reserved.</p>
           <div className="flex items-center gap-1.5 font-medium">
             <span>Developed with</span>

@@ -2,16 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useStore } from '@/context/StoreContext';
-import { Flame, Clock, ShoppingCart, ArrowRight } from 'lucide-react';
+import { Clock, ShoppingCart, ArrowRight } from 'lucide-react';
 import { ProductCard, ProductSkeletonCard } from '@/components/ProductCard';
+
+import ProductGridCarousel from '@/components/ProductGridCarousel';
 
 export const FlashSaleSection: React.FC = () => {
   const { products, isLoading } = useStore();
 
+  const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
+    setMounted(true);
     const calculateTimeLeft = () => {
       const now = new Date();
       const target = new Date();
@@ -37,16 +42,20 @@ export const FlashSaleSection: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const flashProducts = products.slice(0, 6);
+  const flashProducts = products.filter((p) => p.isFlashSale === true);
 
   return (
     <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none">
       {/* Header with Single Line Title, Timer & View All Link */}
       <div className="flex items-center justify-between gap-3 mb-3 pb-2.5 border-b border-gray-200/80 dark:border-slate-800">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="p-1.5 bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400 rounded-lg shrink-0">
-            <Flame className="w-5 h-5 fill-red-500 animate-pulse" />
-          </div>
+          <Image
+            src="/flash-bolt.svg"
+            alt="Flash Sale Lightning Icon"
+            width={32}
+            height={32}
+            className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0 drop-shadow-xs"
+          />
           <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight truncate whitespace-nowrap">
             Flash Deals
           </h3>
@@ -72,8 +81,8 @@ export const FlashSaleSection: React.FC = () => {
         </Link>
       </div>
 
-      {/* 6 PRODUCTS PER ROW SHOWCASE ON DESKTOP */}
-      {isLoading ? (
+      {/* 2-ROW HORIZONTAL CONTINUOUS AUTO-CAROUSEL WITHOUT ARROW BUTTONS */}
+      {!mounted || isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <ProductSkeletonCard key={n} />
@@ -87,17 +96,7 @@ export const FlashSaleSection: React.FC = () => {
           <h4 className="text-xs font-bold text-gray-900 dark:text-white">No Flash Sale Products</h4>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-          {flashProducts.map((prod, idx) => (
-            <ProductCard
-              key={prod.id}
-              product={prod}
-              showStockBar={true}
-              stockSoldPercent={85 - idx * 10}
-              stockLeftCount={idx + 2}
-            />
-          ))}
-        </div>
+        <ProductGridCarousel products={flashProducts} showStockBar={true} />
       )}
     </section>
   );

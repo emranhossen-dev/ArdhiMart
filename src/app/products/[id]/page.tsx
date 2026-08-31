@@ -1,5 +1,7 @@
 'use client';
 
+export const runtime = 'edge';
+
 import React, { useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -77,6 +79,32 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  // Touch Swipe Gesture State for Image Slider
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    if (distance > 40) {
+      // Swiped Left -> Next Image
+      setActiveImageIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0));
+    } else if (distance < -40) {
+      // Swiped Right -> Previous Image
+      setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1));
+    }
+    setTouchStartX(0);
+    setTouchEndX(0);
+  };
+
   // Full-Screen Image Lightbox Modal State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -125,10 +153,18 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     );
   }
 
-  const galleryImages = [
-    product.image,
-    ...(product.galleryImages && Array.isArray(product.galleryImages) ? product.galleryImages : []),
-  ].filter(Boolean);
+  const rawGallery = product.galleryImages;
+  let parsedGallery: string[] = [];
+
+  if (Array.isArray(rawGallery)) {
+    parsedGallery = rawGallery;
+  } else if (typeof rawGallery === 'string' && (rawGallery as string).trim()) {
+    parsedGallery = (rawGallery as string).split(',').map((s) => s.trim()).filter(Boolean);
+  }
+
+  const galleryImages = Array.from(
+    new Set([product.image, ...parsedGallery].filter(Boolean))
+  );
 
   const variantOptions = product.color
     ? product.color.split(',').map((s) => s.trim()).filter(Boolean)
@@ -247,11 +283,16 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
           
           {/* Left Column: Product Gallery Slider */}
           <div className="lg:col-span-6 lg:sticky lg:top-24 space-y-3">
-            <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 rounded-md border border-gray-200/80 dark:border-slate-800 overflow-hidden group shadow-xs flex items-center justify-center">
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 rounded-md border border-gray-200/80 dark:border-slate-800 overflow-hidden group shadow-xs flex items-center justify-center touch-pan-y"
+            >
               <img
                 src={galleryImages[activeImageIndex] || product.image}
                 alt={product.title}
-                className="w-full h-full object-contain cursor-zoom-in transition-all duration-300 group-hover:scale-102"
+                className="w-full h-full object-contain cursor-zoom-in transition-all duration-300 group-hover:scale-102 select-none"
                 onClick={() => openLightbox(activeImageIndex)}
               />
 
@@ -470,7 +511,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
             {/* THIRD CTA BUTTON: ORDER ON WHATSAPP WITH SLIDING SHIMMER ANIMATION */}
             <div className="pt-0.5">
               <a
-                href={`https://wa.me/8801700000000?text=${encodeURIComponent(
+                href={`https://wa.me/${(storeConfig?.phone || '01895627138').replace(/^0/, '880').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                   `Hello, I would like to order "${product.title}".\nPrice: ৳${product.price}`
                 )}`}
                 target="_blank"
@@ -683,32 +724,21 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
         </div>
       </main>
 
-      {/* Mobile-Only Fixed Bottom Bar (3 CTA Buttons) */}
-      <div className="sm:hidden fixed bottom-16 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 px-2 py-2 flex gap-1.5 z-30 shadow-2xl">
+      {/* Mobile-Only Fixed Bottom Bar (2 CTA Buttons: Add to Cart & Buy Now) */}
+      <div className="sm:hidden fixed bottom-16 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 px-3 py-2.5 flex gap-2 z-30 shadow-2xl">
         <button
           onClick={handleAddToCart}
-          className="btn-shimmer flex-1 border border-[#0F396F] text-[#0F396F] py-2 rounded font-bold text-[11px] uppercase text-center bg-white dark:bg-slate-900 active:scale-95 cursor-pointer truncate"
+          className="btn-shimmer flex-1 border border-[#0F396F] dark:border-blue-400 text-[#0F396F] dark:text-blue-400 py-2.5 rounded-lg font-extrabold text-xs uppercase text-center bg-white dark:bg-slate-900 active:scale-95 cursor-pointer truncate shadow-xs"
         >
           Add to Cart
         </button>
 
         <button
           onClick={handleBuyNow}
-          className="btn-shimmer flex-1 bg-[#FF6B00] text-white py-2 rounded font-bold text-[11px] uppercase text-center active:scale-95 cursor-pointer truncate"
+          className="btn-shimmer flex-1 bg-[#FF6B00] hover:bg-[#e05e00] text-white py-2.5 rounded-lg font-extrabold text-xs uppercase text-center active:scale-95 cursor-pointer truncate shadow-md shadow-orange-500/20"
         >
           Buy Now
         </button>
-
-        <a
-          href={`https://wa.me/8801700000000?text=${encodeURIComponent(
-            `Hello, I would like to order "${product.title}".\nPrice: ৳${product.price}`
-          )}`}
-          target="_blank"
-          rel="noreferrer"
-          className="btn-shimmer flex-1 bg-emerald-600 text-white py-2 rounded font-bold text-[11px] text-center active:scale-95 cursor-pointer truncate"
-        >
-          WhatsApp
-        </a>
       </div>
 
       {/* Full-Screen Image Lightbox Modal */}
