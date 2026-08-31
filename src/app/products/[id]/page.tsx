@@ -185,24 +185,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   const displayGalleryImages = galleryImages.length > 1 ? [...galleryImages, galleryImages[0]] : galleryImages;
   const [isResetting, setIsResetting] = useState(false);
 
-  // Infinite 1-Way Auto-slide: Never reverses direction when reaching the end!
-  useEffect(() => {
-    if (galleryImages.length <= 1 || isDragging) return;
-    const interval = setInterval(() => {
-      setActiveImageIndex((prev) => {
-        const next = prev + 1;
-        if (next === galleryImages.length) {
-          setTimeout(() => {
-            setIsResetting(true);
-            setActiveImageIndex(0);
-            setTimeout(() => setIsResetting(false), 50);
-          }, 360);
-        }
-        return next;
-      });
-    }, 3500);
-    return () => clearInterval(interval);
-  }, [galleryImages.length, isDragging]);
+  // Auto-slide permanently disabled per user preference
 
   const variantOptions = product.color
     ? product.color.split(',').map((s) => s.trim()).filter(Boolean)

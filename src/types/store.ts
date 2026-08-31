@@ -7,6 +7,9 @@ export interface StoreConfig {
   phone?: string;
   email?: string;
   address?: string;
+  enableCardImageAutoSlide?: boolean;
+  enableGridCarouselAutoSlide?: boolean;
+  autoSlideSpeed?: number;
 }
 
 export interface Category {

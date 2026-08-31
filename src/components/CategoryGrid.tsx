@@ -15,24 +15,13 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Auto Slider Left to Right without arrow buttons
   useEffect(() => {
-    if (isHovered) return;
+    setMounted(true);
+  }, []);
 
-    const timer = setInterval(() => {
-      if (scrollRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 10) {
-          scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          scrollRef.current.scrollBy({ left: 120, behavior: 'smooth' });
-        }
-      }
-    }, 3000);
-
-    return () => clearInterval(timer);
-  }, [isHovered]);
+  // Auto-slide permanently disabled per user preference
 
   return (
     <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none">

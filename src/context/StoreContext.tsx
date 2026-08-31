@@ -75,7 +75,51 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, []);
 
-  const [storeConfig] = useState<StoreConfig>(defaultStoreConfig);
+  const [storeConfig, setStoreConfig] = useState<StoreConfig>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ardhimart_store_settings');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return {
+            ...defaultStoreConfig,
+            enableCardImageAutoSlide: parsed.enableCardImageAutoSlide !== undefined ? Boolean(parsed.enableCardImageAutoSlide) : true,
+            enableGridCarouselAutoSlide: parsed.enableGridCarouselAutoSlide !== undefined ? Boolean(parsed.enableGridCarouselAutoSlide) : true,
+            autoSlideSpeed: Number(parsed.autoSlideSpeed || 3000),
+          };
+        }
+      } catch (e) {}
+    }
+    return {
+      ...defaultStoreConfig,
+      enableCardImageAutoSlide: true,
+      enableGridCarouselAutoSlide: true,
+      autoSlideSpeed: 3000,
+    };
+  });
+
+  React.useEffect(() => {
+    const fetchLiveSettings = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/v1/settings').catch(() =>
+          fetch('https://ardhimart-backend.onrender.com/api/v1/settings')
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setStoreConfig((prev) => ({
+            ...prev,
+            enableCardImageAutoSlide: data.enableCardImageAutoSlide !== undefined ? Boolean(data.enableCardImageAutoSlide) : true,
+            enableGridCarouselAutoSlide: data.enableGridCarouselAutoSlide !== undefined ? Boolean(data.enableGridCarouselAutoSlide) : true,
+            autoSlideSpeed: Number(data.autoSlideSpeed || 3000),
+          }));
+        }
+      } catch (e) {}
+    };
+
+    fetchLiveSettings();
+    const interval = setInterval(fetchLiveSettings, 3000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Instant product state initialized from localStorage cache (0ms delay)
   const [products, setProducts] = useState<Product[]>(() => {

@@ -37,24 +37,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const displayImages = images.length > 1 ? [...images, images[0]] : images;
   const [isResetting, setIsResetting] = useState(false);
 
-  // ALWAYS 1-Way Auto-slide images every 3 seconds: Never reverses direction!
-  React.useEffect(() => {
-    if (images.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentImgIndex((prev: number) => {
-        const next = prev + 1;
-        if (next === images.length) {
-          setTimeout(() => {
-            setIsResetting(true);
-            setCurrentImgIndex(0);
-            setTimeout(() => setIsResetting(false), 50);
-          }, 310);
-        }
-        return next;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [images.length]);
+  // Auto-slide permanently disabled per user preference
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (images.length > 1) {

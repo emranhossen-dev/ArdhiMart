@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Product } from '@/types/store';
 import { ProductCard } from '@/components/ProductCard';
+import { useStore } from '@/context/StoreContext';
 
 interface ProductGridCarouselProps {
   products: Product[];
@@ -13,6 +14,10 @@ export const ProductGridCarousel: React.FC<ProductGridCarouselProps> = ({
   products,
   showStockBar = false,
 }) => {
+  const { storeConfig } = useStore();
+  const isAutoSlideEnabled = storeConfig?.enableGridCarouselAutoSlide ?? true;
+  const slideSpeed = (storeConfig?.autoSlideSpeed || 3000) + 1000;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInteracting, setIsInteracting] = useState(false);
 
@@ -29,29 +34,7 @@ export const ProductGridCarousel: React.FC<ProductGridCarouselProps> = ({
   // Triple columns for 100% seamless forward-only endless looping
   const displayColumns = baseColumns.length > 1 ? [...baseColumns, ...baseColumns, ...baseColumns] : baseColumns;
 
-  // Time delay step slide (always slides FORWARD to the right, NEVER rewinds backward!)
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container || baseColumns.length <= 1) return;
-
-    const timer = setInterval(() => {
-      if (isInteracting) return;
-
-      const firstCol = container.firstElementChild as HTMLElement;
-      const colWidth = firstCol ? firstCol.offsetWidth + 16 : 180;
-      const oneSetWidth = container.scrollWidth / 3;
-
-      // If we reach the end of the 2nd set, jump silently back to 1st set without backwards animation
-      if (container.scrollLeft >= oneSetWidth * 2) {
-        container.scrollLeft = container.scrollLeft - oneSetWidth;
-      }
-
-      // Always slide FORWARD to the right
-      container.scrollBy({ left: colWidth, behavior: 'smooth' });
-    }, 3000);
-
-    return () => clearInterval(timer);
-  }, [isInteracting, baseColumns.length]);
+  // Auto-slide permanently disabled per user preference
 
   if (baseColumns.length === 0) return null;
 
