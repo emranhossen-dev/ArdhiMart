@@ -2,7 +2,7 @@
 
 export const runtime = 'edge';
 
-import React, { useState, use } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
@@ -170,6 +170,15 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   const galleryImages = Array.from(
     new Set([product.image, ...parsedGallery].filter(Boolean))
   );
+
+  // Auto-slide gallery images every 3.5 seconds when multiple images exist
+  useEffect(() => {
+    if (galleryImages.length <= 1 || isDragging) return;
+    const interval = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % galleryImages.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [galleryImages.length, isDragging]);
 
   const variantOptions = product.color
     ? product.color.split(',').map((s) => s.trim()).filter(Boolean)

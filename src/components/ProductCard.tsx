@@ -37,6 +37,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const [touchStartX, setTouchStartX] = useState<number>(0);
   const [touchEndX, setTouchEndX] = useState<number>(0);
 
+  // Auto-slide image on hover if multiple images exist
+  const [isHovered, setIsHovered] = useState(false);
+
+  React.useEffect(() => {
+    if (!isHovered || images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImgIndex((prev: number) => (prev + 1) % images.length);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, [isHovered, images.length]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     if (images.length > 1) {
       e.stopPropagation();
@@ -71,6 +82,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300">
       {/* Product Thumbnail Container - Full Width Edge to Edge */}
       <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
