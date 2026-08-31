@@ -17,7 +17,10 @@ export interface Category {
   name: string;
   slug: string;
   image: string;
+  description?: string;
   itemCount?: number;
+  parentId?: string | null;
+  children?: Category[];
 }
 
 export interface Product {

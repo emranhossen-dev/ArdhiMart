@@ -117,7 +117,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     fetchLiveSettings();
-    const interval = setInterval(fetchLiveSettings, 3000);
+    const interval = setInterval(fetchLiveSettings, 15000);
     return () => clearInterval(interval);
   }, []);
   
@@ -182,26 +182,27 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const res = await fetch(`${baseUrl}/categories`);
         if (res.ok) {
           const data = await res.json();
-          // Array হলে সরাসরি use করো
           const dataArr = Array.isArray(data) ? data : (data && data.id ? [data] : null);
           if (dataArr && dataArr.length > 0) {
-            setDbCategories(
-              dataArr.map((c: any) => ({
-                id: c.id || `cat-${c.slug}`,
-                name: c.name,
-                slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-                image: c.image || '/images/ardhimart-smart-pen-holder.webp',
-                description: c.description || '',
-                itemCount: c.productCount || 0
-              }))
-            );
+            const mapCategory = (c: any): Category => ({
+              id: c.id || `cat-${c.slug}`,
+              name: c.name,
+              slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+              image: c.image || '/images/ardhimart-smart-pen-holder.webp',
+              description: c.description || '',
+              itemCount: c.productCount || 0,
+              parentId: c.parentId || null,
+              children: Array.isArray(c.children) ? c.children.map(mapCategory) : []
+            });
+
+            setDbCategories(dataArr.map(mapCategory));
           }
         }
       } catch (e) {}
     };
 
     fetchLiveCategories();
-    const interval = setInterval(fetchLiveCategories, 10000); // 10s এ একবার refresh
+    const interval = setInterval(fetchLiveCategories, 10000); // 10s refresh
     return () => clearInterval(interval);
   }, []);
 
@@ -209,12 +210,18 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const categories = React.useMemo(() => {
     const existingMap = new Map<string, Category>();
 
-    // 1. Add categories created in Admin / Database
-    dbCategories.forEach((c) => {
+    // Helper to add category & children
+    const addCat = (c: Category) => {
       existingMap.set(c.name.toLowerCase().trim(), c);
-    });
+      if (c.children && c.children.length > 0) {
+        c.children.forEach(addCat);
+      }
+    };
 
-    // 2. Dynamically add from database products
+    // 1. Add categories created in Admin / Database
+    dbCategories.forEach(addCat);
+
+    // 2. Dynamically add from database products if not present
     products.forEach((p) => {
       if (p.category) {
         const key = p.category.toLowerCase().trim();
@@ -224,7 +231,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             name: p.category,
             slug: key.replace(/[^a-z0-9]/g, '-'),
             image: p.image || '/images/ardhimart-smart-pen-holder.webp',
-            itemCount: 1
+            itemCount: 1,
+            parentId: null,
+            children: []
           });
         }
       }

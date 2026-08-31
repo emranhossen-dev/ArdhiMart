@@ -44,6 +44,10 @@ export const FlashSaleSection: React.FC = () => {
 
   const flashProducts = products.filter((p) => p.isFlashSale === true);
 
+  if (!isLoading && flashProducts.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none">
       {/* Header with Single Line Title, Timer & View All Link */}
@@ -87,13 +91,6 @@ export const FlashSaleSection: React.FC = () => {
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <ProductSkeletonCard key={n} />
           ))}
-        </div>
-      ) : flashProducts.length === 0 ? (
-        <div className="py-8 text-center space-y-1">
-          <div className="w-10 h-10 mx-auto rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-400">
-            <ShoppingCart className="w-5 h-5" />
-          </div>
-          <h4 className="text-xs font-bold text-gray-900 dark:text-white">No Flash Sale Products</h4>
         </div>
       ) : (
         <ProductGridCarousel products={flashProducts} showStockBar={true} />
