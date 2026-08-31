@@ -10,7 +10,36 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
-  const slides = [
+  const [dynamicSlides, setDynamicSlides] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ardhimart_hero_banners');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const activeBanners = parsed.filter((b: any) => b.isActive !== false);
+            if (activeBanners.length > 0) {
+              setDynamicSlides(
+                activeBanners.map((b: any) => ({
+                  title: b.title,
+                  subtitle: b.subtitle,
+                  imageUrl: b.image,
+                  ctaPrimaryText: b.btn1Text || 'Order Now',
+                  ctaPrimaryLink: b.btn1Link || '/products',
+                  ctaSecondaryText: b.btn2Text || 'Explore Gadgets',
+                  ctaSecondaryLink: b.btn2Link || '/products',
+                }))
+              );
+            }
+          }
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+  const defaultSlides = [
     {
       badge: banner?.badge || 'Smart Tech Collection ⚡',
       title: banner?.title || 'Smart LED Digital Pen Holder',
@@ -42,6 +71,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
       ctaSecondaryLink: '/products',
     },
   ];
+
+  const slides = dynamicSlides.length > 0 ? dynamicSlides : defaultSlides;
 
   const [currentSlide, setCurrentSlide] = useState(0);
 

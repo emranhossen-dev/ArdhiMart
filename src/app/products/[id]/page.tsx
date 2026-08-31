@@ -79,30 +79,35 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
 
-  // Touch Swipe Gesture State for Image Slider
-  const [touchStartX, setTouchStartX] = useState(0);
-  const [touchEndX, setTouchEndX] = useState(0);
+  // Real-Time Touch Drag & Swipe Transform State
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.targetTouches[0].clientX);
+    setStartX(e.targetTouches[0].clientX);
+    setIsDragging(true);
+    setDragOffset(0);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.targetTouches[0].clientX);
+    if (!isDragging) return;
+    const currentX = e.targetTouches[0].clientX;
+    const deltaX = currentX - startX;
+    setDragOffset(deltaX);
   };
 
   const handleTouchEnd = () => {
-    if (!touchStartX || !touchEndX) return;
-    const distance = touchStartX - touchEndX;
-    if (distance > 40) {
+    if (!isDragging) return;
+    if (dragOffset < -45) {
       // Swiped Left -> Next Image
       setActiveImageIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0));
-    } else if (distance < -40) {
+    } else if (dragOffset > 45) {
       // Swiped Right -> Previous Image
       setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1));
     }
-    setTouchStartX(0);
-    setTouchEndX(0);
+    setDragOffset(0);
+    setIsDragging(false);
   };
 
   // Full-Screen Image Lightbox Modal State
@@ -289,12 +294,20 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
               onTouchEnd={handleTouchEnd}
               className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 rounded-md border border-gray-200/80 dark:border-slate-800 overflow-hidden group shadow-xs flex items-center justify-center touch-pan-y"
             >
-              <img
-                src={galleryImages[activeImageIndex] || product.image}
-                alt={product.title}
-                className="w-full h-full object-contain cursor-zoom-in transition-all duration-300 group-hover:scale-102 select-none"
-                onClick={() => openLightbox(activeImageIndex)}
-              />
+              <div
+                className="w-full h-full flex items-center justify-center"
+                style={{
+                  transform: `translateX(${dragOffset}px)`,
+                  transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                }}
+              >
+                <img
+                  src={galleryImages[activeImageIndex] || product.image}
+                  alt={product.title}
+                  className="w-full h-full object-contain cursor-zoom-in transition-all duration-300 group-hover:scale-102 select-none"
+                  onClick={() => openLightbox(activeImageIndex)}
+                />
+              </div>
 
               <button
                 onClick={() => openLightbox(activeImageIndex)}

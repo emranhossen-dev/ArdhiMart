@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/store';
 import { useStore } from '@/context/StoreContext';
@@ -22,17 +22,71 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const { storeConfig, wishlistIds, toggleWishlist, addToCart } = useStore();
   const isWishlisted = wishlistIds.includes(product.id);
 
+  // Parse gallery images for product card slider
+  const rawGallery = product.galleryImages;
+  let parsedGallery: string[] = [];
+  if (Array.isArray(rawGallery)) {
+    parsedGallery = rawGallery;
+  } else if (typeof rawGallery === 'string' && (rawGallery as string).trim()) {
+    parsedGallery = (rawGallery as string).split(',').map((s) => s.trim()).filter(Boolean);
+  }
+  const images = Array.from(new Set([product.image, ...parsedGallery].filter(Boolean)));
+  const [currentImgIndex, setCurrentImgIndex] = useState<number>(0);
+
+  // Touch Swipe Gesture State
+  const [touchStartX, setTouchStartX] = useState<number>(0);
+  const [touchEndX, setTouchEndX] = useState<number>(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX || images.length <= 1) return;
+    const distance = touchStartX - touchEndX;
+    if (distance > 30) {
+      // Swiped Left -> Next image
+      setCurrentImgIndex((prev: number) => (prev < images.length - 1 ? prev + 1 : 0));
+    } else if (distance < -30) {
+      // Swiped Right -> Previous image
+      setCurrentImgIndex((prev: number) => (prev > 0 ? prev - 1 : images.length - 1));
+    }
+    setTouchStartX(0);
+    setTouchEndX(0);
+  };
+
   return (
     <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300">
       {/* Product Thumbnail Container - Full Width Edge to Edge */}
-      <div className="relative w-full aspect-[4/3] sm:aspect-square bg-gray-50 dark:bg-slate-800 overflow-hidden shrink-0">
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="relative w-full aspect-[4/3] sm:aspect-square bg-gray-50 dark:bg-slate-800 overflow-hidden shrink-0 group/img select-none"
+      >
         <Link href={`/products/${product.urlSlug || product.id}`}>
           <img
-            src={product.image}
+            src={images[currentImgIndex] || product.image}
             alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
           />
         </Link>
+
+        {/* Swipe Indicators / Dots if Multiple Images Exist (ZERO Arrow Buttons) */}
+        {images.length > 1 && (
+          <div className="absolute bottom-1.5 left-0 w-full flex justify-center gap-1 z-10 pointer-events-none">
+            {images.map((_, idx) => (
+              <span
+                key={idx}
+                className={`h-1 rounded-full transition-all ${
+                  currentImgIndex === idx ? 'bg-[#FF6B00] w-3' : 'bg-black/30 dark:bg-white/40 w-1'
+                }`}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Badge */}
         {product.badge && (
