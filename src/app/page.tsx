@@ -45,36 +45,48 @@ export default function Home() {
         {/* 4. Flash Sale Section */}
         <FlashSaleSection />
 
-        {/* 5. Trending Collections Section */}
-        <FeaturedProducts
-          title="Trending Collections"
-          products={trendingProducts.length > 0 ? trendingProducts : products.slice(0, 10)}
-          viewAllLink="/products?sort=trending"
-        />
-
-        {/* 6. New Arrivals Section */}
-        <FeaturedProducts
-          title="New Arrivals"
-          products={displayNewArrivals}
-          viewAllLink="/products?sort=newest"
-        />
-
-        {/* 7. Category-Wise Product Card Showcase Sections (Before Footer) */}
-        {categories.map((cat) => {
-          const catProducts = products.filter(
-            (p) => p.category && p.category.toLowerCase().trim() === cat.name.toLowerCase().trim()
-          );
-          if (catProducts.length === 0) return null;
-
-          return (
+        {/* 5. Product Showcases */}
+        {products.length === 0 ? null : products.length <= 3 ? (
+          /* When store has 1 to 3 products, show them proudly ONCE without repeating in multiple duplicate sections */
+          <FeaturedProducts
+            title="Featured Products"
+            products={products}
+            viewAllLink="/products"
+          />
+        ) : (
+          <>
+            {/* Trending Collections Section */}
             <FeaturedProducts
-              key={cat.id}
-              title={`${cat.name} Showcase`}
-              products={catProducts}
-              viewAllLink={`/products?category=${encodeURIComponent(cat.name)}`}
+              title="Trending Collections"
+              products={trendingProducts.length > 0 ? trendingProducts : products.slice(0, 10)}
+              viewAllLink="/products?sort=trending"
             />
-          );
-        })}
+
+            {/* New Arrivals Section */}
+            <FeaturedProducts
+              title="New Arrivals"
+              products={displayNewArrivals}
+              viewAllLink="/products?sort=newest"
+            />
+
+            {/* Category-Wise Product Card Showcase Sections */}
+            {categories.map((cat) => {
+              const catProducts = products.filter(
+                (p) => p.category && p.category.toLowerCase().trim() === cat.name.toLowerCase().trim()
+              );
+              if (catProducts.length === 0) return null;
+
+              return (
+                <FeaturedProducts
+                  key={cat.id}
+                  title={`${cat.name} Showcase`}
+                  products={catProducts}
+                  viewAllLink={`/products?category=${encodeURIComponent(cat.name)}`}
+                />
+              );
+            })}
+          </>
+        )}
 
         {/* 8. Customer Reviews & Testimonials */}
         <TestimonialsSection />

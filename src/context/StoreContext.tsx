@@ -72,6 +72,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setThemeState(saved);
         applyTheme(saved);
       }
+      // Wipe any legacy/stale cached products immediately
+      try {
+        localStorage.removeItem('ardhimart_cached_products');
+      } catch (e) {}
     }
   }, []);
 
@@ -121,33 +125,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return () => clearInterval(interval);
   }, []);
   
-  // Instant product state initialized from localStorage cache (0ms delay)
-  const [products, setProducts] = useState<Product[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('ardhimart_cached_products');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        }
-      } catch (e) {}
-    }
-    return defaultProducts;
-  });
-
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('ardhimart_cached_products');
-        if (cached && JSON.parse(cached).length > 0) {
-          return false; // Cached products ready immediately!
-        }
-      } catch (e) {}
-    }
-    return true;
-  });
+  // Clean live product state — NO cached/mock products allowed
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [heroBanner] = useState(defaultHeroBanner);
 
@@ -251,7 +231,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
         const res = await fetch(`${baseUrl}/products`, {
-          next: { revalidate: 30 }
+          cache: 'no-store',
         });
         if (res.ok) {
           const data = await res.json();
@@ -318,11 +298,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             });
             setProducts(mapped);
             setIsLoading(false);
-            if (typeof window !== 'undefined') {
-              try {
-                localStorage.setItem('ardhimart_cached_products', JSON.stringify(mapped));
-              } catch (e) {}
-            }
 
             // Fetch categories REST API
             try {
