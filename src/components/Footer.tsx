@@ -134,6 +134,16 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                   Track Your Order
                 </Link>
               </li>
+              <li>
+                <a
+                  href="https://emran.work"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#FF6B00] dark:hover:text-white transition-colors inline-flex items-center gap-1 font-medium text-gray-700 dark:text-slate-300"
+                >
+                  Meet the Developer ↗
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -209,21 +219,27 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
         </div>
 
         {/* Bottom Copyright & Agency Credit Bar (Single Divider Line) */}
-        <div className="pt-1 md:pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 dark:text-slate-500 gap-2 sm:gap-4">
+        <div className="pt-1 md:pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 dark:text-slate-500 gap-3">
           <p>© {new Date().getFullYear()} {storeConfig.name}. All Rights Reserved.</p>
-          <div className="flex items-center gap-1.5 font-medium">
-            <span>Developed with</span>
-            <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-            <span>by{' '}
-              <a
-                href="https://nextstation26.asia/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-900 dark:text-white hover:text-[#FF6B00] dark:hover:text-blue-400 font-bold tracking-wide transition-colors underline decoration-gray-400 dark:decoration-slate-600"
-              >
-                Next Station 26
-              </a>
-            </span>
+          <div className="flex flex-wrap items-center gap-2 font-medium">
+            <span>Developed by</span>
+            <a
+              href="https://nextstation26.asia/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-900 dark:text-white hover:text-[#FF6B00] dark:hover:text-blue-400 font-bold tracking-wide transition-colors underline decoration-gray-400 dark:decoration-slate-600"
+            >
+              NextStation26
+            </a>
+            <span className="text-gray-300 dark:text-slate-700">|</span>
+            <a
+              href="https://emran.work"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-700 dark:text-slate-300 hover:text-[#FF6B00] dark:hover:text-white font-semibold transition-colors inline-flex items-center gap-1 underline decoration-transparent hover:decoration-current"
+            >
+              Meet the Developer ↗
+            </a>
           </div>
         </div>
       </div>

@@ -21,12 +21,12 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ardhimart.com"),
-  title: "ArdhiMart — Gift Shop, Gadgets & Accessories in BD",
-  description: "Shop unique gifts, trendy gadgets & premium accessories at ArdhiMart. Enjoy fast 24h delivery across Bangladesh with Cash on Delivery!",
+  title: "ArdhiMart — Mindblowing Gifts, Fashion & Gadgets in BD",
+  description: "From stylish bags & jewelry to smart desk lamps & couple combos—everything is a gift at ArdhiMart! Enjoy premium quality products & fast cash on delivery in BD.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.png", type: "image/png", sizes: "48x48" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
       { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
     ],
     shortcut: "/favicon.ico",
@@ -37,10 +37,11 @@ export const metadata: Metadata = {
   keywords: [
     "ArdhiMart",
     "online gift shop bangladesh",
-    "gadgets and accessories bd",
-    "gadget gift items bd",
-    "birthday gift shop bd",
-    "tech gadgets accessories bd",
+    "mindblowing gift shop bd",
+    "couple combo gifts bd",
+    "smart gadgets and accessories bd",
+    "fashion jewelry gifts bd",
+    "desk organizer pen holder clock",
     "unique gift items bd",
     "cash on delivery gifts bd",
   ],
@@ -53,15 +54,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://ardhimart.com",
-    title: "ArdhiMart — Gift Shop, Gadgets & Accessories in BD",
-    description: "Shop unique gifts, trendy gadgets & premium accessories at ArdhiMart across Bangladesh.",
+    title: "ArdhiMart — Mindblowing Gifts, Fashion & Gadgets in BD",
+    description: "From stylish bags & jewelry to smart desk lamps & couple combos—everything is a gift at ArdhiMart! Enjoy premium quality products & fast cash on delivery in BD.",
     siteName: "ArdhiMart",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "ArdhiMart Gift, Gadget & Accessories Shop Logo",
+        alt: "ArdhiMart Mindblowing Gifts, Fashion & Gadgets Shop",
       },
     ],
   },
