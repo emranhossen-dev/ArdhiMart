@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Truck, Gift } from 'lucide-react';
+import { X, Copy, CheckCircle2 } from 'lucide-react';
 
 interface PromotionalEntryModalProps {
   forceOpen?: boolean;
@@ -13,25 +13,7 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
   onCloseModal,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Calculate dynamic remaining time until 5:00 PM today (or tomorrow 5:00 PM if past 5 PM)
-  const getRemainingTimeUntil5PM = () => {
-    const now = new Date();
-    let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0);
-
-    if (now.getTime() >= target.getTime()) {
-      target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 17, 0, 0);
-    }
-
-    const diff = target.getTime() - now.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return { hours, minutes, seconds };
-  };
-
-  const [timeLeft, setTimeLeft] = useState(getRemainingTimeUntil5PM);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (forceOpen) {
@@ -41,31 +23,27 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
 
     if (typeof window !== 'undefined') {
       const dismissed = sessionStorage.getItem('ardhi_promo_dismissed');
-      if (!dismissed) {
-        // Subtle delay to allow layout paint while background product fetch executes silently
-        const timer = setTimeout(() => {
+      if (dismissed) return;
+
+      const handleScroll = () => {
+        // Assume the hero banner is about 400-500px tall
+        if (window.scrollY > 400) {
           setIsOpen(true);
-        }, 500);
-        return () => clearTimeout(timer);
+          window.removeEventListener('scroll', handleScroll);
+        }
+      };
+
+      // Check immediately in case user loads page already scrolled down
+      if (window.scrollY > 400) {
+        setIsOpen(true);
+      } else {
+        window.addEventListener('scroll', handleScroll, { passive: true });
       }
+
+      return () => window.removeEventListener('scroll', handleScroll);
     }
   }, [forceOpen]);
 
-  // Dynamic 5:00 PM Daily Countdown timer tick effect
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const updateTimer = () => {
-      setTimeLeft(getRemainingTimeUntil5PM());
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-
-    return () => clearInterval(interval);
-  }, [isOpen]);
-
-  // Keyboard Escape listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -86,103 +64,91 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
     if (onCloseModal) onCloseModal();
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText('FD20');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-md animate-fade-in transition-opacity"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-md animate-fade-in transition-opacity"
       aria-modal="true"
       role="dialog"
     >
-      {/* Ultra Compact Modal Container for Mobile & Desktop */}
+      {/* 
+        Leaf Shape Modal Container 
+        Glassmorphism (transparent, blur, white border)
+        Leaf shape achieved via asymmetric border radius (top-right and bottom-left large radius)
+      */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[340px] sm:max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-amber-200/60 dark:border-amber-500/20 transform transition-all animate-scale-in"
+        className="relative w-full max-w-[380px] p-8 sm:p-10 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] animate-scale-in flex flex-col items-center justify-center text-center overflow-hidden"
+        style={{
+          borderRadius: '2rem 100px 2rem 100px', // Leaf Shape
+        }}
       >
-        {/* Decorative Header Banner (No Sparkles Icon) */}
-        <div className="relative bg-gradient-to-r from-amber-500 via-[#FF6B00] to-orange-600 px-5 py-5 sm:px-6 sm:py-6 text-white text-center overflow-hidden">
-          {/* Background Decorative Glow */}
-          <div className="absolute -top-10 -right-10 w-28 h-28 bg-white/15 rounded-full blur-lg pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-28 h-28 bg-black/15 rounded-full blur-lg pointer-events-none" />
+        {/* Decorative Glow inside */}
+        <div className="absolute top-0 left-0 w-40 h-40 bg-orange-400/20 rounded-full mix-blend-screen filter blur-[40px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-indigo-500/20 rounded-full mix-blend-screen filter blur-[40px] pointer-events-none" />
 
-          {/* Top Right Close Button (X) */}
-          <button
-            onClick={handleClose}
-            aria-label="Close promotional popup"
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-black/25 hover:bg-black/45 text-white/90 hover:text-white backdrop-blur-xs transition-colors cursor-pointer z-10"
-          >
-            <X className="w-4 h-4" />
-          </button>
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          aria-label="Close promotional popup"
+          className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-colors cursor-pointer z-10 border border-white/10"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
-          {/* Header Badge */}
-          <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider mb-2 text-amber-100 border border-white/20 shadow-xs">
-            <span>স্পেশাল মেগা অফার ⚡</span>
+        {/* Content */}
+        <div className="relative z-10 w-full flex flex-col items-center mt-2">
+          {/* Badge */}
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/80 to-pink-500/80 text-white text-xs font-black tracking-widest uppercase mb-6 shadow-lg border border-white/20">
+            Welcome Gift
           </div>
 
-          <h3 className="text-xl sm:text-2xl font-black tracking-tight leading-tight drop-shadow-xs">
-            ৳১০০ ভাউচার কার্ড + ফ্রি ডেলিভারি!
-          </h3>
-          <p className="text-[11px] sm:text-xs font-medium text-amber-100 mt-1 opacity-95">
-            আজকের অর্ডারে বিশেষ মেগা সুবিধা উপভোগ করুন
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight drop-shadow-md mb-3">
+            Claim Extra <span className="text-orange-400">20%</span> Off
+          </h2>
+          
+          <p className="text-sm sm:text-base text-gray-200 drop-shadow mb-8 font-medium">
+            On your very first order at ArdhiMart!
           </p>
-        </div>
 
-        {/* Modal Body */}
-        <div className="p-4 sm:p-5 space-y-3.5">
-          {/* 2 Core Offer Highlights */}
-          <div className="space-y-2.5">
-            {/* Offer 1: Free Shipping */}
-            <div className="flex items-center gap-3 p-3 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/40 rounded-2xl">
-              <div className="w-9 h-9 rounded-xl bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center shrink-0">
-                <Truck className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-extrabold text-gray-900 dark:text-amber-200">
-                  ৳৯৯৯+ কেনাকাটায় ফ্রি ডেলিভারি!
-                </span>
-                <span className="block text-[10px] text-gray-500 dark:text-gray-400 font-semibold mt-0.5">
-                  যেকোনো স্থান থেকে ডেলিভারি চার্জ সম্পূর্ণ মাফ
-                </span>
-              </div>
-            </div>
-
-            {/* Offer 2: 100Tk Physical Voucher Card on Delivery */}
-            <div className="flex items-center gap-3 p-3 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/40 rounded-2xl">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <Gift className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-extrabold text-gray-900 dark:text-emerald-200">
-                  যেকোনো পণ্য কিনলেই ৳১০০ ভাউচার কার্ড!
-                </span>
-                <span className="block text-[10px] text-gray-500 dark:text-gray-400 font-semibold mt-0.5">
-                  কার্ডের কুপন কোড দিয়ে পরবর্তী অর্ডারে পাবেন ৳১০০ ছাড়
-                </span>
-              </div>
-            </div>
+          {/* Coupon Code Section */}
+          <div className="w-full flex items-center justify-between bg-black/30 border border-white/20 rounded-2xl p-2 pl-6 shadow-inner backdrop-blur-md">
+            <span className="text-2xl font-black text-white tracking-widest font-mono">
+              FD20
+            </span>
+            <button
+              onClick={handleCopy}
+              className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${
+                copied 
+                  ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]' 
+                  : 'bg-white text-black hover:bg-gray-100 shadow-lg'
+              }`}
+            >
+              {copied ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  Copy Code
+                </>
+              )}
+            </button>
           </div>
-
-          {/* Countdown Timer Block */}
-          <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700/60 rounded-2xl p-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 font-bold text-[11px] sm:text-xs">
-              <Clock className="w-3.5 h-3.5 text-[#FF6B00] animate-spin-slow" />
-              <span>অফারের সময় বাকি:</span>
-            </div>
-            <div className="flex items-center gap-1 text-[11px] font-extrabold text-white">
-              <span className="bg-gray-900 dark:bg-slate-700 px-2 py-0.5 rounded shadow-xs">
-                {String(timeLeft.hours).padStart(2, '0')}h
-              </span>
-              <span className="text-gray-900 dark:text-white font-bold">:</span>
-              <span className="bg-gray-900 dark:bg-slate-700 px-2 py-0.5 rounded shadow-xs">
-                {String(timeLeft.minutes).padStart(2, '0')}m
-              </span>
-              <span className="text-gray-900 dark:text-white font-bold">:</span>
-              <span className="bg-[#FF6B00] px-2 py-0.5 rounded shadow-xs animate-pulse">
-                {String(timeLeft.seconds).padStart(2, '0')}s
-              </span>
-            </div>
-          </div>
+          
+          <p className="text-[10px] text-gray-300/80 mt-6 font-medium uppercase tracking-wider">
+            Apply this code at checkout
+          </p>
         </div>
       </div>
     </div>
