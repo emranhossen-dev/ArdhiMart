@@ -46,7 +46,7 @@ const StoreShellInner: React.FC<{ children: ReactNode }> = ({ children }) => {
 
       {/* Global Animated Eye Loading Screen during initial site/data load */}
       {showInitialLoader && (
-        <EyesLoader fullScreen size={1} />
+        <EyesLoader fullScreen />
       )}
 
       {children}
