@@ -24,7 +24,7 @@ export const PageNavigationLoader: React.FC = () => {
     <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
       {/* Top Slim Loading Progress Bar */}
       <div className="h-0.5 w-full bg-gray-200/30 overflow-hidden">
-        <div className="h-full bg-black dark:bg-white animate-pulse" style={{ width: '80%' }} />
+        <div className="h-full bg-[#FF6B00] animate-pulse" style={{ width: '80%' }} />
       </div>
     </div>
   );

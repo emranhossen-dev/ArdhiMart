@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BottomNavBar from '@/components/BottomNavBar';
 import FeaturedProducts from '@/components/FeaturedProducts';
+import EyesLoader from '@/components/EyesLoader';
 import { Product } from '@/types/store';
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
@@ -149,19 +150,25 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   const [newComment, setNewComment] = useState('');
   const [newReviewImage, setNewReviewImage] = useState('');
 
-  if (!product || isLoading) {
+  if (isLoading) {
+    return null;
+  }
+
+  if (!product) {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
         <Header />
-        <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            <div className="lg:col-span-6 w-full aspect-square bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse" />
-            <div className="lg:col-span-6 space-y-4">
-              <div className="h-7 bg-gray-200 dark:bg-slate-800 rounded-md w-3/4 animate-pulse" />
-              <div className="h-5 bg-gray-200 dark:bg-slate-800 rounded-md w-1/3 animate-pulse" />
-              <div className="h-12 bg-gray-200 dark:bg-slate-800 rounded-md w-full animate-pulse" />
-            </div>
-          </div>
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-24 text-center space-y-4">
+          <h2 className="text-2xl font-black text-gray-900 dark:text-white">Product Not Found</h2>
+          <p className="text-sm text-gray-500 max-w-md mx-auto">
+            The product you are looking for is currently unavailable or may have been removed.
+          </p>
+          <Link
+            href="/products"
+            className="inline-block px-6 py-2.5 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-colors"
+          >
+            Browse All Products
+          </Link>
         </main>
         <Footer />
         <BottomNavBar />

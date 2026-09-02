@@ -6,6 +6,7 @@ import CartDrawer from '@/components/CartDrawer';
 import SearchModal from '@/components/SearchModal';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
 import PageNavigationLoader from '@/components/PageNavigationLoader';
+import EyesLoader from '@/components/EyesLoader';
 import { useRouter } from 'next/navigation';
 
 const StoreShellInner: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -23,13 +24,30 @@ const StoreShellInner: React.FC<{ children: ReactNode }> = ({ children }) => {
     setIsMenuOpen,
     updateQuantity,
     removeFromCart,
+    isLoading,
   } = useStore();
+
+  const [showInitialLoader, setShowInitialLoader] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!isLoading) {
+      const t = setTimeout(() => setShowInitialLoader(false), 250);
+      return () => clearTimeout(t);
+    }
+    const fallback = setTimeout(() => setShowInitialLoader(false), 2500);
+    return () => clearTimeout(fallback);
+  }, [isLoading]);
 
   return (
     <>
       <Suspense fallback={null}>
         <PageNavigationLoader />
       </Suspense>
+
+      {/* Global Animated Eye Loading Screen during initial site/data load */}
+      {showInitialLoader && (
+        <EyesLoader fullScreen size={1} />
+      )}
 
       {children}
 
