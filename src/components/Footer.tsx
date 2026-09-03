@@ -115,22 +115,22 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                 </Link>
               </li>
               <li>
-                <Link href="/products/combo-gift-boxes" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                <Link href="/category/combo-gift-boxes" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Combo Gift Boxes
                 </Link>
               </li>
               <li>
-                <Link href="/products/smart-gadgets" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                <Link href="/category/smart-gadgets" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Smart Gadgets
                 </Link>
               </li>
               <li>
-                <Link href="/products/fashion-jewellery" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                <Link href="/category/fashion-jewellery" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Fashion & Jewellery
                 </Link>
               </li>
               <li>
-                <Link href="/products/mens-clothing" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                <Link href="/category/mens-clothing" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Men's Clothing
                 </Link>
               </li>
