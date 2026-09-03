@@ -21,8 +21,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ardhimart.com"),
-  title: "ArdhiMart — Mindblowing Gifts, Fashion & Gadgets in BD",
-  description: "From stylish bags & jewelry to smart desk lamps & couple combos—everything is a gift at ArdhiMart! Enjoy premium quality products & fast cash on delivery in BD.",
+  title: "ArdhiMart - Gifts, Fashion & Smart Gadgets in BD",
+  description: "আপনার প্রিয়জনকে চমকে দিন ArdhiMart-এর অনন্য গিফট কালেকশন দিয়ে! কাপল কম্বো বক্স, স্মার্ট গ্যাজেট, ফ্যাশন জুয়েলারি ও আরও অনেক কিছু। সারা বাংলাদেশে ক্যাশ অন ডেলিভারিতে পাঠানো হয়। ArdhiMart — গিফটই হোক আপনার ভালোবাসার ভাষা!",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -36,14 +36,15 @@ export const metadata: Metadata = {
   },
   keywords: [
     "ArdhiMart",
-    "online gift shop bangladesh",
-    "mindblowing gift shop bd",
-    "couple combo gifts bd",
-    "smart gadgets and accessories bd",
-    "fashion jewelry gifts bd",
-    "desk organizer pen holder clock",
+    "gift shop bangladesh",
+    "online gift shop bd",
+    "couple combo gift box bd",
+    "smart gadgets bangladesh",
+    "fashion jewellery bd",
     "unique gift items bd",
-    "cash on delivery gifts bd",
+    "cash on delivery bd",
+    "birthday gifts bd",
+    "anniversary gifts bd",
   ],
   authors: [{ name: "ArdhiMart Team" }],
   robots: {
@@ -54,15 +55,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://ardhimart.com",
-    title: "ArdhiMart — Mindblowing Gifts, Fashion & Gadgets in BD",
-    description: "From stylish bags & jewelry to smart desk lamps & couple combos—everything is a gift at ArdhiMart! Enjoy premium quality products & fast cash on delivery in BD.",
+    title: "ArdhiMart - Gifts, Fashion & Smart Gadgets in BD",
+    description: "আপনার প্রিয়জনকে চমকে দিন ArdhiMart-এর অনন্য গিফট কালেকশন দিয়ে! কাপল কম্বো বক্স, স্মার্ট গ্যাজেট, ফ্যাশন জুয়েলারি ও আরও অনেক কিছু। সারা বাংলাদেশে ক্যাশ অন ডেলিভারিতে পাঠানো হয়।",
     siteName: "ArdhiMart",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "ArdhiMart Mindblowing Gifts, Fashion & Gadgets Shop",
+        alt: "ArdhiMart — Gifts, Fashion & Smart Gadgets Shop in Bangladesh",
       },
     ],
   },
