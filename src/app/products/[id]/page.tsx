@@ -13,6 +13,7 @@ import EyesLoader from '@/components/EyesLoader';
 import { Product } from '@/types/store';
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
+import { notifySuccess, notifyInfo } from '@/lib/sweetalert';
 import {
   Heart,
   Share2,
@@ -249,7 +250,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
 
     // Check purchase history
     if (!hasPurchased && userOrders.length > 0) {
-      alert('সতর্কতা: শুধুমাত্র পণ্যটি ক্রয়কৃত ভেরিফাইড কাস্টমারগণ রিভিউ দিতে পারবেন।');
+      notifyInfo('শুধুমাত্র ক্রয়কৃত কাস্টমারগণ রিভিউ দিতে পারবেন।');
       return;
     }
 
@@ -272,7 +273,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     setNewComment('');
     setNewReviewImage('');
     setNewRating(5);
-    alert('Thank you! Your review has been submitted successfully.');
+    notifySuccess('রিভিউ জমা হয়েছে!', 'আপনার মতামতের জন্য ধন্যবাদ।');
   };
 
   const featuresList = product.features && product.features.length > 0 ? product.features : [
@@ -425,14 +426,9 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                   <button
                     onClick={async () => {
                       try {
-                        if (typeof window !== 'undefined' && navigator.share) {
-                          await navigator.share({
-                            title: product.title,
-                            url: window.location.href,
-                          });
-                        } else if (typeof window !== 'undefined' && navigator.clipboard) {
+                        if (typeof window !== 'undefined' && navigator.clipboard) {
                           await navigator.clipboard.writeText(window.location.href);
-                          alert('Link copied to clipboard!');
+                          notifySuccess('Link Copied!', 'Product link copied to clipboard.');
                         }
                       } catch {}
                     }}

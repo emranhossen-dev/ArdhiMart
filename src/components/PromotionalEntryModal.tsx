@@ -75,10 +75,21 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-md animate-fade-in transition-opacity"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-md animate-fade-in transition-opacity"
       aria-modal="true"
       role="dialog"
     >
+      {/* Close Button (Outside modal) */}
+      <div className="relative w-full max-w-[380px] flex justify-end mb-3 pointer-events-none">
+        <button
+          onClick={handleClose}
+          aria-label="Close promotional popup"
+          className="pointer-events-auto p-3 rounded-full bg-white/20 hover:bg-white/40 text-white shadow-xl backdrop-blur-md border border-white/30 transition-all active:scale-95 cursor-pointer z-[101]"
+        >
+          <X className="w-6 h-6 stroke-2" />
+        </button>
+      </div>
+
       {/* 
         Leaf Shape Modal Container 
         Glassmorphism (transparent, blur, white border)
@@ -94,15 +105,6 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
         {/* Decorative Glow inside */}
         <div className="absolute top-0 left-0 w-40 h-40 bg-orange-400/20 rounded-full mix-blend-screen filter blur-[40px] pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-40 h-40 bg-indigo-500/20 rounded-full mix-blend-screen filter blur-[40px] pointer-events-none" />
-
-        {/* Close Button */}
-        <button
-          onClick={handleClose}
-          aria-label="Close promotional popup"
-          className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-colors cursor-pointer z-10 border border-white/10"
-        >
-          <X className="w-4 h-4" />
-        </button>
 
         {/* Content */}
         <div className="relative z-10 w-full flex flex-col items-center mt-2">

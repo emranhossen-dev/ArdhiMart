@@ -103,46 +103,41 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
             </div>
           </div>
 
-          {/* Col 2: Quick Links */}
+          {/* Col 2: Shop Categories (Sitelinks) */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-200 border-b border-gray-200 dark:border-slate-800 pb-2">
-              Quick Links
+              Top Categories
             </h4>
-            <ul className="space-y-2 text-xs text-gray-600 dark:text-slate-400">
+            <ul className="space-y-2 text-xs text-gray-600 dark:text-slate-400 font-medium">
               <li>
                 <Link href="/products" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
-                  Shop All Products
+                  All Products
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
-                  New Arrivals
+                <Link href="/products/combo-gift-boxes" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                  Combo Gift Boxes
                 </Link>
               </li>
               <li>
-                <Link href="/cart" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
-                  Shopping Cart
+                <Link href="/products/smart-gadgets" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                  Smart Gadgets
                 </Link>
               </li>
               <li>
-                <Link href="/account" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
-                  My Account
+                <Link href="/products/fashion-jewellery" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                  Fashion & Jewellery
                 </Link>
               </li>
               <li>
-                <Link href="/account/orders/8849201A/track" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
-                  Track Your Order
+                <Link href="/products/mens-clothing" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                  Men's Clothing
                 </Link>
               </li>
               <li>
-                <a
-                  href="https://emran.work"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-[#FF6B00] dark:hover:text-white transition-colors inline-flex items-center gap-1 font-medium text-gray-700 dark:text-slate-300"
-                >
-                  Meet the Developer ↗
-                </a>
+                <Link href="/login" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                  Login / Sign Up
+                </Link>
               </li>
             </ul>
           </div>
@@ -153,6 +148,11 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               Customer Care & Policies
             </h4>
             <ul className="space-y-2 text-xs text-gray-600 dark:text-slate-400">
+              <li>
+                <Link href="/faq" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
+                  Frequently Asked Questions (FAQ)
+                </Link>
+              </li>
               <li>
                 <Link href="/return-policy" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   7-Day Return & Refund Policy
@@ -166,11 +166,6 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               <li>
                 <Link href="/terms-and-conditions" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
                   Terms & Conditions
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
-                  Frequently Asked Questions (FAQ)
                 </Link>
               </li>
             </ul>
