@@ -13,6 +13,7 @@ import Footer from '@/components/Footer';
 import BottomNavBar from '@/components/BottomNavBar';
 import PromotionalEntryModal from '@/components/PromotionalEntryModal';
 import { useStore } from '@/context/StoreContext';
+import { getCategorySlug } from '@/lib/slug';
 
 export default function Home() {
   const { storeConfig, heroBanner, categories, products } = useStore();
@@ -81,7 +82,7 @@ export default function Home() {
                   key={cat.id}
                   title={`${cat.name} Showcase`}
                   products={catProducts}
-                  viewAllLink={`/products?category=${encodeURIComponent(cat.name)}`}
+                  viewAllLink={`/category/${getCategorySlug(cat.name, cat.slug)}`}
                 />
               );
             })}

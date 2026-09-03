@@ -16,15 +16,7 @@ import {
   Check,
 } from 'lucide-react';
 import { ProductCard, ProductSkeletonCard } from '@/components/ProductCard';
-
-/**
- * Converts a URL slug to a human-readable category name for matching.
- * e.g. "combo-gift-boxes" -> "combo gift boxes"
- * Then we match case-insensitively against category.name from backend.
- */
-function slugToCategoryName(slug: string): string {
-  return decodeURIComponent(slug).replace(/-/g, ' ').toLowerCase();
-}
+import { getCategorySlug, isCategoryMatch } from '@/lib/slug';
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
@@ -37,16 +29,16 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     categories,
   } = useStore();
 
-  // Find the matching category from backend (slug or name match)
+  // Find matching category from backend (supports slug or name match, ignoring hyphens/apostrophes)
   const matchedCategory = categories.find(
     (c) =>
-      c.slug?.toLowerCase() === slug.toLowerCase() ||
-      c.name.toLowerCase() === slugToCategoryName(slug)
+      isCategoryMatch(c.slug || '', slug) ||
+      isCategoryMatch(c.name, slug)
   );
 
   const categoryDisplayName = matchedCategory?.name ||
-    slugToCategoryName(slug)
-      .split(' ')
+    slug
+      .split('-')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
 
@@ -58,8 +50,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const filteredProducts = products
     .filter((prod) => {
       const matchCategory = matchedCategory
-        ? prod.category.toLowerCase() === matchedCategory.name.toLowerCase()
-        : prod.category.toLowerCase() === slugToCategoryName(slug);
+        ? isCategoryMatch(prod.category, matchedCategory.name)
+        : isCategoryMatch(prod.category, slug);
       const matchPrice = prod.price <= maxPrice;
       return matchCategory && matchPrice;
     })
@@ -109,13 +101,14 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             All
           </Link>
           {categories.map((cat) => {
-            const catSlug = cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const catSlug = getCategorySlug(cat.name, cat.slug);
+            const isSelected = isCategoryMatch(cat.name, slug) || isCategoryMatch(cat.slug || '', slug);
             return (
               <Link
                 key={cat.id}
                 href={`/category/${catSlug}`}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                  matchedCategory?.id === cat.id
+                  isSelected
                     ? 'bg-black text-white dark:bg-white dark:text-black shadow-sm'
                     : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
                 }`}
@@ -215,20 +208,21 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       All Products
                     </Link>
                     {categories.map((cat) => {
-                      const catSlug = cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                      const catSlug = getCategorySlug(cat.name, cat.slug);
+                      const isSelected = isCategoryMatch(cat.name, slug) || isCategoryMatch(cat.slug || '', slug);
                       return (
                         <Link
                           key={cat.id}
                           href={`/category/${catSlug}`}
                           onClick={() => setIsFilterOpen(false)}
                           className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer border ${
-                            matchedCategory?.id === cat.id
+                            isSelected
                               ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-xs'
                               : 'bg-gray-50 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:border-[#FF6B00]'
                           }`}
                         >
                           <span className="truncate">{cat.name}</span>
-                          {matchedCategory?.id === cat.id && <Check className="w-3.5 h-3.5 shrink-0" />}
+                          {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
                         </Link>
                       );
                     })}

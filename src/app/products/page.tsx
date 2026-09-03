@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BottomNavBar from '@/components/BottomNavBar';
 import { useStore } from '@/context/StoreContext';
+import { getCategorySlug } from '@/lib/slug';
 import {
   ChevronRight,
   SlidersHorizontal,
@@ -18,6 +19,7 @@ import {
 import { ProductCard, ProductSkeletonCard } from '@/components/ProductCard';
 
 function ProductsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
   const searchQueryParam = searchParams.get('search');
@@ -34,12 +36,13 @@ function ProductsContent() {
   const [maxPrice, setMaxPrice] = useState<number>(20000);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
-  // Sync URL search param category to selectedCategory state
+  // If someone enters via /products?category=..., redirect to clean /category/[slug] URL
   useEffect(() => {
-    if (categoryParam) {
-      setSelectedCategory(categoryParam);
+    if (categoryParam && categoryParam.toLowerCase() !== 'all') {
+      const slug = getCategorySlug(categoryParam);
+      router.replace(`/category/${slug}`);
     }
-  }, [categoryParam]);
+  }, [categoryParam, router]);
 
   // Filter & Sort Logic
   const filteredProducts = products
@@ -96,19 +99,28 @@ function ProductsContent() {
 
       {/* Category Pills Bar */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-3">
-        {['All', ...categories.map((c) => c.name)].map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-              selectedCategory.toLowerCase() === cat.toLowerCase()
-                ? 'bg-black text-white dark:bg-white dark:text-black shadow-sm'
-                : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+        <Link
+          href="/products"
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+            selectedCategory.toLowerCase() === 'all'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-sm'
+              : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          All
+        </Link>
+        {categories.map((cat) => {
+          const catSlug = getCategorySlug(cat.name, cat.slug);
+          return (
+            <Link
+              key={cat.id}
+              href={`/category/${catSlug}`}
+              className="px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+            >
+              {cat.name}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Sticky Filter & Sort Control Bar */}
@@ -202,22 +214,26 @@ function ProductsContent() {
                   Select Category
                 </label>
                 <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1 no-scrollbar">
-                  {['All', ...categories.map((c) => c.name)].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer border ${
-                        selectedCategory.toLowerCase() === cat.toLowerCase()
-                          ? 'bg-[#FF6B00] text-white border-[#FF6B00] font-bold shadow-xs'
-                          : 'bg-gray-50 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:border-[#FF6B00]'
-                      }`}
-                    >
-                      <span className="truncate">{cat}</span>
-                      {selectedCategory.toLowerCase() === cat.toLowerCase() && (
-                        <Check className="w-3.5 h-3.5 shrink-0" />
-                      )}
-                    </button>
-                  ))}
+                  <Link
+                    href="/products"
+                    onClick={() => setIsFilterOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer border bg-gray-50 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:border-[#FF6B00]"
+                  >
+                    <span>All Products</span>
+                  </Link>
+                  {categories.map((cat) => {
+                    const catSlug = getCategorySlug(cat.name, cat.slug);
+                    return (
+                      <Link
+                        key={cat.id}
+                        href={`/category/${catSlug}`}
+                        onClick={() => setIsFilterOpen(false)}
+                        className="flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer border bg-gray-50 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:border-[#FF6B00]"
+                      >
+                        <span className="truncate">{cat.name}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 

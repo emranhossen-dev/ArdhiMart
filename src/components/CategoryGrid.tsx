@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Category } from '@/types/store';
+import { getCategorySlug } from '@/lib/slug';
 
 interface CategoryGridProps {
   categories: Category[];
@@ -48,7 +49,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
         {categories.map((cat) => (
           <Link
             key={cat.id}
-            href={`/products?category=${encodeURIComponent(cat.name)}`}
+            href={`/category/${getCategorySlug(cat.name, cat.slug)}`}
             onClick={() => onSelectCategory && onSelectCategory(cat)}
             className="group cursor-pointer shrink-0 snap-start flex flex-col items-center w-[calc(16.66%-0.4rem)] min-w-[62px] sm:min-w-[85px] md:min-w-[105px]"
           >

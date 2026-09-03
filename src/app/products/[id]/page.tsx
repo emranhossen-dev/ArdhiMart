@@ -14,6 +14,7 @@ import { Product } from '@/types/store';
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
 import { notifySuccess, notifyInfo } from '@/lib/sweetalert';
+import { getCategorySlug } from '@/lib/slug';
 import {
   Heart,
   Share2,
@@ -297,7 +298,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
             </Link>
             <span>/</span>
             <Link
-              href={`/products?category=${encodeURIComponent(product.category || 'All')}`}
+              href={product.category ? `/category/${getCategorySlug(product.category)}` : '/products'}
               className="hover:text-[#FF6B00] transition-colors"
             >
               {product.category || 'Products'}
@@ -408,7 +409,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
 
               <div className="flex items-center justify-between pt-0.5">
                 <Link
-                  href={`/products?category=${encodeURIComponent(product.category || 'All')}`}
+                  href={product.category ? `/category/${getCategorySlug(product.category)}` : '/products'}
                   className="text-xs font-bold text-[#FF6B00] hover:underline uppercase tracking-wider truncate whitespace-nowrap"
                 >
                   {product.brand || product.category}
