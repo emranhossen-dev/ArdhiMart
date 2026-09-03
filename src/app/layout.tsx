@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://ardhimart.com"),
   title: "ArdhiMart - Gifts, Fashion & Smart Gadgets in BD",
   description: "আপনার প্রিয়জনকে চমকে দিন ArdhiMart-এর অনন্য গিফট কালেকশন দিয়ে! কাপল কম্বো বক্স, স্মার্ট গ্যাজেট, ফ্যাশন জুয়েলারি ও আরও অনেক কিছু। সারা বাংলাদেশে ক্যাশ অন ডেলিভারিতে পাঠানো হয়। ArdhiMart — গিফটই হোক আপনার ভালোবাসার ভাষা!",
+  alternates: {
+    canonical: "https://ardhimart.com",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
