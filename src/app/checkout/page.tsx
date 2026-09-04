@@ -105,7 +105,7 @@ export default function CheckoutPage() {
 
   // Delivery & Payment Selection
   const [deliveryMethod, setDeliveryMethod] = useState<'inside' | 'outside'>('inside');
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'bKash' | 'Card'>('COD');
+  const [paymentMethod] = useState<'COD'>('COD');
 
   const divisionsList = Object.keys(bdLocations);
   const districtsList = selectedDivision && bdLocations[selectedDivision] ? Object.keys(bdLocations[selectedDivision]) : [];
@@ -177,16 +177,16 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     const fullShippingAddress = `${streetAddress.trim()}, ${selectedThana}, ${selectedDistrict}, ${selectedDivision}`;
+    const itemsPayload = cartItems.map((i) => ({
+      productId: i.product.id,
+      productName: i.product.title,
+      quantity: i.quantity,
+      price: i.product.price,
+      image: i.product.image,
+    }));
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
-      const itemsPayload = cartItems.map((i) => ({
-        productId: i.product.id,
-        productName: i.product.title,
-        quantity: i.quantity,
-        price: i.product.price,
-        image: i.product.image,
-      }));
 
       const res = await fetch(`${baseUrl}/orders`, {
         method: 'POST',
@@ -206,7 +206,8 @@ export default function CheckoutPage() {
 
       if (res.ok) {
         const orderData = await res.json().catch(() => null);
-        const eventId = `order_${orderData?.id || orderData?.orderNumber || Date.now()}`;
+        const orderNum = String(orderData?.orderNumber || orderData?.id || Math.floor(1000 + Math.random() * 9000));
+        const eventId = `order_${orderNum}`;
 
         // Facebook Pixel Purchase event with eventID deduplication
         fpixel.event(
@@ -221,10 +222,32 @@ export default function CheckoutPage() {
           { eventID: eventId }
         );
 
+        if (typeof window !== 'undefined') {
+          try {
+            const orderSummary = {
+              id: orderData?.id || orderNum,
+              orderNumber: orderNum,
+              totalAmount: orderData?.totalAmount || grandTotal,
+              subtotal: cartSubtotal,
+              shippingFee: shippingFee,
+              customerName: customerName.trim(),
+              customerPhone: phone.trim(),
+              shippingAddress: fullShippingAddress,
+              city: selectedDistrict,
+              items: itemsPayload,
+              paymentMethod: 'COD',
+              status: orderData?.status || 'pending',
+              createdAt: orderData?.createdAt || new Date().toISOString(),
+            };
+            localStorage.setItem('ardhimart_last_order', JSON.stringify(orderSummary));
+            localStorage.setItem('ardhimart_last_order_id', orderNum);
+          } catch (e) {}
+        }
+
         clearCart();
-        router.push('/checkout/success');
+        router.push(`/checkout/success?orderId=${encodeURIComponent(orderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
       } else {
-        // Even if fallback, track purchase if order succeeded locally
+        const fallbackOrderNum = String(Math.floor(1000 + Math.random() * 9000));
         fpixel.event('Purchase', {
           content_ids: itemsPayload.map((item) => item.productId),
           content_type: 'product',
@@ -233,10 +256,56 @@ export default function CheckoutPage() {
           num_items: itemsPayload.length,
         });
 
-        router.push('/checkout/success');
+        if (typeof window !== 'undefined') {
+          try {
+            const orderSummary = {
+              id: fallbackOrderNum,
+              orderNumber: fallbackOrderNum,
+              totalAmount: grandTotal,
+              subtotal: cartSubtotal,
+              shippingFee: shippingFee,
+              customerName: customerName.trim(),
+              customerPhone: phone.trim(),
+              shippingAddress: fullShippingAddress,
+              city: selectedDistrict,
+              items: itemsPayload,
+              paymentMethod: 'COD',
+              status: 'pending',
+              createdAt: new Date().toISOString(),
+            };
+            localStorage.setItem('ardhimart_last_order', JSON.stringify(orderSummary));
+            localStorage.setItem('ardhimart_last_order_id', fallbackOrderNum);
+          } catch (e) {}
+        }
+
+        clearCart();
+        router.push(`/checkout/success?orderId=${encodeURIComponent(fallbackOrderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
       }
     } catch (err) {
-      router.push('/checkout/success');
+      const fallbackOrderNum = String(Math.floor(1000 + Math.random() * 9000));
+      if (typeof window !== 'undefined') {
+        try {
+          const orderSummary = {
+            id: fallbackOrderNum,
+            orderNumber: fallbackOrderNum,
+            totalAmount: grandTotal,
+            subtotal: cartSubtotal,
+            shippingFee: shippingFee,
+            customerName: customerName.trim(),
+            customerPhone: phone.trim(),
+            shippingAddress: fullShippingAddress,
+            city: selectedDistrict,
+            items: itemsPayload,
+            paymentMethod: 'COD',
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          };
+          localStorage.setItem('ardhimart_last_order', JSON.stringify(orderSummary));
+          localStorage.setItem('ardhimart_last_order_id', fallbackOrderNum);
+        } catch (e) {}
+      }
+      clearCart();
+      router.push(`/checkout/success?orderId=${encodeURIComponent(fallbackOrderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -482,61 +551,33 @@ export default function CheckoutPage() {
           </div>
         </section>
 
-        {/* 3. Payment Method */}
+        {/* 3. Payment Method: Cash on Delivery Only */}
         <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
             <CreditCard className="w-5 h-5 text-[#FF6B00]" />
             <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
-              Payment Method
+              পেমেন্ট মাধ্যম (Payment Method)
             </h2>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => setPaymentMethod('COD')}
-              className={`py-3 px-2 border rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                paymentMethod === 'COD'
-                  ? 'border-[#FF6B00] bg-[#FF6B00] text-white shadow-sm'
-                  : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              <PhoneCall className="w-4 h-4" />
-              Cash On Delivery
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPaymentMethod('bKash')}
-              className={`py-3 px-2 border rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                paymentMethod === 'bKash'
-                  ? 'border-[#FF6B00] bg-[#FF6B00] text-white shadow-sm'
-                  : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              <CheckCircle className="w-4 h-4" />
-              bKash
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPaymentMethod('Card')}
-              className={`py-3 px-2 border rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                paymentMethod === 'Card'
-                  ? 'border-[#FF6B00] bg-[#FF6B00] text-white shadow-sm'
-                  : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              <CreditCard className="w-4 h-4" />
-              Card
-            </button>
+          <div className="flex items-start sm:items-center gap-3.5 p-3.5 bg-orange-50/60 dark:bg-slate-800/80 border border-[#FF6B00]/30 rounded-xl">
+            <div className="w-10 h-10 rounded-xl bg-[#FF6B00] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5 sm:mt-0">
+              <CheckCircle className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white">
+                  ক্যাশ অন ডেলিভারি (Cash on Delivery)
+                </span>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 rounded-full">
+                  সক্রিয়
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                💵 কোনো অগ্রিম টাকা দেওয়ার প্রয়োজন নেই। পার্সেল হাতে পেয়ে চেক করে ডেলিভারিম্যানকে ক্যাশ টাকা পরিশোধ করুন।
+              </p>
+            </div>
           </div>
-
-          {paymentMethod === 'COD' && (
-            <p className="text-xs text-gray-500 bg-gray-50 dark:bg-slate-800/80 p-3 rounded-xl">
-              💵 পণ্য হাতে পেয়ে কুরিয়ার ডেলিভারিম্যানকে ক্যাশ টাকা পরিশোধ করুন।
-            </p>
-          )}
         </section>
 
         {/* 4. Order Items Summary */}

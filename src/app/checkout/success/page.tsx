@@ -1,16 +1,57 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { defaultStoreConfig } from '@/config/storeConfig';
-import { CheckCircle2, ArrowRight, Package } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Truck } from 'lucide-react';
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [storeConfig] = useState(defaultStoreConfig);
 
-  const orderId = `#ORD-${Math.floor(1000 + Math.random() * 9000)}-XL`;
+  const [orderId, setOrderId] = useState<string>('');
+  const [totalAmount, setTotalAmount] = useState<number | null>(null);
+
+  useEffect(() => {
+    // 1. Read from query params
+    const queryId = searchParams.get('orderId');
+    const queryAmount = searchParams.get('amount');
+
+    if (queryId) {
+      setOrderId(queryId);
+    }
+    if (queryAmount) {
+      setTotalAmount(Number(queryAmount) || null);
+    }
+
+    // 2. Read from localStorage fallback
+    if (typeof window !== 'undefined') {
+      try {
+        const savedOrder = localStorage.getItem('ardhimart_last_order');
+        if (savedOrder) {
+          const parsed = JSON.parse(savedOrder);
+          if (!queryId && (parsed.orderNumber || parsed.id)) {
+            setOrderId(String(parsed.orderNumber || parsed.id));
+          }
+          if (!queryAmount && parsed.totalAmount) {
+            setTotalAmount(Number(parsed.totalAmount));
+          }
+        }
+      } catch (e) {}
+    }
+  }, [searchParams]);
+
+  const displayOrderId = orderId ? `#${orderId}` : '#ORD-CONFIRMED';
+
+  const handleTrackOrder = () => {
+    if (orderId && orderId !== '#ORD-CONFIRMED') {
+      router.push(`/account/orders/${encodeURIComponent(orderId)}/track`);
+    } else {
+      router.push('/account/orders/track/track');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
@@ -36,26 +77,32 @@ export default function OrderSuccessPage() {
             Order Placed Successfully!
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-            Thank you for your purchase. We&apos;ve sent a confirmation SMS & Email.
+            ধন্যবাদ! আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। আমাদের প্রতিনিধি দ্রুত আপনার সাথে যোগাযোগ করবেন।
           </p>
         </div>
 
         {/* Order Details Card */}
         <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 text-left space-y-3 text-xs">
           <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-slate-800">
-            <span className="text-gray-500 font-semibold uppercase tracking-wider">Order Details</span>
-            <span className="font-extrabold text-black dark:text-white">{orderId}</span>
+            <span className="text-gray-500 font-semibold uppercase tracking-wider">Order ID</span>
+            <span className="font-black text-sm text-[#FF6B00]">{displayOrderId}</span>
+          </div>
+
+          <div className="flex justify-between items-center py-1">
+            <span className="text-gray-500">Payment Method</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">ক্যাশ অন ডেলিভারি (COD)</span>
           </div>
 
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-500">Estimated Delivery</span>
-            <span className="font-bold text-gray-900 dark:text-white">2 - 3 Days</span>
+            <span className="font-bold text-gray-900 dark:text-white">১ - ৩ দিন (Courier)</span>
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-slate-800 text-sm">
             <span className="font-bold text-gray-900 dark:text-white">Total Amount</span>
             <span className="font-extrabold text-base text-gray-900 dark:text-white">
-              {storeConfig.currency}4,310
+              {storeConfig.currency}
+              {totalAmount !== null ? totalAmount.toLocaleString() : '---'}
             </span>
           </div>
         </div>
@@ -63,11 +110,11 @@ export default function OrderSuccessPage() {
         {/* Action Buttons */}
         <div className="space-y-3 pt-2">
           <button
-            onClick={() => alert(`Tracking Order ${orderId}`)}
-            className="w-full h-12 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-md active:scale-95"
+            onClick={handleTrackOrder}
+            className="w-full h-12 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
           >
-            <Package className="w-4 h-4" />
-            Track Order
+            <Truck className="w-4 h-4" />
+            Track Order (অর্ডার ট্র্যাক করুন)
           </button>
 
           <Link
@@ -80,5 +127,17 @@ export default function OrderSuccessPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }

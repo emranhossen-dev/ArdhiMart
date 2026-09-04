@@ -164,7 +164,16 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               </button>
 
               <button
-                onClick={() => handleNav('/account/orders/8849201A/track')}
+                onClick={() => {
+                  let target = '/account/orders/track/track';
+                  if (typeof window !== 'undefined') {
+                    try {
+                      const lastId = localStorage.getItem('ardhimart_last_order_id');
+                      if (lastId) target = `/account/orders/${encodeURIComponent(lastId)}/track`;
+                    } catch (e) {}
+                  }
+                  handleNav(target);
+                }}
                 className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 text-sm font-bold text-gray-900 dark:text-white transition-colors text-left cursor-pointer"
               >
                 <div className="flex items-center gap-3">
