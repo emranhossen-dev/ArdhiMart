@@ -155,7 +155,7 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               </li>
               <li>
                 <Link href="/return-policy" className="hover:text-[#FF6B00] dark:hover:text-white transition-colors">
-                  7-Day Return & Refund Policy
+                  3-Day Replacement & Return Policy
                 </Link>
               </li>
               <li>

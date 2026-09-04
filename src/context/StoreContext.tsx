@@ -92,8 +92,8 @@ export const mapApiProduct = (item: any): Product => {
       : [],
     material: item.material || '',
     warranty: item.warranty || '',
-    deliveryInsideDhaka: item.deliveryInsideDhaka ? Number(item.deliveryInsideDhaka) : 80,
-    deliveryOutsideDhaka: item.deliveryOutsideDhaka ? Number(item.deliveryOutsideDhaka) : 120,
+    deliveryInsideDhaka: item.deliveryInsideDhaka !== undefined && item.deliveryInsideDhaka !== null ? Number(item.deliveryInsideDhaka) : 70,
+    deliveryOutsideDhaka: item.deliveryOutsideDhaka !== undefined && item.deliveryOutsideDhaka !== null ? Number(item.deliveryOutsideDhaka) : 130,
     sku: item.sku || '',
     urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
   };

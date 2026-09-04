@@ -17,7 +17,7 @@ export const TrustBadgesBar: React.FC = () => {
     },
     {
       icon: RefreshCw,
-      title: '7-Day Return',
+      title: '3-Day Replacement',
       desc: 'Instant replacement guarantee',
     },
     {

@@ -476,7 +476,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     '১০০% প্রিমিয়াম ও অরিজিনাল কোয়ালিটি গ্যারান্টি।',
     'দীর্ঘস্থায়ী ও অত্যন্ত টেকসই উপাদান।',
     'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি সুবিধা।',
-    '৭ দিনের সহজ রিটার্ন ও রিপ্লেসমেন্ট সুবিধা।',
+    '৩ দিনের সহজ রিপ্লেসমেন্ট সুবিধা।',
   ];
 
   return (
@@ -978,14 +978,14 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
           <div className="flex items-center gap-2">
             <Truck className="w-4 h-4 text-gray-500" />
             <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
-              Inside Dhaka: ৳{product.deliveryInsideDhaka || 80} | Outside Dhaka: ৳{product.deliveryOutsideDhaka || 120}
+              Inside Dhaka: ৳{product.deliveryInsideDhaka ?? 70} | Outside Dhaka: ৳{product.deliveryOutsideDhaka ?? 130}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
             <RotateCcw className="w-4 h-4 text-gray-500" />
             <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
-              7-Day Replacement Guarantee
+              3-Day Replacement Guarantee (৩ দিনের সহজ রিপ্লেসমেন্ট গ্যারান্টি)
             </span>
           </div>
 

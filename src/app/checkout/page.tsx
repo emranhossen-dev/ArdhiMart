@@ -142,7 +142,14 @@ export default function CheckoutPage() {
   const cartSubtotal = cartItems.length > 0
     ? cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
     : 0;
-  const shippingFee = deliveryMethod === 'inside' ? 80 : 120;
+
+  const insideDeliveryFee = cartItems.length > 0
+    ? Math.max(...cartItems.map((i) => Number(i.product.deliveryInsideDhaka ?? 70)))
+    : 70;
+  const outsideDeliveryFee = cartItems.length > 0
+    ? Math.max(...cartItems.map((i) => Number(i.product.deliveryOutsideDhaka ?? 130)))
+    : 130;
+  const shippingFee = deliveryMethod === 'inside' ? insideDeliveryFee : outsideDeliveryFee;
   const grandTotal = cartSubtotal + shippingFee;
 
   // Track InitiateCheckout on page entry
@@ -524,7 +531,7 @@ export default function CheckoutPage() {
                 </span>
               </div>
               <span className="font-black text-xs text-[#FF6B00]">
-                ৳80
+                ৳{insideDeliveryFee}
               </span>
             </label>
 
@@ -545,7 +552,7 @@ export default function CheckoutPage() {
                 </span>
               </div>
               <span className="font-black text-xs text-[#FF6B00]">
-                ৳120
+                ৳{outsideDeliveryFee}
               </span>
             </label>
           </div>

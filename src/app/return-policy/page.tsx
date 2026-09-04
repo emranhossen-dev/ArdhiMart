@@ -15,7 +15,7 @@ export default function ReturnPolicyPage() {
       <div className="bg-gradient-to-b from-emerald-50 to-white dark:from-slate-900 dark:to-slate-950 pt-10 pb-6 border-b border-gray-100 dark:border-slate-800">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
-            <RotateCcw className="w-4 h-4" /> ৭ দিনের গ্যারান্টি
+            <RotateCcw className="w-4 h-4" /> ৩ দিনের গ্যারান্টি
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight drop-shadow-sm">
             রিটার্ন ও রিফান্ড পলিসি
@@ -36,10 +36,10 @@ export default function ReturnPolicyPage() {
               <CheckCircle className="w-5 h-5" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              ১. ৭ দিনের রিপ্লেসমেন্ট গ্যারান্টি
+              ১. ৩ দিনের রিপ্লেসমেন্ট গ্যারান্টি
             </h2>
             <p className="text-gray-600 dark:text-gray-300">
-              আমরা সবসময় কোয়ালিটি প্রোডাক্ট নিশ্চিত করার চেষ্টা করি। তবে ডেলিভারি পাওয়ার পর যদি আপনি কোনো ডিফেক্টিভ, ড্যামেজ বা ভুল প্রোডাক্ট পান, তবে পরবর্তী ৭ দিনের মধ্যে আমাদের সাথে যোগাযোগ করে রিপ্লেসমেন্ট সুবিধা গ্রহণ করতে পারবেন।
+              আমরা সবসময় কোয়ালিটি প্রোডাক্ট নিশ্চিত করার চেষ্টা করি। তবে ডেলিভারি পাওয়ার পর যদি আপনি কোনো ডিফেক্টিভ, ড্যামেজ বা ভুল প্রোডাক্ট পান, তবে পরবর্তী ৩ দিনের মধ্যে আমাদের সাথে যোগাযোগ করে রিপ্লেসমেন্ট সুবিধা গ্রহণ করতে পারবেন।
             </p>
           </section>
 
