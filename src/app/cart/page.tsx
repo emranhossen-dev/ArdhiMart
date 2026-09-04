@@ -105,7 +105,13 @@ export default function CartPage() {
                       <div className="flex items-center border border-gray-300 dark:border-slate-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-slate-800 h-8">
                         <button
                           onClick={() => updateQuantity(product.id, -1)}
-                          className="w-8 h-full flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 cursor-pointer"
+                          disabled={quantity <= 1}
+                          className={`w-8 h-full flex items-center justify-center text-gray-600 dark:text-gray-300 ${
+                            quantity <= 1
+                              ? 'opacity-30 cursor-not-allowed'
+                              : 'hover:bg-gray-200 dark:hover:bg-slate-700 cursor-pointer'
+                          }`}
+                          title={quantity <= 1 ? 'Use trash icon to delete item' : 'Decrease'}
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>

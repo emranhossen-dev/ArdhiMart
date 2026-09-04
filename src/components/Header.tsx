@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const handleCartClick = () => {
-    setIsCartOpen(true);
+    router.push('/cart');
     if (customOpenCart) customOpenCart();
   };
 

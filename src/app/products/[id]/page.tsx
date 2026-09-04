@@ -2,7 +2,7 @@
 
 export const runtime = 'edge';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
@@ -11,7 +11,7 @@ import BottomNavBar from '@/components/BottomNavBar';
 import FeaturedProducts from '@/components/FeaturedProducts';
 import EyesLoader from '@/components/EyesLoader';
 import { Product } from '@/types/store';
-import { useStore } from '@/context/StoreContext';
+import { useStore, mapApiProduct } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
 import { notifySuccess, notifyInfo } from '@/lib/sweetalert';
 import { getCategorySlug } from '@/lib/slug';
@@ -36,7 +36,90 @@ import {
   CheckCircle2,
   FileText,
   HelpCircle,
+  Check,
 } from 'lucide-react';
+
+const DIVERSE_REVIEWS_POOL = [
+  {
+    userName: 'তানভীর আহমেদ',
+    rating: 5,
+    comment: 'প্রডাক্টটি একদম ছবির মতোই পেয়েছি। প্যাকেজিং ও ফিনিশিং প্রিমিয়াম ছিল। ধন্যবাদ আরধিমার্ট!',
+    date: '২ সেপ্টেম্বর, ২০২৬',
+  },
+  {
+    userName: 'নুসরাত জাহান',
+    rating: 5,
+    comment: 'অসাধারণ একটা জিনিস! ছবিতে যেমন দেখেছি বাস্তবেও ঠিক তেমনই পেয়েছি। ডেলিভারিও দ্রুত পেয়েছি।',
+    date: '৩১ আগস্ট, ২০২৬',
+  },
+  {
+    userName: 'আব্দুল্লাহ আল মামুন',
+    rating: 5,
+    comment: 'প্রডাক্টটি হাতে পেয়েছি। কোয়ালিটি অনেক ভালো এবং ফাস্ট ডেলিভারি পেয়েছি। ধন্যবাদ!',
+    date: '২৮ আগস্ট, ২০২৬',
+  },
+  {
+    userName: 'মেহেদী হাসান',
+    rating: 5,
+    comment: 'অর্ডার করার পরদিনই ডেলিভারি পেয়েছি। প্রোডাক্টের বিল্ড কোয়ালিটি যথেষ্ট প্রিমিয়াম এবং টেকসই।',
+    date: '২৬ আগস্ট, ২০২৬',
+  },
+  {
+    userName: 'সাদিয়া রহমান',
+    rating: 5,
+    comment: 'অরিজিনাল প্রোডাক্ট দেওয়ার জন্য ধন্যবাদ। ডেলিভারি ম্যানের ব্যবহারও খুব অমায়িক ছিল। ১০০% রেকমেন্ডেড!',
+    date: '২৪ আগস্ট, ২০২৬',
+  },
+  {
+    userName: 'রাফিকুল ইসলাম',
+    rating: 5,
+    comment: 'দাম অনুযায়ী কোয়ালিটি চমৎকার। ক্যাশ অন ডেলিভারিতে চেক করে রিসিভ করতে পেরেছি।',
+    date: '২১ আগস্ট, ২০২৬',
+  },
+  {
+    userName: 'ফারহানা ইয়াসমিন',
+    rating: 5,
+    comment: 'খুবই সুন্দর ও কাজের একটা প্রোডাক্ট। গিফট হিসেবে দিয়েছিলাম, সে খুব পছন্দ করেছে!',
+    date: '১৮ আগস্ট, ২০২৬',
+  },
+  {
+    userName: 'আরিফুল হক',
+    rating: 5,
+    comment: '১০০% অরিজিনাল প্রডাক্ট। সাপোর্ট টিমও অনেক হেল্পফুল ছিল। সামনে আরও অর্ডার করবো।',
+    date: '১৫ আগস্ট, ২০২৬',
+  },
+];
+
+interface ReviewItem {
+  id: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  date: string;
+  image?: string;
+}
+
+const getInitialReviews = (productId?: string): ReviewItem[] => {
+  if (!productId) {
+    return [
+      { ...DIVERSE_REVIEWS_POOL[0], id: 'rev-default-1' },
+      { ...DIVERSE_REVIEWS_POOL[1], id: 'rev-default-2' },
+    ];
+  }
+  let hash = 0;
+  for (let i = 0; i < productId.length; i++) {
+    hash = (hash << 5) - hash + productId.charCodeAt(i);
+    hash |= 0;
+  }
+  const positiveHash = Math.abs(hash);
+  const idx1 = positiveHash % DIVERSE_REVIEWS_POOL.length;
+  const idx2 = (positiveHash + 3) % DIVERSE_REVIEWS_POOL.length;
+
+  return [
+    { ...DIVERSE_REVIEWS_POOL[idx1], id: `rev-${productId}-1` },
+    { ...DIVERSE_REVIEWS_POOL[idx2], id: `rev-${productId}-2` },
+  ];
+};
 
 interface ProductDetailsPageProps {
   params: Promise<{ id: string }>;
@@ -45,19 +128,26 @@ interface ProductDetailsPageProps {
 export default function ProductDetailsPage({ params }: ProductDetailsPageProps) {
   const router = useRouter();
   const resolvedParams = use(params);
-  const productId = resolvedParams.id;
+  const rawId = resolvedParams?.id || '';
+  const productId = decodeURIComponent(rawId).trim();
 
   const {
     products,
-    isLoading,
+    isLoading: isStoreLoading,
     storeConfig,
     wishlistIds,
     toggleWishlist,
     addToCart,
+    cartItems,
+    updateQuantity,
     setIsCartOpen,
   } = useStore();
 
   const { user: currentUser } = useAuth();
+
+  const [directProduct, setDirectProduct] = useState<Product | null>(null);
+  const [isDirectLoading, setIsDirectLoading] = useState<boolean>(false);
+  const [directFetchFailed, setDirectFetchFailed] = useState<boolean>(false);
 
   const [userOrders, setUserOrders] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
@@ -71,13 +161,85 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     return [];
   });
 
-  // Find product by id, urlSlug or title slug
-  const product: Product | undefined = products.find(
-    (p) =>
-      p.id === productId ||
-      p.urlSlug === productId ||
-      (p.title && p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') === productId)
-  );
+  // 1. Fast match from store context first (case-insensitive and title-slug fallback)
+  const contextProduct = useMemo(() => {
+    if (!productId || products.length === 0) return undefined;
+    const cleanId = productId.toLowerCase();
+    return products.find((p) => {
+      const pId = String(p.id || '').toLowerCase().trim();
+      const pSlug = String(p.urlSlug || (p as any).slug || '').toLowerCase().trim();
+      const pTitleSlug = p.title
+        ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
+        : '';
+      return pId === cleanId || pSlug === cleanId || pTitleSlug === cleanId;
+    });
+  }, [products, productId]);
+
+  // 2. If not yet in context (direct URL visit or cold start), fetch directly from API
+  useEffect(() => {
+    if (contextProduct) {
+      setDirectProduct(contextProduct);
+      return;
+    }
+
+    if (!productId) return;
+
+    let isMounted = true;
+    setIsDirectLoading(true);
+
+    const fetchDirectProduct = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+        
+        // Attempt A: Direct single item endpoint by slug/id
+        const res = await fetch(`${baseUrl}/products/${encodeURIComponent(productId)}`);
+        if (res.ok) {
+          const item = await res.json();
+          if (item && item.id && isMounted) {
+            setDirectProduct(mapApiProduct(item));
+            setIsDirectLoading(false);
+            return;
+          }
+        }
+
+        // Attempt B: In case slug is not indexed on single endpoint, search full list
+        const listRes = await fetch(`${baseUrl}/products`);
+        if (listRes.ok) {
+          const allItems = await listRes.json();
+          if (Array.isArray(allItems) && isMounted) {
+            const cleanId = productId.toLowerCase();
+            const found = allItems.find((p: any) => {
+              const pId = String(p.id || '').toLowerCase().trim();
+              const pSlug = String(p.urlSlug || p.slug || '').toLowerCase().trim();
+              const pTitle = p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '';
+              return pId === cleanId || pSlug === cleanId || pTitle === cleanId;
+            });
+            if (found) {
+              setDirectProduct(mapApiProduct(found));
+              setIsDirectLoading(false);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Direct product fetch error:', err);
+      }
+
+      if (isMounted) {
+        setIsDirectLoading(false);
+        setDirectFetchFailed(true);
+      }
+    };
+
+    fetchDirectProduct();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [contextProduct, productId]);
+
+  const product = contextProduct || directProduct;
+  const cartItem = product ? cartItems.find((item) => item.product.id === product.id) : undefined;
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
@@ -142,7 +304,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  // Reviews State
+  // Reviews State initialized dynamically per product ID
   const [reviewsList, setReviewsList] = useState<
     Array<{
       id: string;
@@ -152,22 +314,41 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
       date: string;
       image?: string;
     }>
-  >([
-    {
-      id: 'rev-1',
-      userName: 'আব্দুল্লাহ আল মামুন',
-      rating: 5,
-      comment: 'প্রডাক্টটি হাতে পেয়েছি। কোয়ালিটি অনেক ভালো এবং ফাস্ট ডেলিভারি পেয়েছি। ধন্যবাদ!',
-      date: '২৮ আগস্ট, ২০২৬',
-    },
-  ]);
+  >(() => getInitialReviews(productId));
+
+  useEffect(() => {
+    if (productId) {
+      setReviewsList(getInitialReviews(productId));
+    }
+  }, [productId]);
 
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [newReviewImage, setNewReviewImage] = useState('');
 
-  if (isLoading) {
-    return null;
+  const isPageLoading = (!product && (isStoreLoading || isDirectLoading)) && !directFetchFailed;
+
+  if (isPageLoading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
+        <Header />
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 animate-pulse space-y-6">
+          <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded w-48 mb-4" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-6 aspect-square bg-gray-100 dark:bg-slate-800 rounded-2xl" />
+            <div className="lg:col-span-6 space-y-4">
+              <div className="h-8 bg-gray-200 dark:bg-slate-800 rounded w-3/4" />
+              <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded w-1/4" />
+              <div className="h-10 bg-gray-200 dark:bg-slate-800 rounded w-1/3" />
+              <div className="h-24 bg-gray-200 dark:bg-slate-800 rounded w-full" />
+              <div className="h-12 bg-gray-200 dark:bg-slate-800 rounded w-full" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+        <BottomNavBar />
+      </div>
+    );
   }
 
   if (!product) {
@@ -229,7 +410,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, selectedColor || (variantOptions[0] ?? ''));
+    addToCart(product, quantity, selectedColor || (variantOptions[0] ?? ''), { showModal: false });
     setIsCartOpen(false);
     router.push('/checkout');
   };
@@ -552,13 +733,50 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
 
             {/* 3 CTA BUTTONS TOTAL: ADD TO CART, BUY NOW, ORDER ON WHATSAPP (Requirement 9) */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                onClick={handleAddToCart}
-                className="btn-shimmer w-full py-2.5 px-2 border-2 border-[#0F396F] text-[#0F396F] hover:bg-[#0F396F] hover:text-white dark:border-white dark:text-white font-bold text-xs uppercase tracking-wider rounded-md transition-all shadow-xs active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <ShoppingBag className="w-4 h-4 shrink-0" />
-                <span className="truncate whitespace-nowrap">Add to Cart</span>
-              </button>
+              {cartItem ? (
+                <div className="w-full h-11 flex items-center justify-between border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 rounded-md px-2.5 py-1.5 shadow-xs">
+                  <Link
+                    href="/cart"
+                    className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline truncate"
+                    title="View Cart"
+                  >
+                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{cartItem.quantity} in Cart</span>
+                  </Link>
+
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded px-2 py-1">
+                    {cartItem.quantity > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(product.id, -1)}
+                        className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white cursor-pointer"
+                        title="Decrease quantity"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                    ) : null}
+                    <span className="text-xs font-black text-gray-900 dark:text-white px-1">
+                      {cartItem.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(product.id, 1)}
+                      className="w-4 h-4 flex items-center justify-center text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer font-bold"
+                      title="Add more"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  className="btn-shimmer w-full py-2.5 px-2 border-2 border-[#0F396F] text-[#0F396F] hover:bg-[#0F396F] hover:text-white dark:border-white dark:text-white font-bold text-xs uppercase tracking-wider rounded-md transition-all shadow-xs active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <ShoppingBag className="w-4 h-4 shrink-0" />
+                  <span className="truncate whitespace-nowrap">Add to Cart</span>
+                </button>
+              )}
 
               <button
                 onClick={handleBuyNow}
@@ -787,12 +1005,46 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
 
       {/* Mobile-Only Fixed Bottom Bar (2 CTA Buttons: Add to Cart & Buy Now) */}
       <div className="sm:hidden fixed bottom-16 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 px-3 py-2.5 flex gap-2 z-30 shadow-2xl">
-        <button
-          onClick={handleAddToCart}
-          className="btn-shimmer flex-1 border border-[#0F396F] dark:border-blue-400 text-[#0F396F] dark:text-blue-400 py-2.5 rounded-lg font-extrabold text-xs uppercase text-center bg-white dark:bg-slate-900 active:scale-95 cursor-pointer truncate shadow-xs"
-        >
-          Add to Cart
-        </button>
+        {cartItem ? (
+          <div className="flex-1 h-10 flex items-center justify-between border border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-2 shadow-xs">
+            <Link
+              href="/cart"
+              className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline truncate"
+            >
+              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{cartItem.quantity} in Cart</span>
+            </Link>
+
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded px-1.5 py-0.5">
+              {cartItem.quantity > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => updateQuantity(product.id, -1)}
+                  className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white cursor-pointer"
+                >
+                  <Minus className="w-2.5 h-2.5" />
+                </button>
+              ) : null}
+              <span className="text-[11px] font-black text-gray-900 dark:text-white px-1">
+                {cartItem.quantity}
+              </span>
+              <button
+                type="button"
+                onClick={() => updateQuantity(product.id, 1)}
+                className="w-4 h-4 flex items-center justify-center text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer font-bold"
+              >
+                <Plus className="w-2.5 h-2.5" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            className="btn-shimmer flex-1 border border-[#0F396F] dark:border-blue-400 text-[#0F396F] dark:text-blue-400 py-2.5 rounded-lg font-extrabold text-xs uppercase text-center bg-white dark:bg-slate-900 active:scale-95 cursor-pointer truncate shadow-xs"
+          >
+            Add to Cart
+          </button>
+        )}
 
         <button
           onClick={handleBuyNow}

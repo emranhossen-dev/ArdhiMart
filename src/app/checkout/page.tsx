@@ -15,10 +15,11 @@ import {
   MapPin,
   ShieldCheck,
   User,
-  Phone
+  Phone,
 } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 import * as fpixel from '@/lib/fpixel';
+import { notifyError, notifySuccess } from '@/lib/sweetalert';
 
 // Authentic Bangladesh Administrative Divisions, Districts & Thanas Data
 const bdLocations: Record<string, Record<string, string[]>> = {
@@ -151,8 +152,21 @@ export default function CheckoutPage() {
   }, []);
 
   const handlePlaceOrder = async () => {
-    if (!customerName.trim() || !phone.trim() || !streetAddress.trim()) {
-      alert('Please enter your Name, Phone Number, and Detailed Street/House Address.');
+    if (!customerName.trim()) {
+      notifyError('নাম আবশ্যক', 'অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন।');
+      return;
+    }
+    if (!phone.trim() || phone.trim().length < 10) {
+      notifyError('সঠিক মোবাইল নম্বর আবশ্যক', 'অনুগ্রহ করে একটি সঠিক ১১ ডিজিটের মোবাইল নম্বর লিখুন (যেমন: 017XXXXXXXX)।');
+      return;
+    }
+    if (!streetAddress.trim()) {
+      notifyError('ঠিকানা আবশ্যক', 'অনুগ্রহ করে আপনার বিস্তারিত বাসা/রোড বা এলাকা লিখুন।');
+      return;
+    }
+    if (cartItems.length === 0) {
+      notifyError('কার্ট খালি', 'আপনার শপিং ব্যাগে কোনো পণ্য নেই। অনুগ্রহ করে পণ্য যোগ করুন।');
+      router.push('/products');
       return;
     }
 
@@ -223,6 +237,46 @@ export default function CheckoutPage() {
     }
   };
 
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
+        <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 flex items-center justify-between px-4">
+          <button
+            onClick={() => router.push('/products')}
+            aria-label="Back"
+            className="p-2 -ml-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <span className="font-extrabold text-sm uppercase tracking-wider text-gray-900 dark:text-white">
+            CHECKOUT
+          </span>
+          <div className="p-2 text-gray-400">
+            <Lock className="w-4 h-4" />
+          </div>
+        </header>
+
+        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
+          <div className="w-20 h-20 rounded-full bg-orange-50 dark:bg-slate-800 flex items-center justify-center mb-5 text-[#FF6B00]">
+            <ShoppingBag className="w-10 h-10" />
+          </div>
+          <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">
+            Your Cart is Empty
+          </h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
+            You don&apos;t have any products in your cart to checkout yet.
+          </p>
+          <button
+            onClick={() => router.push('/products')}
+            className="px-6 py-3 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+          >
+            Explore Products
+          </button>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans pb-28 select-none">
       {/* Header */}
@@ -249,7 +303,7 @@ export default function CheckoutPage() {
         {/* 1. Customer & Bangladesh Address Section */}
         <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
-            <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <User className="w-5 h-5 text-[#FF6B00]" />
             <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
               Customer Information & Delivery Address
             </h2>
@@ -265,7 +319,7 @@ export default function CheckoutPage() {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="e.g. Shakib Al Hasan"
-                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-indigo-600 dark:focus:border-indigo-400"
+                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
               />
             </div>
 
@@ -278,7 +332,7 @@ export default function CheckoutPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 01700000000"
-                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-indigo-600 dark:focus:border-indigo-400"
+                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
               />
             </div>
 
@@ -345,7 +399,7 @@ export default function CheckoutPage() {
                 value={streetAddress}
                 onChange={(e) => setStreetAddress(e.target.value)}
                 placeholder="e.g. House #12, Road #4, Block B"
-                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-indigo-600 dark:focus:border-indigo-400"
+                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
               />
             </div>
           </div>
@@ -354,7 +408,7 @@ export default function CheckoutPage() {
         {/* 2. Delivery Charge Selection */}
         <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
-            <Truck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <Truck className="w-5 h-5 text-[#FF6B00]" />
             <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
               Delivery Method
             </h2>
@@ -365,7 +419,7 @@ export default function CheckoutPage() {
               onClick={() => setDeliveryMethod('inside')}
               className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all ${
                 deliveryMethod === 'inside'
-                  ? 'border-indigo-600 bg-indigo-50/30 dark:bg-slate-800'
+                  ? 'border-[#FF6B00] bg-orange-50/50 dark:bg-slate-800'
                   : 'border-gray-200 dark:border-slate-800'
               }`}
             >
@@ -377,7 +431,7 @@ export default function CheckoutPage() {
                   Express Delivery (24 Hours)
                 </span>
               </div>
-              <span className="font-black text-xs text-indigo-600 dark:text-indigo-400">
+              <span className="font-black text-xs text-[#FF6B00]">
                 ৳80
               </span>
             </label>
@@ -386,7 +440,7 @@ export default function CheckoutPage() {
               onClick={() => setDeliveryMethod('outside')}
               className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all ${
                 deliveryMethod === 'outside'
-                  ? 'border-indigo-600 bg-indigo-50/30 dark:bg-slate-800'
+                  ? 'border-[#FF6B00] bg-orange-50/50 dark:bg-slate-800'
                   : 'border-gray-200 dark:border-slate-800'
               }`}
             >
@@ -398,7 +452,7 @@ export default function CheckoutPage() {
                   Courier Delivery (2-3 Days)
                 </span>
               </div>
-              <span className="font-black text-xs text-indigo-600 dark:text-indigo-400">
+              <span className="font-black text-xs text-[#FF6B00]">
                 ৳120
               </span>
             </label>
@@ -408,7 +462,7 @@ export default function CheckoutPage() {
         {/* 3. Payment Method */}
         <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
-            <CreditCard className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <CreditCard className="w-5 h-5 text-[#FF6B00]" />
             <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
               Payment Method
             </h2>
@@ -420,7 +474,7 @@ export default function CheckoutPage() {
               onClick={() => setPaymentMethod('COD')}
               className={`py-3 px-2 border rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition-all cursor-pointer ${
                 paymentMethod === 'COD'
-                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                  ? 'border-[#FF6B00] bg-[#FF6B00] text-white shadow-sm'
                   : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -433,7 +487,7 @@ export default function CheckoutPage() {
               onClick={() => setPaymentMethod('bKash')}
               className={`py-3 px-2 border rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition-all cursor-pointer ${
                 paymentMethod === 'bKash'
-                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                  ? 'border-[#FF6B00] bg-[#FF6B00] text-white shadow-sm'
                   : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -446,7 +500,7 @@ export default function CheckoutPage() {
               onClick={() => setPaymentMethod('Card')}
               className={`py-3 px-2 border rounded-xl font-bold text-xs flex flex-col items-center gap-1 transition-all cursor-pointer ${
                 paymentMethod === 'Card'
-                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                  ? 'border-[#FF6B00] bg-[#FF6B00] text-white shadow-sm'
                   : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -466,12 +520,12 @@ export default function CheckoutPage() {
         <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2.5">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <ShoppingBag className="w-5 h-5 text-[#FF6B00]" />
               <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
                 Ordered Items ({cartItems.length})
               </h2>
             </div>
-            <span className="font-black text-sm text-indigo-600 dark:text-indigo-400">
+            <span className="font-black text-sm text-[#FF6B00]">
               ৳{grandTotal.toLocaleString()}
             </span>
           </div>
@@ -503,7 +557,7 @@ export default function CheckoutPage() {
         <div className="max-w-2xl mx-auto space-y-2">
           <div className="flex justify-between items-center text-xs">
             <span className="text-gray-500 font-semibold">Total Payable Amount</span>
-            <span className="font-black text-base text-indigo-600 dark:text-indigo-400">
+            <span className="font-black text-base text-[#FF6B00]">
               ৳{grandTotal.toLocaleString()}
             </span>
           </div>
@@ -511,7 +565,7 @@ export default function CheckoutPage() {
           <button
             onClick={handlePlaceOrder}
             disabled={isSubmitting}
-            className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer"
+            className="w-full h-12 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer"
           >
             <Lock className="w-4 h-4" />
             {isSubmitting ? 'Confirming Order...' : 'Confirm Order'}

@@ -29,7 +29,7 @@ interface StoreContextType {
   setIsSearchOpen: (open: boolean) => void;
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
-  addToCart: (product: Product, quantity?: number, selectedVariant?: string) => void;
+  addToCart: (product: Product, quantity?: number, selectedVariant?: string, options?: { showModal?: boolean }) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, delta: number) => void;
   toggleWishlist: (productId: string) => void;
@@ -37,6 +37,67 @@ interface StoreContextType {
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
+
+export const mapApiProduct = (item: any): Product => {
+  const tagsArray = Array.isArray(item.tags)
+    ? item.tags
+    : typeof item.tags === 'string'
+    ? item.tags.split(',').map((s: string) => s.trim())
+    : [];
+
+  const keywordsArray = Array.isArray(item.keywords)
+    ? item.keywords
+    : typeof item.keywords === 'string'
+    ? item.keywords.split(',').map((s: string) => s.trim())
+    : [];
+
+  const isFlashSaleVal =
+    tagsArray.includes('flash_sale') ||
+    keywordsArray.includes('flash_sale') ||
+    Boolean(item.isFlashSale);
+
+  const mainBadgeTag =
+    tagsArray.find((t: string) => t !== 'flash_sale') || item.badge || '';
+
+  const finalBadge =
+    mainBadgeTag === 'None' || mainBadgeTag === 'none' ? '' : mainBadgeTag;
+
+  return {
+    ...item,
+    id: String(item.id),
+    title: item.title || item.name || 'Untitled Product',
+    price: Number(item.price || 0),
+    comparePrice: item.comparePrice ? Number(item.comparePrice) : undefined,
+    rating: typeof item.rating === 'number' ? item.rating : 5.0,
+    reviewsCount: typeof item.reviewsCount === 'number' ? item.reviewsCount : 0,
+    badge: finalBadge,
+    isNew: finalBadge === 'New' || finalBadge === 'Hot',
+    isFeatured: finalBadge === 'Featured' || finalBadge === 'Trending',
+    isFlashSale: isFlashSaleVal,
+    image: item.image || '/images/ardhimart-smart-pen-holder.webp',
+    galleryImages: Array.isArray(item.galleryImages)
+      ? item.galleryImages
+      : typeof item.galleryImages === 'string' && item.galleryImages.trim()
+      ? item.galleryImages.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : [],
+    category: item.category || 'Electronics',
+    color: item.color || item.variantOptions || '',
+    shortDescription: item.shortDescription || '',
+    description: item.description || '',
+    usability: item.usability || '',
+    features: Array.isArray(item.features)
+      ? item.features
+      : typeof item.features === 'string' && item.features.trim()
+      ? item.features.split('\n').map((s: string) => s.trim()).filter(Boolean)
+      : [],
+    material: item.material || '',
+    warranty: item.warranty || '',
+    deliveryInsideDhaka: item.deliveryInsideDhaka ? Number(item.deliveryInsideDhaka) : 80,
+    deliveryOutsideDhaka: item.deliveryOutsideDhaka ? Number(item.deliveryOutsideDhaka) : 120,
+    sku: item.sku || '',
+    urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
+  };
+};
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<'light' | 'dark'>('light');
@@ -73,10 +134,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setThemeState(saved);
         applyTheme(saved);
       }
-      // Wipe any legacy/stale cached products immediately
-      try {
-        localStorage.removeItem('ardhimart_cached_products');
-      } catch (e) {}
     }
   }, []);
 
@@ -126,9 +183,28 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return () => clearInterval(interval);
   }, []);
   
-  // Clean live product state — NO cached/mock products allowed
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Clean live product state with instant localStorage fallback to prevent cold-start 404
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ardhimart_live_products_cache');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+    }
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ardhimart_live_products_cache');
+        if (saved && JSON.parse(saved).length > 0) return false;
+      } catch (e) {}
+    }
+    return true;
+  });
 
   const [heroBanner] = useState(defaultHeroBanner);
 
@@ -237,68 +313,14 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && isMounted) {
-            const mapped = data.map((item: any) => {
-              const tagsArray = Array.isArray(item.tags)
-                ? item.tags
-                : typeof item.tags === 'string'
-                ? item.tags.split(',').map((s: string) => s.trim())
-                : [];
-
-              const keywordsArray = Array.isArray(item.keywords)
-                ? item.keywords
-                : typeof item.keywords === 'string'
-                ? item.keywords.split(',').map((s: string) => s.trim())
-                : [];
-
-              const isFlashSaleVal =
-                tagsArray.includes('flash_sale') ||
-                keywordsArray.includes('flash_sale') ||
-                Boolean(item.isFlashSale);
-
-              const mainBadgeTag =
-                tagsArray.find((t: string) => t !== 'flash_sale') || item.badge || '';
-
-              const finalBadge =
-                mainBadgeTag === 'None' || mainBadgeTag === 'none' ? '' : mainBadgeTag;
-
-              return {
-                ...item,
-                id: String(item.id),
-                title: item.title || item.name || 'Untitled Product',
-                price: Number(item.price || 0),
-                comparePrice: item.comparePrice ? Number(item.comparePrice) : undefined,
-                rating: typeof item.rating === 'number' ? item.rating : 5.0,
-                reviewsCount: typeof item.reviewsCount === 'number' ? item.reviewsCount : 0,
-                badge: finalBadge,
-                isNew: finalBadge === 'New' || finalBadge === 'Hot',
-                isFeatured: finalBadge === 'Featured' || finalBadge === 'Trending',
-                isFlashSale: isFlashSaleVal,
-                image: item.image || '/images/ardhimart-smart-pen-holder.webp',
-                galleryImages: Array.isArray(item.galleryImages)
-                  ? item.galleryImages
-                  : typeof item.galleryImages === 'string' && item.galleryImages.trim()
-                  ? item.galleryImages.split(',').map((s: string) => s.trim()).filter(Boolean)
-                  : [],
-                category: item.category || 'Electronics',
-                color: item.color || item.variantOptions || '',
-                shortDescription: item.shortDescription || '',
-                description: item.description || '',
-                usability: item.usability || '',
-                features: Array.isArray(item.features)
-                  ? item.features
-                  : typeof item.features === 'string' && item.features.trim()
-                  ? item.features.split('\n').map((s: string) => s.trim()).filter(Boolean)
-                  : [],
-                material: item.material || '',
-                warranty: item.warranty || '',
-                deliveryInsideDhaka: item.deliveryInsideDhaka ? Number(item.deliveryInsideDhaka) : 80,
-                deliveryOutsideDhaka: item.deliveryOutsideDhaka ? Number(item.deliveryOutsideDhaka) : 120,
-                sku: item.sku || '',
-                urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
-              };
-            });
+            const mapped = data.map(mapApiProduct);
             setProducts(mapped);
             setIsLoading(false);
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem('ardhimart_live_products_cache', JSON.stringify(mapped));
+              } catch (e) {}
+            }
 
             // Fetch categories REST API
             try {
@@ -376,7 +398,12 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const addToCart = (product: Product, quantity: number = 1, selectedVariant?: string) => {
+  const addToCart = (
+    product: Product,
+    quantity: number = 1,
+    selectedVariant?: string,
+    options?: { showModal?: boolean }
+  ) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id && item.selectedVariant === selectedVariant);
       if (existing) {
@@ -398,7 +425,13 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       currency: 'BDT',
     });
 
-    showAddToCartModal(product.title, product.image, () => setIsCartOpen(true));
+    if (options?.showModal !== false) {
+      showAddToCartModal(product.title, product.image, () => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/cart';
+        }
+      });
+    }
   };
 
   const removeFromCart = (productId: string) => {

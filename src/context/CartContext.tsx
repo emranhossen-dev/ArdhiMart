@@ -136,7 +136,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       currency: 'BDT',
     });
 
-    showAddToCartModal(product.name, product.image, () => setIsCartOpen(true));
+    showAddToCartModal(product.name, product.image, () => {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/cart';
+      }
+    });
   };
 
   const removeFromCart = (cartItemId: string) => {
