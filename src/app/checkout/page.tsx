@@ -186,14 +186,21 @@ export default function CheckoutPage() {
       });
 
       if (res.ok) {
-        // Facebook Pixel Purchase event
-        fpixel.event('Purchase', {
-          content_ids: itemsPayload.map((item) => item.productId),
-          content_type: 'product',
-          value: grandTotal,
-          currency: 'BDT',
-          num_items: itemsPayload.length,
-        });
+        const orderData = await res.json().catch(() => null);
+        const eventId = `order_${orderData?.id || orderData?.orderNumber || Date.now()}`;
+
+        // Facebook Pixel Purchase event with eventID deduplication
+        fpixel.event(
+          'Purchase',
+          {
+            content_ids: itemsPayload.map((item) => item.productId),
+            content_type: 'product',
+            value: grandTotal,
+            currency: 'BDT',
+            num_items: itemsPayload.length,
+          },
+          { eventID: eventId }
+        );
 
         clearCart();
         router.push('/checkout/success');

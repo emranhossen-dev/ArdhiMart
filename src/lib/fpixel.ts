@@ -19,9 +19,18 @@ export const pageview = (): void => {
 
 /**
  * Trigger standard or custom Meta Pixel events (e.g. AddToCart, ViewContent, Purchase)
+ * Supports extraParams for event deduplication (eventID)
  */
-export const event = (name: string, options: Record<string, any> = {}): void => {
+export const event = (
+  name: string,
+  options: Record<string, any> = {},
+  extraParams?: Record<string, any>
+): void => {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
-    window.fbq('track', name, options);
+    if (extraParams) {
+      window.fbq('track', name, options, extraParams);
+    } else {
+      window.fbq('track', name, options);
+    }
   }
 };
