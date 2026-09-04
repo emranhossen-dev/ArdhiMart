@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StoreShell from "@/components/StoreShell";
+import FacebookPixel from "@/components/FacebookPixel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,11 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  verification: {
+    other: {
+      "facebook-domain-verification": "3jkij7uzt4hjc6y9e5262hjn10vsld",
+    },
   },
   openGraph: {
     type: "website",
@@ -116,7 +122,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
         <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        {/* Facebook Domain Verification */}
+        <meta name="facebook-domain-verification" content="3jkij7uzt4hjc6y9e5262hjn10vsld" />
 
         {/* Google Organization JSON-LD Schema for Google Search & Search Console Brand Logo */}
         <script
@@ -125,6 +132,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <FacebookPixel />
         <StoreShell>{children}</StoreShell>
       </body>
     </html>

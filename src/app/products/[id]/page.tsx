@@ -15,6 +15,7 @@ import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
 import { notifySuccess, notifyInfo } from '@/lib/sweetalert';
 import { getCategorySlug } from '@/lib/slug';
+import * as fpixel from '@/lib/fpixel';
 import {
   Heart,
   Share2,
@@ -81,6 +82,19 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
+
+  // Meta Pixel ViewContent event
+  useEffect(() => {
+    if (product) {
+      fpixel.event('ViewContent', {
+        content_name: product.title,
+        content_ids: [product.id],
+        content_type: 'product',
+        value: product.price,
+        currency: 'BDT',
+      });
+    }
+  }, [product?.id]);
 
   // Real-Time Touch Drag & Swipe Transform State
   const [dragOffset, setDragOffset] = useState(0);

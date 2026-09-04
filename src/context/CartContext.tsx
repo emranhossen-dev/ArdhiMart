@@ -5,6 +5,7 @@ import { ExtendedProduct } from "../data/products";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { showAddToCartModal } from "../lib/sweetalert";
+import * as fpixel from "@/lib/fpixel";
 
 export interface Product {
   id: string;
@@ -124,6 +125,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         return [...prev, newItem];
       }
+    });
+
+    // Facebook Pixel AddToCart tracking
+    fpixel.event('AddToCart', {
+      content_name: product.name,
+      content_ids: [product.id],
+      content_type: 'product',
+      value: product.price * addedQty,
+      currency: 'BDT',
     });
 
     showAddToCartModal(product.name, product.image, () => setIsCartOpen(true));

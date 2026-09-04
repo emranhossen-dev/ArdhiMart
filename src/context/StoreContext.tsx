@@ -10,6 +10,7 @@ import {
 } from '@/config/storeConfig';
 import { notifySuccess, notifyInfo, showAddToCartModal } from '@/lib/sweetalert';
 import { useAuth } from '@/context/AuthContext';
+import * as fpixel from '@/lib/fpixel';
 
 interface StoreContextType {
   theme: 'light' | 'dark';
@@ -386,6 +387,15 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         );
       }
       return [...prev, { product, quantity, selectedVariant }];
+    });
+
+    // Facebook Pixel AddToCart tracking
+    fpixel.event('AddToCart', {
+      content_name: product.title,
+      content_ids: [product.id],
+      content_type: 'product',
+      value: product.price * quantity,
+      currency: 'BDT',
     });
 
     showAddToCartModal(product.title, product.image, () => setIsCartOpen(true));

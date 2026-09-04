@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { defaultStoreConfig } from '@/config/storeConfig';
 import {
@@ -18,6 +18,7 @@ import {
   Phone
 } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
+import * as fpixel from '@/lib/fpixel';
 
 // Authentic Bangladesh Administrative Divisions, Districts & Thanas Data
 const bdLocations: Record<string, Record<string, string[]>> = {
@@ -138,6 +139,17 @@ export default function CheckoutPage() {
   const shippingFee = deliveryMethod === 'inside' ? 80 : 120;
   const grandTotal = cartSubtotal + shippingFee;
 
+  // Track InitiateCheckout on page entry
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      fpixel.event('InitiateCheckout', {
+        num_items: cartItems.length,
+        value: grandTotal,
+        currency: 'BDT',
+      });
+    }
+  }, []);
+
   const handlePlaceOrder = async () => {
     if (!customerName.trim() || !phone.trim() || !streetAddress.trim()) {
       alert('Please enter your Name, Phone Number, and Detailed Street/House Address.');
@@ -174,9 +186,27 @@ export default function CheckoutPage() {
       });
 
       if (res.ok) {
+        // Facebook Pixel Purchase event
+        fpixel.event('Purchase', {
+          content_ids: itemsPayload.map((item) => item.productId),
+          content_type: 'product',
+          value: grandTotal,
+          currency: 'BDT',
+          num_items: itemsPayload.length,
+        });
+
         clearCart();
         router.push('/checkout/success');
       } else {
+        // Even if fallback, track purchase if order succeeded locally
+        fpixel.event('Purchase', {
+          content_ids: itemsPayload.map((item) => item.productId),
+          content_type: 'product',
+          value: grandTotal,
+          currency: 'BDT',
+          num_items: itemsPayload.length,
+        });
+
         router.push('/checkout/success');
       }
     } catch (err) {
