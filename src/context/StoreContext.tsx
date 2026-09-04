@@ -365,8 +365,124 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
   }, []);
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
+  // Parse and validate stored cart items safely supporting both StoreContext and legacy CartContext formats
+  const parseStoredCartItems = (raw: string | null): CartItem[] => {
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((item: any): CartItem | null => {
+          if (item && item.product && item.product.id) {
+            return {
+              product: item.product,
+              quantity: Math.max(1, Number(item.quantity) || 1),
+              selectedVariant: item.selectedVariant || '',
+            };
+          }
+          if (item && (item.id || item.productId)) {
+            return {
+              product: {
+                id: String(item.id || item.productId),
+                title: item.title || item.name || 'Product',
+                price: Number(item.price) || 0,
+                image: item.image || '',
+                rating: Number(item.rating) || 5,
+                category: item.category || '',
+              },
+              quantity: Math.max(1, Number(item.quantity) || 1),
+              selectedVariant: item.selectedVariant || item.variantColor || '',
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) as CartItem[];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const saveCartToStorage = (items: CartItem[]) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const serialized = JSON.stringify(items);
+        localStorage.setItem('ardhimart_cart', serialized);
+        localStorage.setItem('websites_cart', serialized);
+      } catch (e) {}
+    }
+  };
+
+  const saveWishlistToStorage = (ids: string[]) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const serialized = JSON.stringify(ids);
+        localStorage.setItem('ardhimart_wishlist', serialized);
+        localStorage.setItem('websites_wishlist', serialized);
+      } catch (e) {}
+    }
+  };
+
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ardhimart_cart') || localStorage.getItem('websites_cart');
+      return parseStoredCartItems(saved);
+    }
+    return [];
+  });
+
+  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ardhimart_wishlist') || localStorage.getItem('websites_wishlist');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed.map(String);
+        }
+      } catch (e) {}
+    }
+    return [];
+  });
+
+  // Client-side hydration sync to guarantee state matches localStorage even after SSR
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ardhimart_cart') || localStorage.getItem('websites_cart');
+      const loaded = parseStoredCartItems(saved);
+      if (loaded.length > 0) {
+        setCartItems(loaded);
+      }
+      try {
+        const savedWish = localStorage.getItem('ardhimart_wishlist') || localStorage.getItem('websites_wishlist');
+        if (savedWish) {
+          const parsed = JSON.parse(savedWish);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setWishlistIds(parsed.map(String));
+          }
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+  // Multi-tab synchronization
+  React.useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'ardhimart_cart' || e.key === 'websites_cart') {
+        setCartItems(parseStoredCartItems(e.newValue));
+      } else if (e.key === 'ardhimart_wishlist' || e.key === 'websites_wishlist') {
+        try {
+          if (e.newValue) {
+            const parsed = JSON.parse(e.newValue);
+            if (Array.isArray(parsed)) setWishlistIds(parsed.map(String));
+          } else {
+            setWishlistIds([]);
+          }
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const { user } = useAuth();
 
   // Auto-sync active cart items to backend for admin tracking
@@ -406,14 +522,18 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   ) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id && item.selectedVariant === selectedVariant);
+      let next: CartItem[];
       if (existing) {
-        return prev.map((item) =>
+        next = prev.map((item) =>
           item.product.id === product.id && item.selectedVariant === selectedVariant
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+      } else {
+        next = [...prev, { product, quantity, selectedVariant }];
       }
-      return [...prev, { product, quantity, selectedVariant }];
+      saveCartToStorage(next);
+      return next;
     });
 
     // Facebook Pixel AddToCart tracking
@@ -435,13 +555,17 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const removeFromCart = (productId: string) => {
-    setCartItems((prev) => prev.filter((item) => item.product.id !== productId));
+    setCartItems((prev) => {
+      const next = prev.filter((item) => item.product.id !== productId);
+      saveCartToStorage(next);
+      return next;
+    });
     notifyInfo('Item removed from cart');
   };
 
   const updateQuantity = (productId: string, delta: number) => {
-    setCartItems((prev) =>
-      prev
+    setCartItems((prev) => {
+      const next = prev
         .map((item) => {
           if (item.product.id === productId) {
             const newQty = item.quantity + delta;
@@ -449,24 +573,30 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           }
           return item;
         })
-        .filter(Boolean) as CartItem[]
-    );
+        .filter(Boolean) as CartItem[];
+      saveCartToStorage(next);
+      return next;
+    });
   };
 
   const toggleWishlist = (productId: string) => {
     setWishlistIds((prev) => {
+      let next: string[];
       if (prev.includes(productId)) {
         notifyInfo('Removed from Wishlist');
-        return prev.filter((id) => id !== productId);
+        next = prev.filter((id) => id !== productId);
       } else {
         notifySuccess('Added to Wishlist!');
-        return [...prev, productId];
+        next = [...prev, productId];
       }
+      saveWishlistToStorage(next);
+      return next;
     });
   };
 
   const clearCart = () => {
     setCartItems([]);
+    saveCartToStorage([]);
   };
 
   return (

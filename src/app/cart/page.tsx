@@ -14,9 +14,14 @@ export default function CartPage() {
   const router = useRouter();
   const { cartItems, storeConfig, updateQuantity, removeFromCart } = useStore();
 
+  const [isMounted, setIsMounted] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -34,6 +39,27 @@ export default function CartPage() {
   };
 
   const totalAmount = Math.max(0, subtotal - discountAmount);
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
+        <Header />
+        <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 pb-28">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              Your Cart
+            </h1>
+          </div>
+          <div className="animate-pulse space-y-4">
+            <div className="h-28 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800" />
+            <div className="h-28 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800" />
+          </div>
+        </main>
+        <Footer className="hidden md:block" />
+        <BottomNavBar />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">

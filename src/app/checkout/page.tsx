@@ -86,7 +86,12 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [storeConfig] = useState(defaultStoreConfig);
   const { cartItems, clearCart } = useStore();
+  const [isMounted, setIsMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Form Fields State
   const [customerName, setCustomerName] = useState('');
@@ -236,6 +241,24 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
+        <header className="h-16 border-b border-gray-200 dark:border-slate-800 flex items-center px-4 bg-white dark:bg-slate-900">
+          <span className="font-extrabold text-sm uppercase tracking-wider text-gray-900 dark:text-white">
+            CHECKOUT
+          </span>
+        </header>
+        <main className="flex-1 max-w-2xl mx-auto w-full p-4 space-y-4">
+          <div className="animate-pulse space-y-4">
+            <div className="h-24 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800" />
+            <div className="h-48 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800" />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (

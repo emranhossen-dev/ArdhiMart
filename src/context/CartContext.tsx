@@ -67,39 +67,65 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeMobileTab, setActiveMobileTab] = useState("home");
   const [previewProduct, setPreviewProduct] = useState<ExtendedProduct | null>(null);
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
   // Load state from localStorage on mount
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem("websites_cart");
+      const savedCart = localStorage.getItem("ardhimart_cart") || localStorage.getItem("websites_cart");
       if (savedCart) {
-        setCart(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed)) {
+          const mapped: CartItem[] = parsed.map((item: any) => {
+            if (item && item.product) {
+              return {
+                id: item.product.id,
+                name: item.product.title || item.product.name,
+                price: item.product.price,
+                image: item.product.image,
+                category: item.product.category || '',
+                rating: item.product.rating || 5,
+                reviewCount: item.product.reviewsCount || 0,
+                quantity: item.quantity || 1,
+                variantColor: item.selectedVariant || '',
+                cartItemId: `${item.product.id}-${item.selectedVariant || ''}`,
+              };
+            }
+            return item;
+          }).filter(Boolean);
+          setCart(mapped);
+        }
       }
-      const savedWishlist = localStorage.getItem("websites_wishlist");
+      const savedWishlist = localStorage.getItem("ardhimart_wishlist") || localStorage.getItem("websites_wishlist");
       if (savedWishlist) {
         setWishlist(JSON.parse(savedWishlist));
       }
     } catch (e) {
       console.error("Failed to parse cart/wishlist from storage", e);
+    } finally {
+      setIsLoaded(true);
     }
   }, []);
 
   // Save cart to localStorage
   useEffect(() => {
+    if (!isLoaded) return;
     try {
       localStorage.setItem("websites_cart", JSON.stringify(cart));
     } catch (e) {
       console.error("Failed to save cart", e);
     }
-  }, [cart]);
+  }, [cart, isLoaded]);
 
   // Save wishlist to localStorage
   useEffect(() => {
+    if (!isLoaded) return;
     try {
       localStorage.setItem("websites_wishlist", JSON.stringify(wishlist));
     } catch (e) {
       console.error("Failed to save wishlist", e);
     }
-  }, [wishlist]);
+  }, [wishlist, isLoaded]);
 
   const addToCart = (product: Product, options?: Partial<CartItem>) => {
     const variantColor = options?.variantColor || "";
