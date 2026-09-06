@@ -148,6 +148,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             enableCardImageAutoSlide: parsed.enableCardImageAutoSlide !== undefined ? Boolean(parsed.enableCardImageAutoSlide) : true,
             enableGridCarouselAutoSlide: parsed.enableGridCarouselAutoSlide !== undefined ? Boolean(parsed.enableGridCarouselAutoSlide) : true,
             autoSlideSpeed: Number(parsed.autoSlideSpeed || 3000),
+            enablePromoModal: parsed.enablePromoModal !== undefined ? Boolean(parsed.enablePromoModal) : true,
           };
         }
       } catch (e) {}
@@ -157,6 +158,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       enableCardImageAutoSlide: true,
       enableGridCarouselAutoSlide: true,
       autoSlideSpeed: 3000,
+      enablePromoModal: true,
     };
   });
 
@@ -173,6 +175,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             enableCardImageAutoSlide: data.enableCardImageAutoSlide !== undefined ? Boolean(data.enableCardImageAutoSlide) : true,
             enableGridCarouselAutoSlide: data.enableGridCarouselAutoSlide !== undefined ? Boolean(data.enableGridCarouselAutoSlide) : true,
             autoSlideSpeed: Number(data.autoSlideSpeed || 3000),
+            enablePromoModal: data.enablePromoModal !== undefined ? Boolean(data.enablePromoModal) : true,
           }));
         }
       } catch (e) {}

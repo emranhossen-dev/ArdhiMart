@@ -10,6 +10,7 @@ export interface StoreConfig {
   enableCardImageAutoSlide?: boolean;
   enableGridCarouselAutoSlide?: boolean;
   autoSlideSpeed?: number;
+  enablePromoModal?: boolean;
 }
 
 export interface Category {

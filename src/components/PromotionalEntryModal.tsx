@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Copy, CheckCircle2 } from 'lucide-react';
+import { useStore } from '@/context/StoreContext';
 
 interface PromotionalEntryModalProps {
   forceOpen?: boolean;
@@ -12,10 +13,18 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
   forceOpen = false,
   onCloseModal,
 }) => {
+  const { storeConfig } = useStore();
+  const isEnabled = forceOpen || (storeConfig?.enablePromoModal ?? true);
+
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    if (!isEnabled) {
+      setIsOpen(false);
+      return;
+    }
+
     if (forceOpen) {
       setIsOpen(true);
       return;
@@ -42,7 +51,7 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
 
       return () => window.removeEventListener('scroll', handleScroll);
     }
-  }, [forceOpen]);
+  }, [forceOpen, isEnabled]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -148,9 +157,17 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
             </button>
           </div>
           
-          <p className="text-[10px] text-gray-300/80 mt-6 font-medium uppercase tracking-wider">
+          <p className="text-[10px] text-gray-300/80 mt-4 font-medium uppercase tracking-wider">
             Apply this code at checkout
           </p>
+
+          <button
+            type="button"
+            onClick={handleClose}
+            className="w-full mt-3 py-2.5 px-6 rounded-xl font-extrabold text-xs sm:text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg shadow-orange-500/30 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span>ঠিক আছে (OK)</span>
+          </button>
         </div>
       </div>
     </div>

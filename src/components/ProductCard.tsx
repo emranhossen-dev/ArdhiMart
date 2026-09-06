@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Product } from '@/types/store';
 import { useStore } from '@/context/StoreContext';
-import { Heart, Star, ShoppingCart, Plus, Minus, Check, ArrowRight } from 'lucide-react';
+import { Heart, Star, ShoppingCart, Eye, ArrowRight } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -181,60 +181,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           {cartItem ? (
-            isHomePage ? (
-              <div className="w-full mt-2 h-8 flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/40 rounded-md px-2 py-1 shadow-xs">
-                <Link
-                  href="/cart"
-                  className="flex items-center gap-1 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 hover:underline truncate"
-                  title="View Cart"
-                >
-                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>{cartItem.quantity} in Cart</span>
-                </Link>
-
-                <div className="flex items-center gap-1 shrink-0 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded px-1.5 py-0.5">
-                  {cartItem.quantity > 1 ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        updateQuantity(product.id, -1);
-                      }}
-                      className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white cursor-pointer"
-                      title="Decrease quantity"
-                    >
-                      <Minus className="w-2.5 h-2.5" />
-                    </button>
-                  ) : null}
-                  <span className="text-[11px] font-black text-gray-900 dark:text-white px-1">
-                    {cartItem.quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      updateQuantity(product.id, 1);
-                    }}
-                    className="w-4 h-4 flex items-center justify-center text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer font-bold"
-                    title="Add more"
-                  >
-                    <Plus className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <Link
-                href="/cart"
-                className="btn-shimmer w-full mt-2 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                title="View Cart"
-              >
-                <ShoppingCart className="w-3.5 h-3.5" />
-                <span>View Cart</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            )
+            <Link
+              href={`/products/${product.urlSlug || product.id}`}
+              className="btn-shimmer w-full mt-2 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              title="View Details"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>View Details</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           ) : (
             <button
               onClick={() => addToCart(product)}

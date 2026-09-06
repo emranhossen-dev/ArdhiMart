@@ -317,10 +317,41 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   >(() => getInitialReviews(productId));
 
   useEffect(() => {
-    if (productId) {
-      setReviewsList(getInitialReviews(productId));
-    }
-  }, [productId]);
+    if (!product?.id && !productId) return;
+    const targetId = product?.id || productId;
+    const fetchProductReviews = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+        const res = await fetch(`${baseUrl}/reviews?productId=${targetId}`).catch(() =>
+          fetch(`https://ardhimart-backend.onrender.com/api/v1/reviews?productId=${targetId}`)
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setReviewsList(
+              data.map((r: any) => ({
+                id: r.id,
+                userName: r.userName || 'Verified Buyer',
+                rating: Number(r.rating || 5),
+                comment: r.comment || '',
+                date: new Date(r.createdAt || Date.now()).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                }),
+                image: r.image || undefined,
+              }))
+            );
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Live reviews fetch error, using initial product reviews:', err);
+      }
+      setReviewsList(getInitialReviews(targetId));
+    };
+    fetchProductReviews();
+  }, [product?.id, productId]);
 
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
@@ -466,6 +497,25 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     };
 
     setReviewsList((prev) => [newRev, ...prev]);
+
+    // Asynchronously sync with Backend Reviews API
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+      fetch(`${baseUrl}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userName: newRev.userName,
+          rating: newRev.rating,
+          comment: newRev.comment,
+          image: newRev.image || '',
+          productId: product.id,
+          isHomepage: false,
+          role: 'Verified Buyer',
+        }),
+      }).catch((e) => console.warn('Review API sync warning:', e));
+    } catch (e) {}
+
     setNewComment('');
     setNewReviewImage('');
     setNewRating(5);
