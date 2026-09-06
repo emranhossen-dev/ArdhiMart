@@ -37,7 +37,9 @@ export interface Product {
   galleryImages?: string[];
   category: string;
   isNew?: boolean;
+  isNewArrival?: boolean;
   isFeatured?: boolean;
+  isTrending?: boolean;
   isFlashSale?: boolean;
   color?: string;
   variantName?: string;

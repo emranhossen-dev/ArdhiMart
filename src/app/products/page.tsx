@@ -23,6 +23,8 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
   const searchQueryParam = searchParams.get('search');
+  const sortParam = searchParams.get('sort');
+  const filterParam = searchParams.get('filter');
 
   const {
     products,
@@ -57,7 +59,15 @@ function ProductsContent() {
           (prod.brand && prod.brand.toLowerCase().includes(searchQueryParam.toLowerCase())) ||
           (prod.description && prod.description.toLowerCase().includes(searchQueryParam.toLowerCase()))
         : true;
-      return matchCategory && matchPrice && matchSearch;
+      const matchSectionFilter =
+        filterParam === 'featured'
+          ? prod.isFeatured === true
+          : sortParam === 'trending'
+          ? prod.isTrending === true
+          : sortParam === 'newest'
+          ? prod.isNew === true
+          : true;
+      return matchCategory && matchPrice && matchSearch && matchSectionFilter;
     })
     .sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;

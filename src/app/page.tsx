@@ -18,15 +18,9 @@ import { getCategorySlug } from '@/lib/slug';
 export default function Home() {
   const { storeConfig, heroBanner, categories, products } = useStore();
 
-  const trendingProducts = products.filter(
-    (p) => p.badge === 'Trending' || p.badge === 'Featured' || p.badge === 'Best Seller' || p.isFeatured
-  );
-
-  // New Arrivals includes all items tagged New/Hot or recently added database products
-  const newArrivals = products.filter(
-    (p) => p.badge === 'New' || p.badge === 'Hot' || p.isNew
-  );
-  const displayNewArrivals = newArrivals.length >= 4 ? newArrivals : [...products].reverse();
+  const featuredProducts = products.filter((p) => p.isFeatured === true);
+  const trendingProducts = products.filter((p) => p.isTrending === true);
+  const newArrivals = products.filter((p) => p.isNew === true);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col">
@@ -46,29 +40,44 @@ export default function Home() {
         {/* 4. Flash Sale Section */}
         <FlashSaleSection />
 
-        {/* 5. Product Showcases */}
-        {products.length === 0 ? null : products.length <= 3 ? (
-          /* When store has 1 to 3 products, show them proudly ONCE without repeating in multiple duplicate sections */
-          <FeaturedProducts
-            title="Featured Products"
-            products={products}
-            viewAllLink="/products"
-          />
-        ) : (
+        {/* 5. Product Showcases - based strictly on Admin Section Checkmarks */}
+        {products.length === 0 ? null : (
           <>
-            {/* Trending Collections Section */}
-            <FeaturedProducts
-              title="Trending Collections"
-              products={trendingProducts.length > 0 ? trendingProducts : products.slice(0, 10)}
-              viewAllLink="/products?sort=trending"
-            />
+            {/* Featured Products Section - strictly products checked as Featured */}
+            {featuredProducts.length > 0 && (
+              <FeaturedProducts
+                title="Featured Products"
+                products={featuredProducts}
+                viewAllLink="/products?filter=featured"
+              />
+            )}
 
-            {/* New Arrivals Section */}
-            <FeaturedProducts
-              title="New Arrivals"
-              products={displayNewArrivals}
-              viewAllLink="/products?sort=newest"
-            />
+            {/* Trending Collections Section - strictly products checked as Trending */}
+            {trendingProducts.length > 0 && (
+              <FeaturedProducts
+                title="Trending Collections"
+                products={trendingProducts}
+                viewAllLink="/products?sort=trending"
+              />
+            )}
+
+            {/* New Arrivals Section - strictly products checked as New Arrival */}
+            {newArrivals.length > 0 && (
+              <FeaturedProducts
+                title="New Arrivals"
+                products={newArrivals}
+                viewAllLink="/products?sort=newest"
+              />
+            )}
+
+            {/* Fallback: if no products have any of the 3 section checkmarks, display All Products once under Featured */}
+            {featuredProducts.length === 0 && trendingProducts.length === 0 && newArrivals.length === 0 && (
+              <FeaturedProducts
+                title="Featured Products"
+                products={products}
+                viewAllLink="/products"
+              />
+            )}
 
             {/* Category-Wise Product Card Showcase Sections */}
             {categories.map((cat) => {

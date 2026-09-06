@@ -39,28 +39,69 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const mapApiProduct = (item: any): Product => {
-  const tagsArray = Array.isArray(item.tags)
-    ? item.tags
+  const tagsLower = Array.isArray(item.tags)
+    ? item.tags.map((s: string) => String(s).trim().toLowerCase())
+    : typeof item.tags === 'string'
+    ? item.tags.split(',').map((s: string) => s.trim().toLowerCase())
+    : [];
+
+  const tagsOriginal = Array.isArray(item.tags)
+    ? item.tags.map((s: string) => String(s).trim())
     : typeof item.tags === 'string'
     ? item.tags.split(',').map((s: string) => s.trim())
     : [];
 
-  const keywordsArray = Array.isArray(item.keywords)
-    ? item.keywords
+  const keywordsLower = Array.isArray(item.keywords)
+    ? item.keywords.map((s: string) => String(s).trim().toLowerCase())
     : typeof item.keywords === 'string'
-    ? item.keywords.split(',').map((s: string) => s.trim())
+    ? item.keywords.split(',').map((s: string) => s.trim().toLowerCase())
     : [];
 
   const isFlashSaleVal =
-    tagsArray.includes('flash_sale') ||
-    keywordsArray.includes('flash_sale') ||
+    tagsLower.includes('flash_sale') ||
+    tagsLower.includes('flash sale') ||
+    keywordsLower.includes('flash_sale') ||
     Boolean(item.isFlashSale);
 
-  const mainBadgeTag =
-    tagsArray.find((t: string) => t !== 'flash_sale') || item.badge || '';
+  const isFeaturedVal =
+    tagsLower.includes('featured') ||
+    Boolean(item.isFeatured) ||
+    item.badge === 'Featured';
 
-  const finalBadge =
-    mainBadgeTag === 'None' || mainBadgeTag === 'none' ? '' : mainBadgeTag;
+  const isTrendingVal =
+    tagsLower.includes('trending') ||
+    Boolean(item.isTrending) ||
+    item.badge === 'Trending';
+
+  const isNewVal =
+    tagsLower.includes('new') ||
+    tagsLower.includes('new_arrival') ||
+    Boolean(item.isNew) ||
+    Boolean(item.isNewArrival) ||
+    item.badge === 'New';
+
+  // Determine card badge
+  let finalBadge = item.badge || '';
+  if (!finalBadge || finalBadge === 'Auto') {
+    const customTag = tagsOriginal.find(
+      (t: string) => !['flash_sale', 'flash sale', 'featured', 'trending', 'new', 'new_arrival'].includes(t.toLowerCase())
+    );
+    if (customTag && customTag !== 'None' && customTag !== 'none') {
+      finalBadge = customTag;
+    } else if (isFlashSaleVal) {
+      finalBadge = 'Flash Sale';
+    } else if (isTrendingVal) {
+      finalBadge = 'Trending';
+    } else if (isFeaturedVal) {
+      finalBadge = 'Featured';
+    } else if (isNewVal) {
+      finalBadge = 'New';
+    } else {
+      finalBadge = '';
+    }
+  } else if (finalBadge === 'None' || finalBadge === 'none') {
+    finalBadge = '';
+  }
 
   return {
     ...item,
@@ -71,8 +112,10 @@ export const mapApiProduct = (item: any): Product => {
     rating: typeof item.rating === 'number' ? item.rating : 5.0,
     reviewsCount: typeof item.reviewsCount === 'number' ? item.reviewsCount : 0,
     badge: finalBadge,
-    isNew: finalBadge === 'New' || finalBadge === 'Hot',
-    isFeatured: finalBadge === 'Featured' || finalBadge === 'Trending',
+    isNew: isNewVal,
+    isNewArrival: isNewVal,
+    isFeatured: isFeaturedVal,
+    isTrending: isTrendingVal,
     isFlashSale: isFlashSaleVal,
     image: item.image || '/images/ardhimart-smart-pen-holder.webp',
     galleryImages: Array.isArray(item.galleryImages)
