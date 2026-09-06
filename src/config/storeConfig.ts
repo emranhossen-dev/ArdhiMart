@@ -5,7 +5,7 @@ export const defaultStoreConfig: StoreConfig = {
   tagline: "Premium E-commerce Experience",
   currency: "৳",
   logoUrl: "/logo.png",
-  announcementText: "Free Delivery on orders over ৳5000 | Use Code: FIRST50",
+  announcementText: "Welcome Offer! Use Code: FD20 for 20% OFF",
   phone: "01895627138",
   email: "martardhi@gmail.com",
   address: "Mohammadpur, Dhaka-1207",

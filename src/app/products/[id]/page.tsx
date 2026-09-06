@@ -733,50 +733,13 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
 
             {/* 3 CTA BUTTONS TOTAL: ADD TO CART, BUY NOW, ORDER ON WHATSAPP (Requirement 9) */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              {cartItem ? (
-                <div className="w-full h-11 flex items-center justify-between border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 rounded-md px-2.5 py-1.5 shadow-xs">
-                  <Link
-                    href="/cart"
-                    className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline truncate"
-                    title="View Cart"
-                  >
-                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>{cartItem.quantity} in Cart</span>
-                  </Link>
-
-                  <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded px-2 py-1">
-                    {cartItem.quantity > 1 ? (
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(product.id, -1)}
-                        className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white cursor-pointer"
-                        title="Decrease quantity"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                    ) : null}
-                    <span className="text-xs font-black text-gray-900 dark:text-white px-1">
-                      {cartItem.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(product.id, 1)}
-                      className="w-4 h-4 flex items-center justify-center text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer font-bold"
-                      title="Add more"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={handleAddToCart}
-                  className="btn-shimmer w-full py-2.5 px-2 border-2 border-[#0F396F] text-[#0F396F] hover:bg-[#0F396F] hover:text-white dark:border-white dark:text-white font-bold text-xs uppercase tracking-wider rounded-md transition-all shadow-xs active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <ShoppingBag className="w-4 h-4 shrink-0" />
-                  <span className="truncate whitespace-nowrap">Add to Cart</span>
-                </button>
-              )}
+              <button
+                onClick={handleAddToCart}
+                className="btn-shimmer w-full py-2.5 px-2 border-2 border-[#0F396F] text-[#0F396F] hover:bg-[#0F396F] hover:text-white dark:border-white dark:text-white font-bold text-xs uppercase tracking-wider rounded-md transition-all shadow-xs active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <ShoppingBag className="w-4 h-4 shrink-0" />
+                <span className="truncate whitespace-nowrap">Add to Cart</span>
+              </button>
 
               <button
                 onClick={handleBuyNow}
@@ -1005,46 +968,12 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
 
       {/* Mobile-Only Fixed Bottom Bar (2 CTA Buttons: Add to Cart & Buy Now) */}
       <div className="sm:hidden fixed bottom-16 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 px-3 py-2.5 flex gap-2 z-30 shadow-2xl">
-        {cartItem ? (
-          <div className="flex-1 h-10 flex items-center justify-between border border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-2 shadow-xs">
-            <Link
-              href="/cart"
-              className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline truncate"
-            >
-              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>{cartItem.quantity} in Cart</span>
-            </Link>
-
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded px-1.5 py-0.5">
-              {cartItem.quantity > 1 ? (
-                <button
-                  type="button"
-                  onClick={() => updateQuantity(product.id, -1)}
-                  className="w-4 h-4 flex items-center justify-center text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white cursor-pointer"
-                >
-                  <Minus className="w-2.5 h-2.5" />
-                </button>
-              ) : null}
-              <span className="text-[11px] font-black text-gray-900 dark:text-white px-1">
-                {cartItem.quantity}
-              </span>
-              <button
-                type="button"
-                onClick={() => updateQuantity(product.id, 1)}
-                className="w-4 h-4 flex items-center justify-center text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer font-bold"
-              >
-                <Plus className="w-2.5 h-2.5" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={handleAddToCart}
-            className="btn-shimmer flex-1 border border-[#0F396F] dark:border-blue-400 text-[#0F396F] dark:text-blue-400 py-2.5 rounded-lg font-extrabold text-xs uppercase text-center bg-white dark:bg-slate-900 active:scale-95 cursor-pointer truncate shadow-xs"
-          >
-            Add to Cart
-          </button>
-        )}
+        <button
+          onClick={handleAddToCart}
+          className="btn-shimmer flex-1 border border-[#0F396F] dark:border-blue-400 text-[#0F396F] dark:text-blue-400 py-2.5 rounded-lg font-extrabold text-xs uppercase text-center bg-white dark:bg-slate-900 active:scale-95 cursor-pointer truncate shadow-xs"
+        >
+          Add to Cart
+        </button>
 
         <button
           onClick={handleBuyNow}

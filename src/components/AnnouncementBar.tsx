@@ -8,7 +8,7 @@ interface AnnouncementBarProps {
 }
 
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
-  text = '⚡ Free Shipping on orders over ৳5000 | Use Code: FIRST50 for ৳500 OFF!',
+  text = '⚡ Welcome Offer! Use Code: FD20 for 20% OFF your first order!',
 }) => {
   const [isVisible, setIsVisible] = useState(true);
 

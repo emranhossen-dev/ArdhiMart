@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BottomNavBar from '@/components/BottomNavBar';
 import { useStore } from '@/context/StoreContext';
-import { notifySuccess, notifyError } from '@/lib/sweetalert';
+import { notifySuccess, notifyError, notifyInfo } from '@/lib/sweetalert';
 import { ShoppingCart, Trash2, Plus, Minus, Lock, ArrowRight, Tag } from 'lucide-react';
 
 export default function CartPage() {
@@ -18,24 +18,96 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
 
-  const handleApplyCoupon = () => {
-    if (couponCode.trim().toUpperCase() === 'FIRST50') {
-      setDiscountAmount(500);
-      setAppliedCoupon('FIRST50');
-      notifySuccess('Promo Coupon Applied!', '৳500 flat discount applied to your order total.');
-    } else if (couponCode.trim().length > 0) {
-      notifyError('Invalid Promo Code', 'Try using code "FIRST50" for ৳500 OFF!');
+  // Restore saved coupon on mount or re-validate if subtotal changes
+  React.useEffect(() => {
+    setIsMounted(true);
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('ardhimart_applied_coupon');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.code) {
+            setAppliedCoupon(parsed.code);
+            // Re-calculate discount based on current subtotal if percentage
+            if (parsed.type === 'percentage') {
+              const recalculated = Math.round((subtotal * Number(parsed.value)) / 100);
+              setDiscountAmount(recalculated);
+            } else {
+              setDiscountAmount(Number(parsed.discountAmount || parsed.value || 0));
+            }
+            setCouponMessage(parsed.message || `Coupon ${parsed.code} applied`);
+          }
+        }
+      } catch (e) {}
     }
+  }, [subtotal]);
+
+  const handleApplyCoupon = async () => {
+    const codeToTest = couponCode.trim().toUpperCase();
+    if (!codeToTest) {
+      notifyError('Coupon Required', 'Please enter a valid coupon code.');
+      return;
+    }
+
+    if (subtotal <= 0) {
+      notifyError('Cart Empty', 'Add items to cart before applying coupon.');
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+      const res = await fetch(`${baseUrl}/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: codeToTest,
+          orderAmount: subtotal,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data && data.valid) {
+        setDiscountAmount(Number(data.discountAmount || 0));
+        setAppliedCoupon(data.code);
+        setCouponMessage(data.message || `Coupon ${data.code} applied!`);
+        setCouponCode('');
+
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('ardhimart_applied_coupon', JSON.stringify(data));
+        }
+
+        notifySuccess('Promo Coupon Applied!', data.message || `You saved ৳${data.discountAmount}!`);
+      } else {
+        const errorMsg = data?.message || 'Invalid or expired promo code';
+        notifyError('Invalid Coupon', Array.isArray(errorMsg) ? errorMsg.join(', ') : errorMsg);
+      }
+    } catch (err) {
+      notifyError('Connection Error', 'Could not validate coupon. Please try again.');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setDiscountAmount(0);
+    setAppliedCoupon(null);
+    setCouponMessage(null);
+    setCouponCode('');
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('ardhimart_applied_coupon');
+    }
+    notifyInfo('Coupon Removed', 'Promotional discount has been removed.');
   };
 
   const totalAmount = Math.max(0, subtotal - discountAmount);
@@ -170,25 +242,46 @@ export default function CartPage() {
               <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider block mb-2">
                 Promo Code
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  placeholder="Enter code (e.g. FIRST50)"
-                  className="flex-1 h-12 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl px-4 text-sm text-gray-900 dark:text-white outline-none focus:border-black dark:focus:border-white transition-colors"
-                />
-                <button
-                  onClick={handleApplyCoupon}
-                  className="h-12 px-6 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  Apply
-                </button>
-              </div>
-              {appliedCoupon && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-2 flex items-center gap-1">
-                  <Tag className="w-3.5 h-3.5" /> Coupon &quot;{appliedCoupon}&quot; applied (-{storeConfig.currency}500)!
-                </p>
+
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-3">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div>
+                      <p className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
+                        {appliedCoupon} Applied (-{storeConfig.currency}{discountAmount})
+                      </p>
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                        {couponMessage || `Discount of ৳${discountAmount} applied to cart`}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-xs font-bold text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer px-2 py-1 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                    placeholder="Enter code (e.g. FD20)"
+                    className="flex-1 h-12 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl px-4 text-sm text-gray-900 dark:text-white uppercase font-mono outline-none focus:border-black dark:focus:border-white transition-colors"
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={isValidatingCoupon || !couponCode.trim()}
+                    className="h-12 px-6 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isValidatingCoupon ? 'Checking...' : 'Apply'}
+                  </button>
+                </div>
               )}
             </div>
 

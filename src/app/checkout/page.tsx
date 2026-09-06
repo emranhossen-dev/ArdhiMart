@@ -16,10 +16,11 @@ import {
   ShieldCheck,
   User,
   Phone,
+  Tag,
 } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 import * as fpixel from '@/lib/fpixel';
-import { notifyError, notifySuccess } from '@/lib/sweetalert';
+import { notifyError, notifySuccess, notifyInfo } from '@/lib/sweetalert';
 
 // Authentic Bangladesh Administrative Divisions, Districts & Thanas Data
 const bdLocations: Record<string, Record<string, string[]>> = {
@@ -143,6 +144,82 @@ export default function CheckoutPage() {
     ? cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
     : 0;
 
+  const [couponCode, setCouponCode] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
+  // Restore or recalculate coupon discount from cart
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('ardhimart_applied_coupon');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.code) {
+            setAppliedCoupon(parsed.code);
+            if (parsed.type === 'percentage') {
+              const recalculated = Math.round((cartSubtotal * Number(parsed.value)) / 100);
+              setDiscountAmount(recalculated);
+            } else {
+              setDiscountAmount(Number(parsed.discountAmount || parsed.value || 0));
+            }
+          }
+        }
+      } catch (e) {}
+    }
+  }, [cartSubtotal]);
+
+  const handleApplyCoupon = async () => {
+    const codeToTest = couponCode.trim().toUpperCase();
+    if (!codeToTest) {
+      notifyError('কুপন কোড প্রয়োজন', 'অনুগ্রহ করে একটি কুপন কোড লিখুন।');
+      return;
+    }
+    if (cartSubtotal <= 0) return;
+
+    setIsValidatingCoupon(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+      const res = await fetch(`${baseUrl}/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: codeToTest,
+          orderAmount: cartSubtotal,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data && data.valid) {
+        setDiscountAmount(Number(data.discountAmount || 0));
+        setAppliedCoupon(data.code);
+        setCouponCode('');
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('ardhimart_applied_coupon', JSON.stringify(data));
+        }
+        notifySuccess('কুপন সফলভাবে যুক্ত হয়েছে!', data.message || `৳${data.discountAmount} ছাড় পেয়েছেন!`);
+      } else {
+        const msg = data?.message || 'ভুল বা মেয়াদোত্তীর্ণ কুপন কোড';
+        notifyError('কুপন ত্রুটি', Array.isArray(msg) ? msg.join(', ') : msg);
+      }
+    } catch (err) {
+      notifyError('ত্রুটি', 'কুপন যাচাই করা সম্ভব হয়নি। আবার চেষ্টা করুন।');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setDiscountAmount(0);
+    setAppliedCoupon(null);
+    setCouponCode('');
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('ardhimart_applied_coupon');
+    }
+    notifyInfo('কুপন বাতিল করা হয়েছে');
+  };
+
   const insideDeliveryFee = cartItems.length > 0
     ? Math.max(...cartItems.map((i) => Number(i.product.deliveryInsideDhaka ?? 70)))
     : 70;
@@ -150,7 +227,7 @@ export default function CheckoutPage() {
     ? Math.max(...cartItems.map((i) => Number(i.product.deliveryOutsideDhaka ?? 130)))
     : 130;
   const shippingFee = deliveryMethod === 'inside' ? insideDeliveryFee : outsideDeliveryFee;
-  const grandTotal = cartSubtotal + shippingFee;
+  const grandTotal = Math.max(0, cartSubtotal + shippingFee - discountAmount);
 
   // Track InitiateCheckout on page entry
   useEffect(() => {
@@ -206,10 +283,15 @@ export default function CheckoutPage() {
           items: itemsPayload,
           subtotal: cartSubtotal,
           shippingFee: shippingFee,
+          discount: discountAmount,
           totalAmount: grandTotal,
           paymentMethod: paymentMethod,
         }),
       });
+
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('ardhimart_applied_coupon');
+      }
 
       if (res.ok) {
         const orderData = await res.json().catch(() => null);
@@ -587,7 +669,59 @@ export default function CheckoutPage() {
           </div>
         </section>
 
-        {/* 4. Order Items Summary */}
+        {/* 4. Promo Code Section */}
+        <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
+            <Tag className="w-5 h-5 text-[#FF6B00]" />
+            <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
+              প্রোমো কোড বা কুপন (Promo Code)
+            </h2>
+          </div>
+
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div>
+                  <p className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
+                    {appliedCoupon} যুক্ত হয়েছে (-৳{discountAmount})
+                  </p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                    ৳{discountAmount} ডিসকাউন্ট আপনার মোট বিল থেকে কাটা হয়েছে
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveCoupon}
+                className="text-xs font-bold text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer px-2 py-1"
+              >
+                বাতিল করুন
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                placeholder="কুপন কোড দিন (যেমন: FD20)"
+                className="flex-1 h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-mono uppercase outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
+              />
+              <button
+                type="button"
+                onClick={handleApplyCoupon}
+                disabled={isValidatingCoupon || !couponCode.trim()}
+                className="px-5 h-11 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors whitespace-nowrap cursor-pointer disabled:opacity-50"
+              >
+                {isValidatingCoupon ? 'যাচাই হচ্ছে...' : 'প্রয়োগ করুন'}
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* 5. Order Items & Bill Breakdown */}
         <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2.5">
             <div className="flex items-center gap-2">
@@ -596,9 +730,6 @@ export default function CheckoutPage() {
                 Ordered Items ({cartItems.length})
               </h2>
             </div>
-            <span className="font-black text-sm text-[#FF6B00]">
-              ৳{grandTotal.toLocaleString()}
-            </span>
           </div>
 
           <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -619,6 +750,28 @@ export default function CheckoutPage() {
                 </span>
               </div>
             ))}
+          </div>
+
+          {/* Pricing Breakdown */}
+          <div className="pt-3 border-t border-gray-100 dark:border-slate-800 space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
+            <div className="flex justify-between">
+              <span>পণ্যমূল্য (Subtotal)</span>
+              <span className="font-bold text-gray-900 dark:text-white">৳{cartSubtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>ডেলিভারি চার্জ (Delivery Fee)</span>
+              <span className="font-bold text-gray-900 dark:text-white">৳{shippingFee}</span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                <span>কুপন ডিসকাউন্ট ({appliedCoupon})</span>
+                <span>-৳{discountAmount}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-black text-sm text-gray-900 dark:text-white pt-2 border-t border-gray-100 dark:border-slate-800">
+              <span>সর্বমোট (Total Payable)</span>
+              <span className="text-[#FF6B00]">৳{grandTotal.toLocaleString()}</span>
+            </div>
           </div>
         </section>
       </main>
