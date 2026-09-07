@@ -80,26 +80,27 @@ export const mapApiProduct = (item: any): Product => {
     Boolean(item.isNewArrival) ||
     item.badge === 'New';
 
-  // Determine card badge
-  let finalBadge = item.badge || '';
-  if (!finalBadge || finalBadge === 'Auto') {
-    const customTag = tagsOriginal.find(
-      (t: string) => !['flash_sale', 'flash sale', 'featured', 'trending', 'new', 'new_arrival'].includes(t.toLowerCase())
-    );
-    if (customTag && customTag !== 'None' && customTag !== 'none') {
-      finalBadge = customTag;
-    } else if (isFlashSaleVal) {
-      finalBadge = 'Flash Sale';
-    } else if (isTrendingVal) {
-      finalBadge = 'Trending';
-    } else if (isFeaturedVal) {
-      finalBadge = 'Featured';
-    } else if (isNewVal) {
-      finalBadge = 'New';
-    } else {
-      finalBadge = '';
-    }
-  } else if (finalBadge === 'None' || finalBadge === 'none') {
+  // Determine card badge: strictly standard short section badges only (never raw tags or product names)
+  let finalBadge = '';
+  const ALLOWED_BADGES = ['flash sale', 'trending', 'featured', 'new', 'hot', 'best seller'];
+  const explicitBadge = (item.badge || '').trim();
+
+  if (explicitBadge && ALLOWED_BADGES.includes(explicitBadge.toLowerCase())) {
+    if (explicitBadge.toLowerCase() === 'flash sale') finalBadge = 'Flash Sale';
+    else if (explicitBadge.toLowerCase() === 'trending') finalBadge = 'Trending';
+    else if (explicitBadge.toLowerCase() === 'featured') finalBadge = 'Featured';
+    else if (explicitBadge.toLowerCase() === 'new') finalBadge = 'New';
+    else if (explicitBadge.toLowerCase() === 'hot') finalBadge = 'Hot';
+    else if (explicitBadge.toLowerCase() === 'best seller') finalBadge = 'Best Seller';
+  } else if (isFlashSaleVal) {
+    finalBadge = 'Flash Sale';
+  } else if (isTrendingVal) {
+    finalBadge = 'Trending';
+  } else if (isFeaturedVal) {
+    finalBadge = 'Featured';
+  } else if (isNewVal) {
+    finalBadge = 'New';
+  } else {
     finalBadge = '';
   }
 
