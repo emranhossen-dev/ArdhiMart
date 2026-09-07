@@ -139,7 +139,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Badge */}
         {product.badge && (
-          <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-[#FF6B00] text-white font-extrabold text-[9px] uppercase rounded shadow-xs">
+          <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-[#FF6B00] text-white font-extrabold text-[9px] uppercase rounded shadow-xs max-w-[100px] truncate tracking-wider">
             {product.badge}
           </div>
         )}
