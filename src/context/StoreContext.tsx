@@ -123,7 +123,7 @@ export const mapApiProduct = (item: any): Product => {
       : typeof item.galleryImages === 'string' && item.galleryImages.trim()
       ? item.galleryImages.split(',').map((s: string) => s.trim()).filter(Boolean)
       : [],
-    category: item.category || 'Electronics',
+    category: item.category || 'Smart Gadgets',
     color: item.color || item.variantOptions || '',
     shortDescription: item.shortDescription || '',
     description: item.description || '',
@@ -315,40 +315,21 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return () => clearInterval(interval);
   }, []);
 
-  // Dynamically compute unique categories from Admin/API categories + products
+  // Categories are strictly managed by admin in DB. Never dynamically synthesize categories from products!
   const categories = React.useMemo(() => {
-    const existingMap = new Map<string, Category>();
+    if (!Array.isArray(dbCategories) || dbCategories.length === 0) return [];
 
-    // Helper to add category & children
-    const addCat = (c: Category) => {
-      existingMap.set(c.name.toLowerCase().trim(), c);
-      if (c.children && c.children.length > 0) {
-        c.children.forEach(addCat);
-      }
-    };
-
-    // 1. Add categories created in Admin / Database
-    dbCategories.forEach(addCat);
-
-    // 2. Dynamically add from database products if not present
-    products.forEach((p) => {
-      if (p.category) {
-        const key = p.category.toLowerCase().trim();
-        if (!existingMap.has(key)) {
-          existingMap.set(key, {
-            id: `cat-${key.replace(/[^a-z0-9]/g, '-')}`,
-            name: p.category,
-            slug: key.replace(/[^a-z0-9]/g, '-'),
-            image: p.image || '/images/ardhimart-smart-pen-holder.webp',
-            itemCount: 1,
-            parentId: null,
-            children: []
-          });
-        }
-      }
+    return dbCategories.map((cat) => {
+      const catCount = products.filter(
+        (p) =>
+          p.category?.toLowerCase() === cat.name.toLowerCase() ||
+          cat.children?.some((sub) => sub.name.toLowerCase() === p.category?.toLowerCase())
+      ).length;
+      return {
+        ...cat,
+        itemCount: catCount,
+      };
     });
-
-    return Array.from(existingMap.values());
   }, [dbCategories, products]);
 
   // Fetch real database products from NestJS REST API with resilient retry logic
