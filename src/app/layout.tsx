@@ -22,8 +22,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ardhimart.com"),
-  title: "ArdhiMart - Gifts, Fashion & Smart Gadgets in BD",
-  description: "আপনার প্রিয়জনকে চমকে দিন ArdhiMart-এর অনন্য গিফট কালেকশন দিয়ে! কাপল কম্বো বক্স, স্মার্ট গ্যাজেট, ফ্যাশন জুয়েলারি ও আরও অনেক কিছু। সারা বাংলাদেশে ক্যাশ অন ডেলিভারিতে পাঠানো হয়। ArdhiMart — গিফটই হোক আপনার ভালোবাসার ভাষা!",
+  title: "ArdhiMart - Smart Gadgets, Fashion & Flash Deals in BD",
+  description: "Shop trending smart gadgets, fashion & beauty essentials, and exclusive flash deals at ArdhiMart. 100% authentic products with fast cash on delivery across Bangladesh.",
   alternates: {
     canonical: "https://ardhimart.com",
   },
@@ -40,20 +40,26 @@ export const metadata: Metadata = {
   },
   keywords: [
     "ArdhiMart",
-    "gift shop bangladesh",
-    "online gift shop bd",
-    "couple combo gift box bd",
     "smart gadgets bangladesh",
-    "fashion jewellery bd",
-    "unique gift items bd",
+    "fashion and beauty bd",
+    "flash deals bangladesh",
+    "online shopping bd",
+    "smart watch bd",
+    "earbuds bangladesh",
+    "gift items bd",
     "cash on delivery bd",
-    "birthday gifts bd",
-    "anniversary gifts bd",
   ],
   authors: [{ name: "ArdhiMart Team" }],
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   verification: {
     other: {
@@ -64,15 +70,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://ardhimart.com",
-    title: "ArdhiMart - Gifts, Fashion & Smart Gadgets in BD",
-    description: "আপনার প্রিয়জনকে চমকে দিন ArdhiMart-এর অনন্য গিফট কালেকশন দিয়ে! কাপল কম্বো বক্স, স্মার্ট গ্যাজেট, ফ্যাশন জুয়েলারি ও আরও অনেক কিছু। সারা বাংলাদেশে ক্যাশ অন ডেলিভারিতে পাঠানো হয়।",
+    title: "ArdhiMart - Smart Gadgets, Fashion & Flash Deals in BD",
+    description: "Shop trending smart gadgets, fashion & beauty essentials, and exclusive flash deals at ArdhiMart. 100% authentic products with fast cash on delivery across Bangladesh.",
     siteName: "ArdhiMart",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "ArdhiMart — Gifts, Fashion & Smart Gadgets Shop in Bangladesh",
+        alt: "ArdhiMart — Smart Gadgets, Fashion & Flash Deals in Bangladesh",
       },
     ],
   },
@@ -88,10 +94,14 @@ export default function RootLayout({
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "ArdhiMart",
+      "alternateName": ["Ardhi Mart", "Ardhimart BD", "Ardhimart.com"],
       "url": "https://ardhimart.com",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://ardhimart.com/products?search={search_term_string}",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://ardhimart.com/products?search={search_term_string}"
+        },
         "query-input": "required name=search_term_string"
       }
     },
@@ -102,10 +112,60 @@ export default function RootLayout({
       "url": "https://ardhimart.com",
       "logo": "https://ardhimart.com/logo.png",
       "image": "https://ardhimart.com/logo.png",
-      "description": "Shop unique gifts, trendy gadgets & premium accessories at ArdhiMart across Bangladesh.",
+      "description": "Shop trending smart gadgets, fashion & beauty essentials, and exclusive flash deals at ArdhiMart across Bangladesh.",
+      "telephone": "+8801895627138",
+      "priceRange": "৳৳",
       "sameAs": [
         "https://facebook.com/ardhimart",
         "https://instagram.com/ardhimart"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": [
+        {
+          "@type": "SiteNavigationElement",
+          "position": 1,
+          "name": "Flash Deals",
+          "description": "Limited-time flash sale discounts on top products.",
+          "url": "https://ardhimart.com/products?category=Flash%20Deals"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "position": 2,
+          "name": "Smart Gadgets",
+          "description": "Smart watches, wireless audio, lifestyle electronics and accessories.",
+          "url": "https://ardhimart.com/products?category=Smart%20Gadgets"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "position": 3,
+          "name": "Fashion & Beauty",
+          "description": "Girls fashion, beauty accessories, jewelry and lifestyle essentials.",
+          "url": "https://ardhimart.com/products?category=Fashion%20%26%20Beauty"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "position": 4,
+          "name": "New Arrivals",
+          "description": "Explore the freshest trending arrivals in Bangladesh.",
+          "url": "https://ardhimart.com/products?badge=New"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "position": 5,
+          "name": "Track Order",
+          "description": "Track your parcel and delivery status in real-time.",
+          "url": "https://ardhimart.com/track"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "position": 6,
+          "name": "Return & Refund Policy",
+          "description": "Learn about our 3-day hassle-free replacement and refund guarantee.",
+          "url": "https://ardhimart.com/return-policy"
+        }
       ]
     }
   ];
