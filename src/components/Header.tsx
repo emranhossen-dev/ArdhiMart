@@ -17,6 +17,7 @@ import {
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
 import { notifySuccess } from '@/lib/sweetalert';
+import { getCategorySlug } from '@/lib/slug';
 
 interface HeaderProps {
   siteName?: string;
@@ -37,6 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
   const {
     products,
     cartItems,
+    categories,
     setIsCartOpen,
     setIsMenuOpen,
   } = useStore();
@@ -490,6 +492,48 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       )}
+
+      {/* Sub-Navbar Horizontal Category & Quick Links Pill Bar (Attachment Style) */}
+      <div className="w-full border-t border-gray-100 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm select-none">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 sm:py-2">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
+            {/* 1. HOME */}
+            <Link
+              href="/"
+              className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+            >
+              HOME
+            </Link>
+
+            {/* 2. FLASH DEALS */}
+            <Link
+              href="/products?filter=flash_sale"
+              className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+            >
+              FLASH DEALS
+            </Link>
+
+            {/* 3. TRENDING */}
+            <Link
+              href="/products?sort=trending"
+              className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+            >
+              TRENDING
+            </Link>
+
+            {/* 4. DYNAMIC CATEGORIES */}
+            {categories && categories.length > 0 && categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/category/${getCategorySlug(cat.name, cat.slug)}`}
+                className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+              >
+                {cat.name.toUpperCase()}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
     </header>
   );
 };

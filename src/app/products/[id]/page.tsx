@@ -2,7 +2,7 @@
 
 export const runtime = 'edge';
 
-import React, { useState, useEffect, use, useMemo } from 'react';
+import React, { useState, useEffect, use, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
@@ -37,58 +37,9 @@ import {
   FileText,
   HelpCircle,
   Check,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
-
-const DIVERSE_REVIEWS_POOL = [
-  {
-    userName: 'তানভীর আহমেদ',
-    rating: 5,
-    comment: 'প্রডাক্টটি একদম ছবির মতোই পেয়েছি। প্যাকেজিং ও ফিনিশিং প্রিমিয়াম ছিল। ধন্যবাদ আরধিমার্ট!',
-    date: '২ সেপ্টেম্বর, ২০২৬',
-  },
-  {
-    userName: 'নুসরাত জাহান',
-    rating: 5,
-    comment: 'অসাধারণ একটা জিনিস! ছবিতে যেমন দেখেছি বাস্তবেও ঠিক তেমনই পেয়েছি। ডেলিভারিও দ্রুত পেয়েছি।',
-    date: '৩১ আগস্ট, ২০২৬',
-  },
-  {
-    userName: 'আব্দুল্লাহ আল মামুন',
-    rating: 5,
-    comment: 'প্রডাক্টটি হাতে পেয়েছি। কোয়ালিটি অনেক ভালো এবং ফাস্ট ডেলিভারি পেয়েছি। ধন্যবাদ!',
-    date: '২৮ আগস্ট, ২০২৬',
-  },
-  {
-    userName: 'মেহেদী হাসান',
-    rating: 5,
-    comment: 'অর্ডার করার পরদিনই ডেলিভারি পেয়েছি। প্রোডাক্টের বিল্ড কোয়ালিটি যথেষ্ট প্রিমিয়াম এবং টেকসই।',
-    date: '২৬ আগস্ট, ২০২৬',
-  },
-  {
-    userName: 'সাদিয়া রহমান',
-    rating: 5,
-    comment: 'অরিজিনাল প্রোডাক্ট দেওয়ার জন্য ধন্যবাদ। ডেলিভারি ম্যানের ব্যবহারও খুব অমায়িক ছিল। ১০০% রেকমেন্ডেড!',
-    date: '২৪ আগস্ট, ২০২৬',
-  },
-  {
-    userName: 'রাফিকুল ইসলাম',
-    rating: 5,
-    comment: 'দাম অনুযায়ী কোয়ালিটি চমৎকার। ক্যাশ অন ডেলিভারিতে চেক করে রিসিভ করতে পেরেছি।',
-    date: '২১ আগস্ট, ২০২৬',
-  },
-  {
-    userName: 'ফারহানা ইয়াসমিন',
-    rating: 5,
-    comment: 'খুবই সুন্দর ও কাজের একটা প্রোডাক্ট। গিফট হিসেবে দিয়েছিলাম, সে খুব পছন্দ করেছে!',
-    date: '১৮ আগস্ট, ২০২৬',
-  },
-  {
-    userName: 'আরিফুল হক',
-    rating: 5,
-    comment: '১০০% অরিজিনাল প্রডাক্ট। সাপোর্ট টিমও অনেক হেল্পফুল ছিল। সামনে আরও অর্ডার করবো।',
-    date: '১৫ আগস্ট, ২০২৬',
-  },
-];
 
 interface ReviewItem {
   id: string;
@@ -98,28 +49,6 @@ interface ReviewItem {
   date: string;
   image?: string;
 }
-
-const getInitialReviews = (productId?: string): ReviewItem[] => {
-  if (!productId) {
-    return [
-      { ...DIVERSE_REVIEWS_POOL[0], id: 'rev-default-1' },
-      { ...DIVERSE_REVIEWS_POOL[1], id: 'rev-default-2' },
-    ];
-  }
-  let hash = 0;
-  for (let i = 0; i < productId.length; i++) {
-    hash = (hash << 5) - hash + productId.charCodeAt(i);
-    hash |= 0;
-  }
-  const positiveHash = Math.abs(hash);
-  const idx1 = positiveHash % DIVERSE_REVIEWS_POOL.length;
-  const idx2 = (positiveHash + 3) % DIVERSE_REVIEWS_POOL.length;
-
-  return [
-    { ...DIVERSE_REVIEWS_POOL[idx1], id: `rev-${productId}-1` },
-    { ...DIVERSE_REVIEWS_POOL[idx2], id: `rev-${productId}-2` },
-  ];
-};
 
 interface ProductDetailsPageProps {
   params: Promise<{ id: string }>;
@@ -303,18 +232,144 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
   // Full-Screen Image Lightbox Modal State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxScale, setLightboxScale] = useState(1);
+  const [lightboxPosition, setLightboxPosition] = useState({ x: 0, y: 0 });
 
-  // Reviews State initialized dynamically per product ID
-  const [reviewsList, setReviewsList] = useState<
-    Array<{
-      id: string;
-      userName: string;
-      rating: number;
-      comment: string;
-      date: string;
-      image?: string;
-    }>
-  >(() => getInitialReviews(productId));
+  const lightboxTouchStateRef = useRef<{
+    initialDist: number;
+    initialScale: number;
+    startX: number;
+    startY: number;
+    lastPosX: number;
+    lastPosY: number;
+    lastTapTime: number;
+    isPanning: boolean;
+  }>({
+    initialDist: 0,
+    initialScale: 1,
+    startX: 0,
+    startY: 0,
+    lastPosX: 0,
+    lastPosY: 0,
+    lastTapTime: 0,
+    isPanning: false,
+  });
+
+  const handleResetLightboxZoom = () => {
+    setLightboxScale(1);
+    setLightboxPosition({ x: 0, y: 0 });
+  };
+
+  const handleLightboxZoomIn = () => {
+    setLightboxScale((prev) => Math.min(4, Number((prev + 0.5).toFixed(2))));
+  };
+
+  const handleLightboxZoomOut = () => {
+    setLightboxScale((prev) => {
+      const next = Math.max(1, Number((prev - 0.5).toFixed(2)));
+      if (next <= 1) setLightboxPosition({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
+  const handleLightboxTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      lightboxTouchStateRef.current.initialDist = dist;
+      lightboxTouchStateRef.current.initialScale = lightboxScale;
+      lightboxTouchStateRef.current.isPanning = false;
+    } else if (e.touches.length === 1) {
+      const now = Date.now();
+      if (now - lightboxTouchStateRef.current.lastTapTime < 300) {
+        if (lightboxScale > 1.2) {
+          handleResetLightboxZoom();
+        } else {
+          setLightboxScale(2.5);
+          setLightboxPosition({ x: 0, y: 0 });
+        }
+        lightboxTouchStateRef.current.lastTapTime = 0;
+        return;
+      }
+      lightboxTouchStateRef.current.lastTapTime = now;
+      lightboxTouchStateRef.current.startX = e.touches[0].clientX;
+      lightboxTouchStateRef.current.startY = e.touches[0].clientY;
+      lightboxTouchStateRef.current.lastPosX = lightboxPosition.x;
+      lightboxTouchStateRef.current.lastPosY = lightboxPosition.y;
+      lightboxTouchStateRef.current.isPanning = true;
+    }
+  };
+
+  const handleLightboxTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lightboxTouchStateRef.current.initialDist > 0) {
+      const currentDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const ratio = currentDist / lightboxTouchStateRef.current.initialDist;
+      const targetScale = Math.min(4, Math.max(1, lightboxTouchStateRef.current.initialScale * ratio));
+      setLightboxScale(Number(targetScale.toFixed(2)));
+      if (targetScale <= 1) {
+        setLightboxPosition({ x: 0, y: 0 });
+      }
+    } else if (e.touches.length === 1 && lightboxTouchStateRef.current.isPanning && lightboxScale > 1) {
+      const deltaX = e.touches[0].clientX - lightboxTouchStateRef.current.startX;
+      const deltaY = e.touches[0].clientY - lightboxTouchStateRef.current.startY;
+      const maxPan = (lightboxScale - 1) * 200;
+      setLightboxPosition({
+        x: Math.max(-maxPan, Math.min(maxPan, lightboxTouchStateRef.current.lastPosX + deltaX)),
+        y: Math.max(-maxPan, Math.min(maxPan, lightboxTouchStateRef.current.lastPosY + deltaY)),
+      });
+    }
+  };
+
+  const handleLightboxTouchEnd = () => {
+    lightboxTouchStateRef.current.initialDist = 0;
+    lightboxTouchStateRef.current.isPanning = false;
+  };
+
+  const handleLightboxWheel = (e: React.WheelEvent) => {
+    const delta = e.deltaY < 0 ? 0.3 : -0.3;
+    setLightboxScale((prev) => {
+      const next = Math.min(4, Math.max(1, Number((prev + delta).toFixed(2))));
+      if (next <= 1) setLightboxPosition({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
+  const isLightboxMouseDownRef = useRef(false);
+  const lightboxMousePanRef = useRef({ startX: 0, startY: 0, posX: 0, posY: 0 });
+
+  const handleLightboxMouseDown = (e: React.MouseEvent) => {
+    if (lightboxScale <= 1) return;
+    isLightboxMouseDownRef.current = true;
+    lightboxMousePanRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      posX: lightboxPosition.x,
+      posY: lightboxPosition.y,
+    };
+  };
+
+  const handleLightboxMouseMove = (e: React.MouseEvent) => {
+    if (!isLightboxMouseDownRef.current || lightboxScale <= 1) return;
+    const deltaX = e.clientX - lightboxMousePanRef.current.startX;
+    const deltaY = e.clientY - lightboxMousePanRef.current.startY;
+    const maxPan = (lightboxScale - 1) * 200;
+    setLightboxPosition({
+      x: Math.max(-maxPan, Math.min(maxPan, lightboxMousePanRef.current.posX + deltaX)),
+      y: Math.max(-maxPan, Math.min(maxPan, lightboxMousePanRef.current.posY + deltaY)),
+    });
+  };
+
+  const handleLightboxMouseUp = () => {
+    isLightboxMouseDownRef.current = false;
+  };
+
+  // Reviews State initialized dynamically from API
+  const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
 
   useEffect(() => {
     if (!product?.id && !productId) return;
@@ -327,7 +382,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
         );
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             setReviewsList(
               data.map((r: any) => ({
                 id: r.id,
@@ -346,9 +401,8 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
           }
         }
       } catch (err) {
-        console.warn('Live reviews fetch error, using initial product reviews:', err);
+        setReviewsList([]);
       }
-      setReviewsList(getInitialReviews(targetId));
     };
     fetchProductReviews();
   }, [product?.id, productId]);
@@ -1033,44 +1087,121 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
         </button>
       </div>
 
-      {/* Full-Screen Image Lightbox Modal */}
+      {/* Full-Screen Image Lightbox Modal with Pinch Zoom & Drag */}
       {isLightboxOpen && (
-        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 animate-fade-in">
-          <div className="flex justify-between items-center text-white">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-gray-400">
-              Image {lightboxIndex + 1} of {galleryImages.length}
-            </span>
-            <button
-              onClick={() => setIsLightboxOpen(false)}
-              aria-label="Close Lightbox"
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-3 sm:p-4 animate-fade-in select-none">
+          {/* Top Bar with Controls */}
+          <div className="flex justify-between items-center text-white gap-2 z-10">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-gray-300">
+                Image {lightboxIndex + 1} / {galleryImages.length}
+              </span>
+              <span className="text-[10px] hidden sm:inline-block px-2 py-0.5 rounded-full bg-white/10 text-gray-300">
+                Pinch / Double-tap to zoom
+              </span>
+            </div>
+
+            {/* Zoom Controls & Close Button */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={handleLightboxZoomOut}
+                disabled={lightboxScale <= 1}
+                aria-label="Zoom Out"
+                className="p-2 bg-white/10 hover:bg-white/20 disabled:opacity-30 rounded-full transition-colors cursor-pointer"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-4 h-4 text-white" />
+              </button>
+
+              <span className="text-xs font-mono font-bold text-gray-200 min-w-[3rem] text-center">
+                {Math.round(lightboxScale * 100)}%
+              </span>
+
+              <button
+                type="button"
+                onClick={handleLightboxZoomIn}
+                disabled={lightboxScale >= 4}
+                aria-label="Zoom In"
+                className="p-2 bg-white/10 hover:bg-white/20 disabled:opacity-30 rounded-full transition-colors cursor-pointer"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-4 h-4 text-white" />
+              </button>
+
+              {lightboxScale > 1 && (
+                <button
+                  type="button"
+                  onClick={handleResetLightboxZoom}
+                  aria-label="Reset Zoom"
+                  className="px-2.5 py-1 text-xs font-bold bg-[#FF6B00] hover:bg-[#e05e00] text-white rounded-full transition-colors cursor-pointer"
+                  title="Reset 100%"
+                >
+                  1x
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setIsLightboxOpen(false);
+                  handleResetLightboxZoom();
+                }}
+                aria-label="Close Lightbox"
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors cursor-pointer ml-1"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
           </div>
 
-          <div className="relative flex-1 flex items-center justify-center py-4">
-            <img
-              src={galleryImages[lightboxIndex] || product.image}
-              alt={`${product.title} full view`}
-              className="max-h-[80vh] max-w-full object-contain rounded-md shadow-2xl transition-all"
-            />
+          {/* Interactive Zoomable Viewport */}
+          <div
+            className="relative flex-1 flex items-center justify-center py-2 sm:py-4 overflow-hidden touch-none"
+            onWheel={handleLightboxWheel}
+            onTouchStart={handleLightboxTouchStart}
+            onTouchMove={handleLightboxTouchMove}
+            onTouchEnd={handleLightboxTouchEnd}
+            onMouseDown={handleLightboxMouseDown}
+            onMouseMove={handleLightboxMouseMove}
+            onMouseUp={handleLightboxMouseUp}
+          >
+            <div
+              className={`relative transition-transform ease-out select-none ${
+                lightboxScale > 1 ? 'cursor-grab active:cursor-grabbing duration-75' : 'duration-200'
+              }`}
+              style={{
+                transform: `scale(${lightboxScale}) translate(${lightboxPosition.x / lightboxScale}px, ${lightboxPosition.y / lightboxScale}px)`,
+                transformOrigin: 'center center',
+              }}
+            >
+              <img
+                src={galleryImages[lightboxIndex] || product.image}
+                alt={`${product.title} full view`}
+                className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl pointer-events-none"
+                draggable={false}
+              />
+            </div>
 
+            {/* Navigation Chevrons */}
             {galleryImages.length > 1 && (
               <>
                 <button
-                  onClick={() =>
-                    setLightboxIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1))
-                  }
-                  className="absolute left-2 p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors cursor-pointer"
+                  onClick={() => {
+                    handleResetLightboxZoom();
+                    setLightboxIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1));
+                  }}
+                  className="absolute left-2 p-2.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors cursor-pointer backdrop-blur-sm z-20"
+                  aria-label="Previous Image"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() =>
-                    setLightboxIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0))
-                  }
-                  className="absolute right-2 p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors cursor-pointer"
+                  onClick={() => {
+                    handleResetLightboxZoom();
+                    setLightboxIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0));
+                  }}
+                  className="absolute right-2 p-2.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors cursor-pointer backdrop-blur-sm z-20"
+                  aria-label="Next Image"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -1078,13 +1209,17 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
             )}
           </div>
 
-          <div className="flex justify-center gap-2 py-2 overflow-x-auto">
+          {/* Thumbnail Gallery Row */}
+          <div className="flex justify-center gap-2 py-2 overflow-x-auto z-10">
             {galleryImages.map((img, idx) => (
               <button
                 key={idx}
-                onClick={() => setLightboxIndex(idx)}
+                onClick={() => {
+                  handleResetLightboxZoom();
+                  setLightboxIndex(idx);
+                }}
                 className={`w-12 h-12 rounded-md overflow-hidden border-2 transition-all cursor-pointer ${
-                  lightboxIndex === idx ? 'border-white scale-105' : 'border-transparent opacity-50'
+                  lightboxIndex === idx ? 'border-[#FF6B00] scale-105' : 'border-transparent opacity-50'
                 }`}
               >
                 <img src={img} alt="Thumbnail" className="w-full h-full object-cover rounded-md" />
