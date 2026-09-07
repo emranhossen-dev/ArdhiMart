@@ -53,6 +53,9 @@ export interface Product {
   deliveryOutsideDhaka?: number;
   sku?: string;
   urlSlug?: string;
+  stock?: number;
+  soldCount?: number;
+  tags?: string[];
 }
 
 export interface HeroBanner {

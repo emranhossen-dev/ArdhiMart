@@ -17,14 +17,36 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   showStockBar = false,
-  stockSoldPercent = 85,
-  stockLeftCount = 3,
+  stockSoldPercent: propStockSoldPercent,
+  stockLeftCount: propStockLeftCount,
 }) => {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   const { storeConfig, wishlistIds, toggleWishlist, addToCart, cartItems, updateQuantity } = useStore();
   const isWishlisted = wishlistIds.includes(product.id);
   const cartItem = cartItems.find((item) => item.product.id === product.id);
+
+  // Dynamic Sold count & Left count for Flash Deals (removes uniform mock data)
+  const stock = product.stock !== undefined ? product.stock : 10;
+  let dynamicSoldCount: number;
+  let dynamicLeftCount: number = Math.max(1, stock);
+
+  if (typeof product.soldCount === 'number' && product.soldCount > 0) {
+    dynamicSoldCount = product.soldCount;
+  } else {
+    // Generate deterministic dynamic realism based on product ID/title hash
+    const seed = (String(product.id || '') + (product.title || '')).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    dynamicSoldCount = 15 + (seed % 45); // 15 - 59 sold
+    if (stock === 10) {
+      dynamicLeftCount = 2 + (seed % 7); // 2 - 8 left
+    }
+  }
+
+  const total = dynamicSoldCount + dynamicLeftCount;
+  const calculatedPercent = total > 0 ? Math.min(96, Math.max(25, Math.round((dynamicSoldCount / total) * 100))) : 50;
+
+  const finalSoldPercent = propStockSoldPercent !== undefined ? propStockSoldPercent : calculatedPercent;
+  const finalLeftCount = propStockLeftCount !== undefined ? propStockLeftCount : dynamicLeftCount;
 
   // Parse gallery images for product card slider
   const rawGallery = product.galleryImages;
@@ -152,13 +174,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {showStockBar && (
             <div className="my-1 space-y-0.5">
               <div className="flex justify-between text-[9px] font-bold text-gray-500">
-                <span>Sold: {stockSoldPercent}%</span>
-                <span className="text-red-500">Only {stockLeftCount} Left!</span>
+                <span>Sold: {finalSoldPercent}%</span>
+                <span className="text-red-500">Only {finalLeftCount} Left!</span>
               </div>
               <div className="w-full bg-gray-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                 <div
                   className="bg-red-500 h-full rounded-full transition-all"
-                  style={{ width: `${stockSoldPercent}%` }}
+                  style={{ width: `${finalSoldPercent}%` }}
                 />
               </div>
             </div>

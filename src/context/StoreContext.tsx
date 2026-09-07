@@ -139,6 +139,12 @@ export const mapApiProduct = (item: any): Product => {
     deliveryOutsideDhaka: item.deliveryOutsideDhaka !== undefined && item.deliveryOutsideDhaka !== null ? Number(item.deliveryOutsideDhaka) : 130,
     sku: item.sku || '',
     urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
+    stock: item.stock !== undefined && item.stock !== null ? Number(item.stock) : 10,
+    soldCount: (() => {
+      const soldTag = tagsOriginal.find((t: string) => /^sold[:=]\d+$/i.test(t));
+      return soldTag ? parseInt(soldTag.split(/[:=]/)[1], 10) : undefined;
+    })(),
+    tags: tagsOriginal,
   };
 };
 

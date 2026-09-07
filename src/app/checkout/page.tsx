@@ -100,16 +100,38 @@ export default function CheckoutPage() {
   const activeOrderItems = cartItems.filter((item) => !excludedItemIds.includes(item.product.id));
 
   const toggleItemSelection = (productId: string) => {
-    setExcludedItemIds((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
-    );
+    setExcludedItemIds((prev) => {
+      const nextExcluded = prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId];
+      if (typeof window !== 'undefined') {
+        const remainingSelected = cartItems
+          .map((i) => i.product.id)
+          .filter((id) => !nextExcluded.includes(id));
+        sessionStorage.setItem('ardhimart_checkout_selected_ids', JSON.stringify(remainingSelected));
+      }
+      return nextExcluded;
+    });
   };
 
   const isItemSelected = (productId: string) => !excludedItemIds.includes(productId);
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('ardhimart_checkout_selected_ids');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            const allCartIds = cartItems.map((i) => i.product.id);
+            const excluded = allCartIds.filter((id) => !parsed.includes(id));
+            setExcludedItemIds(excluded);
+          }
+        }
+      } catch (e) {}
+    }
+  }, [cartItems]);
 
   // Form Fields State
   const [customerName, setCustomerName] = useState('');
