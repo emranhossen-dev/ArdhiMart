@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Copy, CheckCircle2 } from 'lucide-react';
+import { X, Gift, CheckCircle2, Sparkles, ArrowRight } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 
 interface PromotionalEntryModalProps {
@@ -17,7 +17,6 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
   const isEnabled = forceOpen || (storeConfig?.enablePromoModal ?? true);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!isEnabled) {
@@ -35,14 +34,12 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
       if (dismissed) return;
 
       const handleScroll = () => {
-        // Assume the hero banner is about 400-500px tall
         if (window.scrollY > 400) {
           setIsOpen(true);
           window.removeEventListener('scroll', handleScroll);
         }
       };
 
-      // Check immediately in case user loads page already scrolled down
       if (window.scrollY > 400) {
         setIsOpen(true);
       } else {
@@ -73,102 +70,86 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
     if (onCloseModal) onCloseModal();
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText('FD20');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   if (!isOpen) return null;
 
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-md animate-fade-in transition-opacity"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md animate-fade-in transition-opacity select-none"
       aria-modal="true"
       role="dialog"
     >
       {/* Close Button (Outside modal) */}
-      <div className="relative w-full max-w-[380px] flex justify-end mb-3 pointer-events-none">
+      <div className="relative w-full max-w-[400px] flex justify-end mb-2 pointer-events-none">
         <button
           onClick={handleClose}
           aria-label="Close promotional popup"
-          className="pointer-events-auto p-3 rounded-full bg-white/20 hover:bg-white/40 text-white shadow-xl backdrop-blur-md border border-white/30 transition-all active:scale-95 cursor-pointer z-[101]"
+          className="pointer-events-auto p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white shadow-xl backdrop-blur-md border border-white/30 transition-all active:scale-95 cursor-pointer z-[101]"
         >
-          <X className="w-6 h-6 stroke-2" />
+          <X className="w-5 h-5 stroke-2" />
         </button>
       </div>
 
-      {/* 
-        Leaf Shape Modal Container 
-        Glassmorphism (transparent, blur, white border)
-        Leaf shape achieved via asymmetric border radius (top-right and bottom-left large radius)
-      */}
+      {/* Modern Voucher Gift Card Modal */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[380px] p-8 sm:p-10 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] animate-scale-in flex flex-col items-center justify-center text-center overflow-hidden"
-        style={{
-          borderRadius: '2rem 100px 2rem 100px', // Leaf Shape
-        }}
+        className="relative w-full max-w-[400px] p-6 sm:p-8 bg-slate-900/90 dark:bg-slate-950/95 backdrop-blur-2xl border border-amber-500/30 rounded-3xl shadow-[0_20px_60px_-15px_rgba(245,158,11,0.3)] animate-scale-in flex flex-col items-center justify-center text-center overflow-hidden"
       >
-        {/* Decorative Glow inside */}
-        <div className="absolute top-0 left-0 w-40 h-40 bg-orange-400/20 rounded-full mix-blend-screen filter blur-[40px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-40 h-40 bg-indigo-500/20 rounded-full mix-blend-screen filter blur-[40px] pointer-events-none" />
+        {/* Glowing Ambient Highlights */}
+        <div className="absolute -top-12 -left-12 w-44 h-44 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -right-12 w-44 h-44 bg-rose-500/20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Content */}
-        <div className="relative z-10 w-full flex flex-col items-center mt-2">
-          {/* Badge */}
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/80 to-pink-500/80 text-white text-xs font-black tracking-widest uppercase mb-6 shadow-lg border border-white/20">
-            Welcome Gift
-          </div>
-
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight drop-shadow-md mb-3">
-            Claim Extra <span className="text-orange-400">20%</span> Off
-          </h2>
-          
-          <p className="text-sm sm:text-base text-gray-200 drop-shadow mb-8 font-medium">
-            On your very first order at ArdhiMart!
-          </p>
-
-          {/* Coupon Code Section */}
-          <div className="w-full flex items-center justify-between bg-black/30 border border-white/20 rounded-2xl p-2 pl-6 shadow-inner backdrop-blur-md">
-            <span className="text-2xl font-black text-white tracking-widest font-mono">
-              FD20
-            </span>
-            <button
-              onClick={handleCopy}
-              className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${
-                copied 
-                  ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]' 
-                  : 'bg-white text-black hover:bg-gray-100 shadow-lg'
-              }`}
-            >
-              {copied ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  Copy Code
-                </>
-              )}
-            </button>
-          </div>
-          
-          <p className="text-[10px] text-gray-300/80 mt-4 font-medium uppercase tracking-wider">
-            Apply this code at checkout
-          </p>
-
-          <button
-            type="button"
-            onClick={handleClose}
-            className="w-full mt-3 py-2.5 px-6 rounded-xl font-extrabold text-xs sm:text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg shadow-orange-500/30 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            <span>ঠিক আছে (OK)</span>
-          </button>
+        {/* Top Floating Badge */}
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white text-[11px] font-black tracking-wider uppercase mb-4 shadow-md border border-white/20">
+          <Gift className="w-3.5 h-3.5" />
+          <span>স্পেশাল গিফট অফার</span>
         </div>
+
+        {/* Title */}
+        <h2 className="text-2xl sm:text-3xl font-black text-white leading-snug drop-shadow-md mb-2">
+          প্রতি অর্ডারে <span className="text-amber-400">১০০৳ ভাউচার</span> ফ্রি!
+        </h2>
+
+        {/* Short Bengali Description */}
+        <p className="text-xs sm:text-sm text-slate-300 drop-shadow mb-5 font-medium leading-relaxed max-w-xs">
+          যেকোনো অর্ডার করলেই পার্সেলের সাথে পাচ্ছেন <strong className="text-amber-300">১০০ টাকার ফ্রি ভাউচার কার্ড</strong>, যা আপনার পরবর্তী অর্ডারে ব্যবহার করতে পারবেন।
+        </p>
+
+        {/* Voucher Card Representation */}
+        <div className="w-full relative rounded-2xl p-4 bg-gradient-to-br from-amber-500/15 via-rose-500/10 to-indigo-950/40 border border-amber-500/40 shadow-inner flex flex-col items-center justify-center text-center space-y-2 group">
+          <div className="flex items-center justify-between w-full border-b border-amber-500/20 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> ArdhiMart Privilege Card
+            </span>
+            <span className="text-[10px] font-extrabold text-slate-400">Next Order</span>
+          </div>
+
+          <div className="py-1">
+            <div className="text-3xl sm:text-4xl font-black text-amber-400 tracking-tight flex items-center justify-center gap-1">
+              <span>৳১০০</span>
+              <span className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded-md">
+                Gift Voucher
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 font-semibold mt-1">
+              পরবর্তী যেকোনো কেনাকাটায় ১০০ টাকা ক্যাশ ডিসকাউন্ট
+            </p>
+          </div>
+
+          <div className="w-full pt-1 text-[10px] text-emerald-400 font-bold flex items-center justify-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> পার্সেলের ভেতর ভাউচার কার্ডটি দেওয়া থাকবে
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <button
+          type="button"
+          onClick={handleClose}
+          className="w-full mt-5 py-3 px-6 rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 shadow-lg shadow-amber-500/30 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>বুঝে পেয়েছি (OK)</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

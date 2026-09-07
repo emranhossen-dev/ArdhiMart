@@ -5,7 +5,7 @@ export const defaultStoreConfig: StoreConfig = {
   tagline: "Premium E-commerce Experience",
   currency: "৳",
   logoUrl: "/logo.png",
-  announcementText: "Welcome Offer! Use Code: FD20 for 20% OFF",
+  announcementText: "Welcome Offer! প্রতিটি অর্ডারের সাথে পাচ্ছেন ১০০৳ ফ্রি গিফট ভাউচার কার্ড!",
   phone: "01895627138",
   email: "martardhi@gmail.com",
   address: "Mohammadpur, Dhaka-1207",
