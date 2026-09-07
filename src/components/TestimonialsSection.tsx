@@ -3,38 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Quote } from 'lucide-react';
 
-const DEFAULT_REVIEWS = [
-  {
-    name: 'Tamim Iqbal',
-    role: 'Verified Buyer',
-    rating: 5,
-    comment:
-      'Outstanding product quality and packaging! Delivered inside Dhaka within 24 hours via Steadfast Courier. Highly recommended storefront!',
-    avatar: '/logo.png',
-    image: '',
-  },
-  {
-    name: 'Nusrat Jahan',
-    role: 'Verified Buyer',
-    rating: 5,
-    comment:
-      'The minimalist ceramic vase looks even better in real life. Smooth checkout experience and fast customer service support.',
-    avatar: '/logo.png',
-    image: '',
-  },
-  {
-    name: 'Tanvir Hossain',
-    role: 'Verified Buyer',
-    rating: 5,
-    comment:
-      'Cash on delivery was smooth and the rider let me inspect product before paying. Best e-commerce shopping experience in BD!',
-    avatar: '/logo.png',
-    image: '',
-  },
-];
-
 export const TestimonialsSection: React.FC = () => {
-  const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchHomepageReviews = async () => {
@@ -45,7 +16,7 @@ export const TestimonialsSection: React.FC = () => {
         );
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             setReviews(
               data.map((r: any) => ({
                 name: r.userName || r.name || 'Verified Customer',
@@ -59,11 +30,22 @@ export const TestimonialsSection: React.FC = () => {
           }
         }
       } catch (err) {
-        console.warn('Live reviews fetch error, using default testimonials:', err);
+        // Fallback: no reviews
+        setReviews([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchHomepageReviews();
   }, []);
+
+  if (!isLoading && reviews.length === 0) {
+    return null;
+  }
+
+  if (reviews.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-12 px-4 bg-gray-50/80 dark:bg-slate-900/40 border-y border-gray-200/80 dark:border-slate-800">

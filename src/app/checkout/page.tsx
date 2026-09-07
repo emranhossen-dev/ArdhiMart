@@ -17,6 +17,9 @@ import {
   User,
   Phone,
   Tag,
+  Plus,
+  Minus,
+  Trash2,
 } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 import * as fpixel from '@/lib/fpixel';
@@ -86,9 +89,23 @@ const bdLocations: Record<string, Record<string, string[]>> = {
 export default function CheckoutPage() {
   const router = useRouter();
   const [storeConfig] = useState(defaultStoreConfig);
-  const { cartItems, clearCart } = useStore();
+  const { cartItems, clearCart, updateQuantity, removeFromCart } = useStore();
   const [isMounted, setIsMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Track excluded/unchecked item IDs in checkout
+  const [excludedItemIds, setExcludedItemIds] = useState<string[]>([]);
+
+  // Filter only checked items for the active order
+  const activeOrderItems = cartItems.filter((item) => !excludedItemIds.includes(item.product.id));
+
+  const toggleItemSelection = (productId: string) => {
+    setExcludedItemIds((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+    );
+  };
+
+  const isItemSelected = (productId: string) => !excludedItemIds.includes(productId);
 
   useEffect(() => {
     setIsMounted(true);
@@ -140,8 +157,8 @@ export default function CheckoutPage() {
     }
   };
 
-  const cartSubtotal = cartItems.length > 0
-    ? cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
+  const cartSubtotal = activeOrderItems.length > 0
+    ? activeOrderItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
     : 0;
 
   const [couponCode, setCouponCode] = useState('');
@@ -220,20 +237,29 @@ export default function CheckoutPage() {
     notifyInfo('কুপন বাতিল করা হয়েছে');
   };
 
-  const insideDeliveryFee = cartItems.length > 0
-    ? Math.max(...cartItems.map((i) => Number(i.product.deliveryInsideDhaka ?? 70)))
+  const insideDeliveryFee = activeOrderItems.length > 0
+    ? Math.max(...activeOrderItems.map((i) => Number(i.product.deliveryInsideDhaka ?? 70)))
     : 70;
-  const outsideDeliveryFee = cartItems.length > 0
-    ? Math.max(...cartItems.map((i) => Number(i.product.deliveryOutsideDhaka ?? 130)))
+  const outsideDeliveryFee = activeOrderItems.length > 0
+    ? Math.max(...activeOrderItems.map((i) => Number(i.product.deliveryOutsideDhaka ?? 130)))
     : 130;
   const shippingFee = deliveryMethod === 'inside' ? insideDeliveryFee : outsideDeliveryFee;
   const grandTotal = Math.max(0, cartSubtotal + shippingFee - discountAmount);
 
+  // Helper to remove ordered items from cart, keeping unchecked ones for future checkout
+  const finalizeCartItems = () => {
+    if (activeOrderItems.length >= cartItems.length) {
+      clearCart();
+    } else {
+      activeOrderItems.forEach((item) => removeFromCart(item.product.id));
+    }
+  };
+
   // Track InitiateCheckout on page entry
   useEffect(() => {
-    if (cartItems.length > 0) {
+    if (activeOrderItems.length > 0) {
       fpixel.event('InitiateCheckout', {
-        num_items: cartItems.length,
+        num_items: activeOrderItems.length,
         value: grandTotal,
         currency: 'BDT',
       });
@@ -258,10 +284,14 @@ export default function CheckoutPage() {
       router.push('/products');
       return;
     }
+    if (activeOrderItems.length === 0) {
+      notifyError('কোনো পণ্য সিলেক্ট করা নেই', 'অর্ডার সম্পন্ন করতে কমপক্ষে ১টি পণ্য চেকমার্ক দিয়ে সিলেক্ট করুন।');
+      return;
+    }
 
     setIsSubmitting(true);
     const fullShippingAddress = `${streetAddress.trim()}, ${selectedThana}, ${selectedDistrict}, ${selectedDivision}`;
-    const itemsPayload = cartItems.map((i) => ({
+    const itemsPayload = activeOrderItems.map((i) => ({
       productId: i.product.id,
       productName: i.product.title,
       quantity: i.quantity,
@@ -333,7 +363,7 @@ export default function CheckoutPage() {
           } catch (e) {}
         }
 
-        clearCart();
+        finalizeCartItems();
         router.push(`/checkout/success?orderId=${encodeURIComponent(orderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
       } else {
         const fallbackOrderNum = String(Math.floor(1000 + Math.random() * 9000));
@@ -367,7 +397,7 @@ export default function CheckoutPage() {
           } catch (e) {}
         }
 
-        clearCart();
+        finalizeCartItems();
         router.push(`/checkout/success?orderId=${encodeURIComponent(fallbackOrderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
       }
     } catch (err) {
@@ -393,7 +423,7 @@ export default function CheckoutPage() {
           localStorage.setItem('ardhimart_last_order_id', fallbackOrderNum);
         } catch (e) {}
       }
-      clearCart();
+      finalizeCartItems();
       router.push(`/checkout/success?orderId=${encodeURIComponent(fallbackOrderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
     } finally {
       setIsSubmitting(false);
@@ -727,29 +757,102 @@ export default function CheckoutPage() {
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-[#FF6B00]" />
               <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
-                Ordered Items ({cartItems.length})
+                Ordered Items ({activeOrderItems.length} selected of {cartItems.length})
               </h2>
             </div>
           </div>
 
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {cartItems.map((item) => (
-              <div key={item.product.id} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 min-w-0 pr-2">
-                  <img
-                    src={item.product.image}
-                    alt={item.product.title}
-                    className="w-9 h-9 object-cover rounded-lg bg-gray-100 dark:bg-slate-800 shrink-0"
-                  />
-                  <span className="font-semibold text-gray-900 dark:text-white truncate">
-                    {item.product.title}
-                  </span>
+          <div className="space-y-3 max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800">
+            {cartItems.map((item) => {
+              const isChecked = isItemSelected(item.product.id);
+              return (
+                <div
+                  key={item.product.id}
+                  className={`pt-2.5 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-opacity ${
+                    isChecked ? 'opacity-100' : 'opacity-40'
+                  }`}
+                >
+                  {/* Left: Checkbox + Thumbnail + Title + Unit Price */}
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <label className="flex items-center cursor-pointer select-none p-1">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleItemSelection(item.product.id)}
+                        className="w-4 h-4 rounded text-[#FF6B00] accent-[#FF6B00] focus:ring-0 cursor-pointer"
+                        title={isChecked ? 'Uncheck to exclude from order' : 'Check to include in order'}
+                      />
+                    </label>
+
+                    <img
+                      src={item.product.image}
+                      alt={item.product.title}
+                      className="w-11 h-11 object-cover rounded-lg bg-gray-100 dark:bg-slate-800 shrink-0 border border-gray-200/60 dark:border-slate-700"
+                    />
+
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white truncate">
+                        {item.product.title}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                          ৳{item.product.price}
+                        </span>
+                        {!isChecked && (
+                          <span className="text-[10px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded">
+                            অর্ডার থেকে বাদ
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Quantity Controls (+ / -) & Total Price & Delete Button */}
+                  <div className="flex items-center justify-between sm:justify-end gap-3 pl-7 sm:pl-0">
+                    <div className="flex items-center border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (item.quantity > 1) {
+                            updateQuantity(item.product.id, -1);
+                          } else {
+                            removeFromCart(item.product.id);
+                          }
+                        }}
+                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                        title={item.quantity > 1 ? 'কমান' : 'মুছে ফেলুন'}
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="w-8 text-center text-xs font-black text-gray-900 dark:text-white">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(item.product.id, 1)}
+                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                        title="বাড়ান"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <span className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white min-w-[3.5rem] text-right">
+                      ৳{(item.product.price * item.quantity).toLocaleString()}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => removeFromCart(item.product.id)}
+                      className="p-1.5 text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                      title="কার্ট থেকে মুছে ফেলুন"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <span className="font-bold text-gray-500 shrink-0">
-                  {item.quantity} x ৳{item.product.price}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Pricing Breakdown */}
