@@ -77,7 +77,7 @@ export const FlashSaleSection: React.FC = () => {
 
         {/* View All Link */}
         <Link
-          href="/products?category=Flash%20Deals"
+          href="/products?filter=flash_sale"
           className="text-xs font-bold text-[#FF6B00] hover:text-[#e05e00] flex items-center gap-1 transition-colors whitespace-nowrap shrink-0"
         >
           <span>View All</span>
