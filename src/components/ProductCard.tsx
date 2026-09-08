@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Product } from '@/types/store';
 import { useStore } from '@/context/StoreContext';
 import { Heart, Star, ShoppingCart, Eye, ArrowRight } from 'lucide-react';
+import { m } from 'framer-motion';
 
 interface ProductCardProps {
   product: Product;
@@ -96,7 +97,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-all duration-300">
+    <m.div 
+      whileTap={{ scale: 0.985 }}
+      transition={{ duration: 0.12 }}
+      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+    >
       {/* Product Thumbnail Container - Full Width Edge to Edge */}
       <div
         onTouchStart={handleTouchStart}
@@ -117,6 +122,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 key={idx}
                 src={img}
                 alt={`${product.title} - ${(idx % images.length) + 1}`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover shrink-0 group-hover/img:scale-105 transition-transform duration-500"
               />
             ))}
@@ -224,7 +231,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </m.div>
   );
 };
 
