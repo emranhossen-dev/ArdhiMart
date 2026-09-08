@@ -126,7 +126,7 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
   };
 
   useEffect(() => {
-    let targetId = (rawIdParam && rawIdParam !== 'track') ? rawIdParam : '';
+    let targetId = (rawIdParam && rawIdParam !== 'track' && rawIdParam !== 'search') ? rawIdParam : '';
 
     if (!targetId && typeof window !== 'undefined') {
       try {
@@ -234,7 +234,19 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
             <AlertCircle className="w-8 h-8 mx-auto" />
             <p className="text-xs sm:text-sm font-bold">{errorMsg}</p>
           </div>
-        ) : orderData ? (
+        ) : !orderData ? (
+          <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 space-y-3 shadow-xs">
+            <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-slate-800 text-[#FF6B00] flex items-center justify-center mx-auto">
+              <Truck className="w-6 h-6" />
+            </div>
+            <h3 className="text-sm font-extrabold text-gray-900 dark:text-white">
+              লাইভ পার্সেল ট্র্যাকিং (Live Order Tracking)
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+              আপনার অর্ডারের বর্তমান অবস্থা জানতে উপরের বক্সে আপনার অর্ডার আইডি (যেমন: 1001) অথবা অর্ডার করার মোবাইল নম্বর লিখে 'ট্র্যাক করুন' বাটনে চাপুন।
+            </p>
+          </div>
+        ) : (
           <div className="space-y-6 animate-fade-in">
             {/* Top Order Stats Card */}
             <section className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-gray-200/80 dark:border-slate-800 shadow-sm space-y-4">
@@ -418,7 +430,7 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
               </div>
             </section>
           </div>
-        ) : null}
+        )}
 
         {/* Support Card */}
         <section className="text-center p-4 bg-orange-50/40 dark:bg-slate-900/40 border border-orange-100 dark:border-slate-800 rounded-2xl">

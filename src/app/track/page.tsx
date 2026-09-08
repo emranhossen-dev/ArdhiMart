@@ -21,7 +21,7 @@ function TrackRedirect() {
       if (targetId) {
         router.replace(`/account/orders/${encodeURIComponent(targetId)}/track`);
       } else {
-        router.replace('/account/orders/track/track');
+        router.replace('/account/orders/search/track');
       }
     }
   }, [router, searchParams]);

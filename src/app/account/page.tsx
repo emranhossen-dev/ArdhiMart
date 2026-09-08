@@ -29,12 +29,23 @@ function AccountContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
-  
-  const { user, logout } = useAuth();
+
+  const { user, loading, logout } = useAuth();
   const { products, wishlistIds, theme, toggleTheme, addToCart } = useStore();
   const [storeConfig] = useState(defaultStoreConfig);
   const [activeTab, setActiveTab] = useState(tabFromUrl || 'dashboard');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Real orders state
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isOrdersLoading, setIsOrdersLoading] = useState(true);
+
+  // Redirect unauthenticated user to /login
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (tabFromUrl) {
@@ -42,32 +53,90 @@ function AccountContent() {
     }
   }, [tabFromUrl]);
 
+  // Fetch real orders for current user
+  useEffect(() => {
+    if (!user) return;
+    const fetchUserOrders = async () => {
+      setIsOrdersLoading(true);
+      const ordersMap = new Map<string, any>();
+
+      // 1. Check local storage for orders placed in this browser session
+      if (typeof window !== 'undefined') {
+        try {
+          const userOrdersStr = localStorage.getItem('ardhimart_user_orders');
+          if (userOrdersStr) {
+            const list = JSON.parse(userOrdersStr);
+            if (Array.isArray(list)) {
+              list.forEach((o: any) => {
+                const key = String(o.orderNumber || o.id);
+                if (key) ordersMap.set(key, o);
+              });
+            }
+          }
+          const lastOrderStr = localStorage.getItem('ardhimart_last_order');
+          if (lastOrderStr) {
+            const last = JSON.parse(lastOrderStr);
+            const key = String(last.orderNumber || last.id);
+            if (key && !ordersMap.has(key)) {
+              ordersMap.set(key, last);
+            }
+          }
+        } catch (e) {}
+      }
+
+      // 2. Fetch from backend orders API for user's phone, email, or name
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+        const queries = [user.email, user.phoneNumber, user.displayName].filter(Boolean) as string[];
+
+        for (const q of queries) {
+          const res = await fetch(`${baseUrl}/orders?search=${encodeURIComponent(q)}`, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              data.forEach((o: any) => {
+                const key = String(o.orderNumber || o.id);
+                if (key) ordersMap.set(key, o);
+              });
+            }
+          }
+        }
+      } catch (e) {}
+
+      const sortedOrders = Array.from(ordersMap.values()).sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+
+      setOrders(sortedOrders);
+      setIsOrdersLoading(false);
+    };
+
+    fetchUserOrders();
+  }, [user]);
+
   const handleLogout = async () => {
     await logout();
     notifySuccess('Signed Out', 'You have been logged out successfully.');
     router.push('/');
   };
 
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   const wishlistProducts = products.filter((p) => wishlistIds.includes(p.id));
 
-  const recentOrders = [
-    {
-      id: '8849201A',
-      productName: 'Smart LED Digital Pen Holder',
-      status: 'In Transit',
-      price: 2450,
-      image: products[0]?.image || '/images/ardhimart-smart-pen-holder.webp',
-      date: '2026-08-30',
-    },
-    {
-      id: '8874902B',
-      productName: 'Luxury Gift Box Set',
-      status: 'Delivered',
-      price: 3200,
-      image: products[1]?.image || '/images/ardhimart-giftbox-valentine-set.webp',
-      date: '2026-08-25',
-    },
-  ];
+  const totalOrdersCount = orders.length;
+  const inTransitCount = orders.filter((o) =>
+    ['pending', 'processing', 'shipped', 'in transit'].includes((o.status || '').toLowerCase())
+  ).length;
+  const deliveredCount = orders.filter((o) => (o.status || '').toLowerCase() === 'delivered').length;
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
@@ -102,14 +171,14 @@ function AccountContent() {
             <div className="space-y-1 min-w-0">
               <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
-                  {user?.displayName || 'ArdhiMart Member'}
+                  {user.displayName || user.email?.split('@')[0] || 'Customer Account'}
                 </h2>
                 <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
                   Verified Customer
                 </span>
               </div>
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                {user?.email || 'Logged In Account'}
+                {user.email || user.phoneNumber || 'Active Account'}
               </p>
             </div>
           </div>
@@ -177,7 +246,7 @@ function AccountContent() {
               <div className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between h-28 shadow-xs">
                 <Package className="w-5 h-5 text-[#FF6B00]" />
                 <div>
-                  <p className="text-2xl font-extrabold text-gray-900 dark:text-white">2</p>
+                  <p className="text-2xl font-extrabold text-gray-900 dark:text-white">{totalOrdersCount}</p>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Orders</p>
                 </div>
               </div>
@@ -185,7 +254,7 @@ function AccountContent() {
               <div className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between h-28 shadow-xs">
                 <Clock className="w-5 h-5 text-amber-500" />
                 <div>
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">1</p>
+                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">{inTransitCount}</p>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">In Transit</p>
                 </div>
               </div>
@@ -193,7 +262,7 @@ function AccountContent() {
               <div className="col-span-2 sm:col-span-1 bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 flex flex-col justify-between h-28 shadow-xs">
                 <Truck className="w-5 h-5 text-emerald-500" />
                 <div>
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">1</p>
+                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">{deliveredCount}</p>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Delivered</p>
                 </div>
               </div>
@@ -209,7 +278,10 @@ function AccountContent() {
                   <Truck className="w-5 h-5 text-emerald-500" />
                   <span className="font-bold text-xs text-gray-900 dark:text-white">Track Recent Orders</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#FF6B00]">{totalOrdersCount}</span>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </div>
               </button>
 
               <button
@@ -240,55 +312,105 @@ function AccountContent() {
         {/* TAB 2: TRACK ORDERS */}
         {activeTab === 'orders' && (
           <div className="space-y-4 animate-fade-in">
-            <h3 className="text-sm font-extrabold text-gray-900 dark:text-white px-1">
-              Your Order History & Tracking
-            </h3>
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-sm font-extrabold text-gray-900 dark:text-white">
+                Your Order History & Tracking
+              </h3>
+              <span className="text-xs font-bold text-gray-400">
+                {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
+              </span>
+            </div>
 
-            <div className="space-y-3">
-              {recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={order.image}
-                      alt={order.productName}
-                      className="w-16 h-16 object-cover rounded-xl bg-gray-100 dark:bg-slate-800 shrink-0 border border-gray-200 dark:border-slate-800"
-                    />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-extrabold text-xs text-gray-900 dark:text-white">
-                          Order #{order.id}
-                        </p>
-                        <span
-                          className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                            order.status === 'In Transit'
-                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 dark:text-slate-300 font-semibold mt-1">
-                        {order.productName}
-                      </p>
-                      <p className="text-xs font-extrabold text-[#FF6B00] mt-0.5">
-                        ৳{order.price.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-
+            {isOrdersLoading ? (
+              <div className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3 shadow-xs">
+                <div className="w-8 h-8 border-3 border-[#FF6B00] border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs font-bold text-gray-500">অর্ডারের তথ্য লোড হচ্ছে...</p>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-3xl p-10 text-center space-y-4 shadow-xs">
+                <div className="w-16 h-16 rounded-full bg-orange-50 dark:bg-slate-800/80 text-[#FF6B00] flex items-center justify-center mx-auto">
+                  <Package className="w-8 h-8" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-base text-gray-900 dark:text-white">
+                    কোনো অর্ডার পাওয়া যায়নি (No Orders Found)
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">
+                    আপনি এখনও কোনো অর্ডার প্লেস করেননি। আমাদের আকর্ষণীয় অফার ও গ্যাজেটগুলো দেখতে পারেন।
+                  </p>
+                </div>
+                <div className="pt-2">
                   <Link
-                    href={`/account/orders/${order.id}/track`}
-                    className="w-full sm:w-auto px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-xs"
+                    href="/products"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#FF6B00] hover:bg-[#e05e00] text-white text-xs font-black rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
                   >
-                    <Truck className="w-4 h-4" /> Track Parcel
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>শপিং করুন (Browse Products)</span>
                   </Link>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {orders.map((order) => {
+                  const orderId = String(order.orderNumber || order.id || '');
+                  const itemsList = order.order_items || order.items || [];
+                  const firstItem = itemsList[0];
+                  const orderImg = firstItem?.image || products[0]?.image || '/logo.png';
+                  const orderTitle = firstItem?.name || firstItem?.productName || (itemsList.length > 0 ? `${itemsList.length} Items Order` : `Order #${orderId}`);
+                  const orderPrice = Number(order.totalAmount || 0);
+                  const orderStatus = String(order.status || 'pending');
+
+                  const isDelivered = orderStatus.toLowerCase() === 'delivered';
+                  const isInTransit = ['shipped', 'in transit', 'processing'].includes(orderStatus.toLowerCase());
+
+                  return (
+                    <div
+                      key={order.id || orderId}
+                      className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={orderImg}
+                          alt={orderTitle}
+                          className="w-16 h-16 object-cover rounded-xl bg-gray-100 dark:bg-slate-800 shrink-0 border border-gray-200 dark:border-slate-800"
+                        />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-extrabold text-xs text-gray-900 dark:text-white font-mono">
+                              #{orderId}
+                            </p>
+                            <span
+                              className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                                isDelivered
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                  : isInTransit
+                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                  : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                              }`}
+                            >
+                              {orderStatus}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-700 dark:text-slate-300 font-semibold mt-1 line-clamp-1">
+                            {orderTitle}
+                          </p>
+                          <p className="text-xs font-extrabold text-[#FF6B00] mt-0.5">
+                            ৳{orderPrice.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/account/orders/${encodeURIComponent(orderId)}/track`}
+                        className="w-full sm:w-auto px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-xs"
+                      >
+                        <Truck className="w-4 h-4" /> Track Parcel
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
