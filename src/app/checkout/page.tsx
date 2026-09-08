@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { defaultStoreConfig } from '@/config/storeConfig';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import {
   ArrowLeft,
   Lock,
@@ -20,6 +22,9 @@ import {
   Plus,
   Minus,
   Trash2,
+  ChevronRight,
+  AlertCircle,
+  Check,
 } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 import * as fpixel from '@/lib/fpixel';
@@ -480,10 +485,10 @@ export default function CheckoutPage() {
             CHECKOUT
           </span>
         </header>
-        <main className="flex-1 max-w-2xl mx-auto w-full p-4 space-y-4">
+        <main className="flex-1 max-w-7xl mx-auto w-full p-6 space-y-4">
           <div className="animate-pulse space-y-4">
-            <div className="h-24 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800" />
-            <div className="h-48 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800" />
+            <div className="h-24 bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-800" />
+            <div className="h-48 bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-800" />
           </div>
         </main>
       </div>
@@ -493,7 +498,7 @@ export default function CheckoutPage() {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
-        <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 flex items-center justify-between px-4">
+        <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 flex items-center justify-between px-4 sm:px-8">
           <button
             onClick={() => router.push('/products')}
             aria-label="Back"
@@ -510,20 +515,20 @@ export default function CheckoutPage() {
         </header>
 
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
-          <div className="w-20 h-20 rounded-full bg-orange-50 dark:bg-slate-800 flex items-center justify-center mb-5 text-[#FF6B00]">
+          <div className="w-20 h-20 rounded-3xl bg-orange-50 dark:bg-slate-800 flex items-center justify-center mb-5 text-[#FF6B00]">
             <ShoppingBag className="w-10 h-10" />
           </div>
           <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">
-            Your Cart is Empty
+            আপনার শপিং ব্যাগ খালি
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
-            You don&apos;t have any products in your cart to checkout yet.
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+            চেকআউট করতে আপনার শপিং ব্যাগে কোনো পণ্য নেই। আমাদের ট্রেন্ডিং গ্যাজেটগুলো দেখতে পারেন।
           </p>
           <button
             onClick={() => router.push('/products')}
             className="px-6 py-3 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
           >
-            Explore Products
+            পণ্য দেখুন (Explore Products)
           </button>
         </main>
       </div>
@@ -531,374 +536,468 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans pb-28 select-none">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 flex items-center justify-between px-4">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans pb-28 lg:pb-12">
+      {/* Top Navigation Header */}
+      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
         <button
           onClick={() => router.back()}
           aria-label="Back"
-          className="p-2 -ml-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer text-xs font-bold"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">পেছনে যান</span>
         </button>
 
-        <span className="font-extrabold text-sm uppercase tracking-wider text-gray-900 dark:text-white">
-          INSTANT CHECKOUT
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-black text-sm uppercase tracking-wider text-gray-900 dark:text-white">
+            ক্যাশ অন ডেলিভারি চেকআউট
+          </span>
+          <span className="hidden sm:inline-block text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300">
+            SSL 256-Bit Secured
+          </span>
+        </div>
 
-        <div className="p-2 text-gray-400">
-          <Lock className="w-4 h-4" />
+        <div className="flex items-center gap-1 text-gray-400 text-xs">
+          <Lock className="w-4 h-4 text-[#FF6B00]" />
+          <span className="hidden sm:inline text-[11px] font-bold">নিরাপদ পেমেন্ট</span>
         </div>
       </header>
 
-      {/* SINGLE UNIFIED CHECKOUT PAGE */}
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-5 space-y-4">
-        {/* 1. Customer & Bangladesh Address Section */}
-        <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
-            <User className="w-5 h-5 text-[#FF6B00]" />
-            <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
-              Customer Information & Delivery Address
-            </h2>
+      {/* Main Checkout Container */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+        {/* Desktop Breadcrumbs & Title */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <nav className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+              <Link href="/" className="hover:text-[#FF6B00] transition-colors">হোম</Link>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <Link href="/cart" className="hover:text-[#FF6B00] transition-colors">কার্ট</Link>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="text-gray-900 dark:text-white font-bold">চেকআউট</span>
+            </nav>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+              অর্ডার কনফার্মেশন (Checkout)
+            </h1>
           </div>
 
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
-                Your Full Name (আপনার পুরো নাম) *
-              </label>
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="e.g. Shakib Al Hasan"
-                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
-                Mobile Number (মোবাইল নম্বর) *
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g. 01700000000"
-                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
-              />
-            </div>
-
-            {/* BANGLADESH CASCADING LOCATION DROPDOWNS */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block mb-1">
-                  Division (বিভাগ) *
-                </label>
-                <select
-                  value={selectedDivision}
-                  onChange={(e) => handleDivisionChange(e.target.value)}
-                  className="w-full h-10 px-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none text-gray-900 dark:text-white"
-                >
-                  {divisionsList.map((div) => (
-                    <option key={div} value={div}>
-                      {div}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block mb-1">
-                  District (জেলা) *
-                </label>
-                <select
-                  value={selectedDistrict}
-                  onChange={(e) => handleDistrictChange(e.target.value)}
-                  className="w-full h-10 px-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none text-gray-900 dark:text-white"
-                >
-                  {districtsList.map((dist) => (
-                    <option key={dist} value={dist}>
-                      {dist}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block mb-1">
-                  Upazila/Thana (উপজেলা/থানা) *
-                </label>
-                <select
-                  value={selectedThana}
-                  onChange={(e) => setSelectedThana(e.target.value)}
-                  className="w-full h-10 px-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none text-gray-900 dark:text-white"
-                >
-                  {thanasList.map((thana) => (
-                    <option key={thana} value={thana}>
-                      {thana}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
-                House / Road / Flat Details (বাসা/রাস্তা বিবরণ) *
-              </label>
-              <input
-                type="text"
-                value={streetAddress}
-                onChange={(e) => setStreetAddress(e.target.value)}
-                placeholder="e.g. House #12, Road #4, Block B"
-                className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
-              />
-            </div>
-
-            {/* Auto-detected Delivery Area & Charge Notice */}
-            <div className="flex items-center justify-between p-3.5 bg-orange-50/70 dark:bg-slate-800/80 border border-[#FF6B00]/30 rounded-xl">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center shrink-0">
-                  <Truck className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                    <span>ডেলিভারি এলাকা:</span>
-                    <span className="text-[#FF6B00]">
-                      {isInsideDhaka ? 'ঢাকা সিটির ভেতরে' : 'ঢাকার বাইরে (সারাদেশ)'}
-                    </span>
-                  </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                    {isInsideDhaka ? '২৪ ঘণ্টার মধ্যে দ্রুত এক্সপ্রেস ডেলিভারি' : '২-৩ দিনের মধ্যে কুরিয়ার হোম ডেলিভারি'}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right shrink-0 ml-2">
-                <span className="text-xs font-black text-[#FF6B00] block">
-                  {activeOrderItems.length === 0 ? '৳০' : `৳${shippingFee}`}
-                </span>
-                <span className="text-[10px] text-gray-400 block">
-                  স্বয়ংক্রিয় হিসাব
-                </span>
-              </div>
-            </div>
+          <div className="inline-flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-slate-900 px-4 py-2 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-[#FF6B00]" />
+            <span>কোনো অগ্রিম পেমেন্ট নেই • পণ্য হাতে পেয়ে মূল্য পরিশোধ</span>
           </div>
-        </section>
+        </div>
 
-        {/* 2. Payment Method: Cash on Delivery Only */}
-        <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
-            <CreditCard className="w-5 h-5 text-[#FF6B00]" />
-            <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
-              পেমেন্ট মাধ্যম (Payment Method)
-            </h2>
-          </div>
-
-          <div className="flex items-start sm:items-center gap-3.5 p-3.5 bg-orange-50/60 dark:bg-slate-800/80 border border-[#FF6B00]/30 rounded-xl">
-            <div className="w-10 h-10 rounded-xl bg-[#FF6B00] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5 sm:mt-0">
-              <CheckCircle className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white">
-                  ক্যাশ অন ডেলিভারি (Cash on Delivery)
-                </span>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 rounded-full">
-                  সক্রিয়
-                </span>
+        {/* 2-Column Desktop Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column (lg:col-span-7) - Customer Details & Address */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* 1. Customer Information & Delivery Address Section */}
+            <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-sm">
+              <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-slate-800 pb-3.5">
+                <User className="w-5 h-5 text-[#FF6B00]" />
+                <h2 className="font-extrabold text-base sm:text-lg text-gray-900 dark:text-white">
+                  গ্রাহকের তথ্য ও ডেলিভারি ঠিকানা
+                </h2>
               </div>
-              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
-                💵 কোনো অগ্রিম টাকা দেওয়ার প্রয়োজন নেই। পার্সেল হাতে পেয়ে চেক করে ডেলিভারিম্যানকে ক্যাশ টাকা পরিশোধ করুন।
-              </p>
-            </div>
-          </div>
-        </section>
 
-        {/* 4. Promo Code Section */}
-        <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
-            <Tag className="w-5 h-5 text-[#FF6B00]" />
-            <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
-              প্রোমো কোড বা কুপন (Promo Code)
-            </h2>
-          </div>
-
-          {appliedCoupon ? (
-            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <div>
-                  <p className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
-                    {appliedCoupon} যুক্ত হয়েছে (-৳{discountAmount})
-                  </p>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
-                    ৳{discountAmount} ডিসকাউন্ট আপনার মোট বিল থেকে কাটা হয়েছে
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleRemoveCoupon}
-                className="text-xs font-bold text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer px-2 py-1"
-              >
-                বাতিল করুন
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
-                placeholder="কুপন কোড দিন (যেমন: FD20)"
-                className="flex-1 h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-mono uppercase outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
-              />
-              <button
-                type="button"
-                onClick={handleApplyCoupon}
-                disabled={isValidatingCoupon || !couponCode.trim()}
-                className="px-5 h-11 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors whitespace-nowrap cursor-pointer disabled:opacity-50"
-              >
-                {isValidatingCoupon ? 'যাচাই হচ্ছে...' : 'প্রয়োগ করুন'}
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* 5. Order Items & Bill Breakdown */}
-        <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
-          <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2.5">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#FF6B00]" />
-              <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
-                Ordered Items ({activeOrderItems.length} selected of {cartItems.length})
-              </h2>
-            </div>
-          </div>
-
-          <div className="space-y-3 max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800">
-            {cartItems.map((item) => {
-              const isChecked = isItemSelected(item.product.id);
-              return (
-                <div
-                  key={item.product.id}
-                  className={`pt-2.5 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-opacity ${
-                    isChecked ? 'opacity-100' : 'opacity-40'
-                  }`}
-                >
-                  {/* Left: Checkbox + Thumbnail + Title + Unit Price */}
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <label className="flex items-center cursor-pointer select-none p-1">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleItemSelection(item.product.id)}
-                        className="w-4 h-4 rounded text-[#FF6B00] accent-[#FF6B00] focus:ring-0 cursor-pointer"
-                        title={isChecked ? 'Uncheck to exclude from order' : 'Check to include in order'}
-                      />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1.5">
+                      আপনার পুরো নাম (Full Name) *
                     </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="যেমন: সাকিব আল হাসান"
+                        className="w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
+                      />
+                    </div>
+                  </div>
 
-                    <img
-                      src={item.product.image}
-                      alt={item.product.title}
-                      className="w-11 h-11 object-cover rounded-lg bg-gray-100 dark:bg-slate-800 shrink-0 border border-gray-200/60 dark:border-slate-700"
-                    />
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1.5">
+                      মোবাইল নম্বর (Phone Number) *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="যেমন: 01700000000"
+                        className="w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-semibold font-mono outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white truncate">
-                        {item.product.title}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                          ৳{item.product.price}
+                {/* Cascading Location Selectors */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block mb-1.5">
+                      বিভাগ (Division) *
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedDivision}
+                        onChange={(e) => handleDivisionChange(e.target.value)}
+                        className="w-full h-11 px-3 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs font-bold outline-none text-gray-900 dark:text-white appearance-none cursor-pointer pr-8"
+                      >
+                        {divisionsList.map((div) => (
+                          <option key={div} value={div}>
+                            {div}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block mb-1.5">
+                      জেলা (District) *
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedDistrict}
+                        onChange={(e) => handleDistrictChange(e.target.value)}
+                        className="w-full h-11 px-3 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs font-bold outline-none text-gray-900 dark:text-white appearance-none cursor-pointer pr-8"
+                      >
+                        {districtsList.map((dist) => (
+                          <option key={dist} value={dist}>
+                            {dist}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block mb-1.5">
+                      উপজেলা/থানা (Thana) *
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedThana}
+                        onChange={(e) => setSelectedThana(e.target.value)}
+                        className="w-full h-11 px-3 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs font-bold outline-none text-gray-900 dark:text-white appearance-none cursor-pointer pr-8"
+                      >
+                        {thanasList.map((thana) => (
+                          <option key={thana} value={thana}>
+                            {thana}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1.5">
+                    বিস্তারিত বাসা / রোড / এরিয়া ঠিকানা (Street Address) *
+                  </label>
+                  <input
+                    type="text"
+                    value={streetAddress}
+                    onChange={(e) => setStreetAddress(e.target.value)}
+                    placeholder="যেমন: বাসা #১২, রোড #৪, সেক্টর #১০ বা স্থানীয় ল্যান্ডমার্ক"
+                    className="w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
+                  />
+                </div>
+
+                {/* Auto-detected Delivery Area Notice */}
+                <div className="flex items-center justify-between p-4 bg-orange-50/70 dark:bg-slate-800/80 border border-[#FF6B00]/30 rounded-2xl">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center shrink-0">
+                      <Truck className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
+                        <span>ডেলিভারি জোন:</span>
+                        <span className="text-[#FF6B00]">
+                          {isInsideDhaka ? 'ঢাকা সিটির ভেতরে' : 'ঢাকার বাইরে (সারাদেশ)'}
                         </span>
-                        {!isChecked && (
-                          <span className="text-[10px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded">
-                            অর্ডার থেকে বাদ
+                      </p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        {isInsideDhaka ? '২৪ ঘণ্টার মধ্যে দ্রুততম এক্সপ্রেস ডেলিভারি' : '২-৩ দিনের মধ্যে কুরিয়ার হোম ডেলিভারি'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 ml-3">
+                    <span className="text-sm font-black text-[#FF6B00] block">
+                      {activeOrderItems.length === 0 ? '৳০' : `৳${shippingFee}`}
+                    </span>
+                    <span className="text-[10px] text-gray-400 block font-semibold">
+                      অটো চার্জ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 2. Payment Method Card */}
+            <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-7 space-y-4 shadow-sm">
+              <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-slate-800 pb-3">
+                <CreditCard className="w-5 h-5 text-[#FF6B00]" />
+                <h2 className="font-extrabold text-base sm:text-lg text-gray-900 dark:text-white">
+                  পেমেন্ট পদ্ধতি (Payment Method)
+                </h2>
+              </div>
+
+              <div className="flex items-start sm:items-center gap-4 p-4 bg-orange-50/60 dark:bg-slate-800/80 border border-[#FF6B00]/30 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-[#FF6B00] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5 sm:mt-0">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-black text-sm text-gray-900 dark:text-white">
+                      ক্যাশ অন ডেলিভারি (Cash on Delivery)
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 rounded-full border border-emerald-300">
+                      সক্রিয় মেথড
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                    💵 কোনো অগ্রিম টাকা দেওয়ার প্রয়োজন নেই। পার্সেল হাতে পেয়ে ডেলিভারিম্যানকে পণ্য মূল্য পরিশোধ করবেন।
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* 3. Safe Shopping Trust Banner */}
+            <section className="bg-gradient-to-r from-emerald-50/60 to-teal-50/40 dark:from-slate-900 dark:to-slate-800/60 rounded-3xl p-5 border border-emerald-200/50 dark:border-slate-800 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="text-xs sm:text-sm font-black text-gray-900 dark:text-white">
+                  ১০০% নিশ্চিন্ত ও নিরাপদ অনলাইন শপিং
+                </h4>
+                <p className="text-[11px] sm:text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                  পণ্য হাতে পাওয়ার পর যাচাই করার নিশ্চয়তা এবং যেকোনো সমস্যায় দ্রুত রিপ্লেসমেন্ট সাপোর্ট।
+                </p>
+              </div>
+            </section>
+          </div>
+
+          {/* Right Column (lg:col-span-5) - Order Summary, Promo, Bill & Desktop CTA */}
+          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+            {/* Promo Code Box */}
+            <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-3.5 shadow-sm">
+              <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
+                <Tag className="w-4 h-4 text-[#FF6B00]" />
+                <h3 className="font-extrabold text-sm text-gray-900 dark:text-white">
+                  প্রোমো কোড বা কুপন (Promo Code)
+                </h3>
+              </div>
+
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/40 rounded-2xl p-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div>
+                      <p className="text-xs font-black text-emerald-800 dark:text-emerald-300">
+                        {appliedCoupon} সক্রিয় (-৳{discountAmount})
+                      </p>
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                        ৳{discountAmount} ডিসকাউন্ট যুক্ত হয়েছে
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-xs font-bold text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer px-2 py-1"
+                  >
+                    বাতিল
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                    placeholder="কুপন কোড দিন..."
+                    className="flex-1 h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-mono uppercase outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={isValidatingCoupon || !couponCode.trim()}
+                    className="px-5 h-11 bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs uppercase tracking-wider rounded-2xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors whitespace-nowrap cursor-pointer disabled:opacity-50 shadow-xs"
+                  >
+                    {isValidatingCoupon ? 'যাচাই...' : 'প্রয়োগ'}
+                  </button>
+                </div>
+              )}
+            </section>
+
+            {/* Order Items & Breakdown Card */}
+            <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-[#FF6B00]" />
+                  <h3 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
+                    অর্ডার সামারি ({activeOrderItems.length} টি নির্বাচিত)
+                  </h3>
+                </div>
+                <span className="text-xs font-bold text-gray-400">
+                  মোট {cartItems.length} টি পণ্য
+                </span>
+              </div>
+
+              {/* Items List */}
+              <div className="space-y-3 max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800 pr-1">
+                {cartItems.map((item) => {
+                  const isChecked = isItemSelected(item.product.id);
+                  return (
+                    <div
+                      key={item.product.id}
+                      className={`pt-3 first:pt-0 flex items-center justify-between gap-3 transition-opacity ${
+                        isChecked ? 'opacity-100' : 'opacity-40'
+                      }`}
+                    >
+                      {/* Checkbox + Thumbnail + Info */}
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleItemSelection(item.product.id)}
+                          className="w-4 h-4 rounded text-[#FF6B00] accent-[#FF6B00] cursor-pointer shrink-0"
+                          title={isChecked ? 'অর্ডার থেকে বাদ দিন' : 'অর্ডারে অন্তর্ভুক্ত করুন'}
+                        />
+
+                        <img
+                          src={item.product.image}
+                          alt={item.product.title}
+                          className="w-12 h-12 object-cover rounded-xl bg-gray-100 dark:bg-slate-800 shrink-0 border border-gray-200 dark:border-slate-700"
+                        />
+
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-xs text-gray-900 dark:text-white truncate">
+                            {item.product.title}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+                            <span>৳{item.product.price}</span>
+                            {!isChecked && (
+                              <span className="text-[9px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded">
+                                বাদ দেওয়া
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stepper + Price */}
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <div className="flex items-center border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-slate-800">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (item.quantity > 1) {
+                                updateQuantity(item.product.id, -1);
+                              } else {
+                                removeFromCart(item.product.id);
+                              }
+                            }}
+                            className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-7 text-center text-xs font-black text-gray-900 dark:text-white">
+                            {item.quantity}
                           </span>
-                        )}
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.product.id, 1)}
+                            className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        <span className="font-extrabold text-xs text-gray-900 dark:text-white min-w-[3.5rem] text-right">
+                          ৳{(item.product.price * item.quantity).toLocaleString()}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="p-1 text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-md transition-colors cursor-pointer"
+                          title="মুছে ফেলুন"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Right: Quantity Controls (+ / -) & Total Price & Delete Button */}
-                  <div className="flex items-center justify-between sm:justify-end gap-3 pl-7 sm:pl-0">
-                    <div className="flex items-center border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-slate-800">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (item.quantity > 1) {
-                            updateQuantity(item.product.id, -1);
-                          } else {
-                            removeFromCart(item.product.id);
-                          }
-                        }}
-                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
-                        title={item.quantity > 1 ? 'কমান' : 'মুছে ফেলুন'}
-                      >
-                        <Minus className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="w-8 text-center text-xs font-black text-gray-900 dark:text-white">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.product.id, 1)}
-                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
-                        title="বাড়ান"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <span className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white min-w-[3.5rem] text-right">
-                      ৳{(item.product.price * item.quantity).toLocaleString()}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="p-1.5 text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                      title="কার্ট থেকে মুছে ফেলুন"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Pricing Breakdown */}
-          <div className="pt-3 border-t border-gray-100 dark:border-slate-800 space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
-            <div className="flex justify-between">
-              <span>পণ্যমূল্য (Subtotal)</span>
-              <span className="font-bold text-gray-900 dark:text-white">৳{cartSubtotal.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>ডেলিভারি চার্জ ({isInsideDhaka ? 'ঢাকা সিটি' : 'ঢাকার বাইরে'})</span>
-              <span className="font-bold text-gray-900 dark:text-white">
-                {activeOrderItems.length === 0 ? '৳০' : `৳${shippingFee}`}
-              </span>
-            </div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
-                <span>কুপন ডিসকাউন্ট ({appliedCoupon})</span>
-                <span>-৳{discountAmount}</span>
+                  );
+                })}
               </div>
-            )}
-            <div className="flex justify-between font-black text-sm text-gray-900 dark:text-white pt-2 border-t border-gray-100 dark:border-slate-800">
-              <span>সর্বমোট (Total Payable)</span>
-              <span className="text-[#FF6B00]">৳{grandTotal.toLocaleString()}</span>
-            </div>
+
+              {/* Price Breakdown */}
+              <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-2 text-xs text-gray-600 dark:text-gray-300">
+                <div className="flex justify-between">
+                  <span>পণ্যমূল্য (Subtotal)</span>
+                  <span className="font-bold text-gray-900 dark:text-white">৳{cartSubtotal.toLocaleString()}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>ডেলিভারি চার্জ ({isInsideDhaka ? 'ঢাকা সিটি' : 'ঢাকার বাইরে'})</span>
+                  <span className="font-bold text-gray-900 dark:text-white">
+                    {activeOrderItems.length === 0 ? '৳০' : `৳${shippingFee}`}
+                  </span>
+                </div>
+
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                    <span>কুপন ডিসকাউন্ট ({appliedCoupon})</span>
+                    <span>-৳{discountAmount}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between font-black text-base text-gray-900 dark:text-white pt-3 border-t border-gray-100 dark:border-slate-800">
+                  <span>সর্বমোট প্রদেয় বিল</span>
+                  <span className="text-[#FF6B00]">৳{grandTotal.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Desktop Confirm Order CTA (hidden on mobile, visible on desktop) */}
+              <div className="hidden lg:block pt-3">
+                <button
+                  type="button"
+                  onClick={handlePlaceOrder}
+                  disabled={isSubmitting || activeOrderItems.length === 0}
+                  className={`w-full py-4 text-white font-extrabold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
+                    activeOrderItems.length === 0
+                      ? 'bg-gray-400 dark:bg-gray-700 cursor-not-allowed opacity-70'
+                      : 'bg-[#FF6B00] hover:bg-[#e05e00] shadow-orange-500/20'
+                  }`}
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>
+                    {isSubmitting
+                      ? 'অর্ডার কনফার্ম হচ্ছে...'
+                      : activeOrderItems.length === 0
+                      ? 'কোনো পণ্য সিলেক্ট করা নেই'
+                      : `অর্ডার কনফার্ম করুন (Confirm Order) • ৳${grandTotal.toLocaleString()}`}
+                  </span>
+                </button>
+                <p className="text-[11px] text-center text-gray-400 mt-2">
+                  🔒 ক্যাশ অন ডেলিভারি • পার্সেল হাতে পেয়ে মূল্য পরিশোধ করবেন
+                </p>
+              </div>
+            </section>
           </div>
-        </section>
+        </div>
       </main>
 
-      {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 p-4 z-40 shadow-2xl">
+      {/* Fixed Bottom Action Bar (Strictly Mobile < lg) */}
+      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 p-4 z-40 shadow-2xl">
         <div className="max-w-2xl mx-auto space-y-2">
           <div className="flex justify-between items-center text-xs">
             <span className="text-gray-500 font-semibold">Total Payable Amount</span>
@@ -918,13 +1017,15 @@ export default function CheckoutPage() {
           >
             <Lock className="w-4 h-4" />
             {isSubmitting
-              ? 'Confirming Order...'
+              ? 'অর্ডার কনফার্ম হচ্ছে...'
               : activeOrderItems.length === 0
               ? 'কোনো পণ্য সিলেক্ট করা নেই'
               : 'অর্ডার কনফার্ম করুন (Confirm Order)'}
           </button>
         </div>
       </div>
+
+      <Footer className="hidden md:block" />
     </div>
   );
 }
