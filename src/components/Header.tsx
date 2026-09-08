@@ -13,6 +13,11 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  PhoneCall,
+  Flame,
+  Zap,
+  LayoutGrid,
+  ShieldCheck,
 } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
@@ -39,6 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
     products,
     cartItems,
     categories,
+    wishlistIds,
+    storeConfig,
     setIsCartOpen,
     setIsMenuOpen,
   } = useStore();
@@ -53,6 +60,12 @@ export const Header: React.FC<HeaderProps> = ({
 
   const computedCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const cartCount = customCartCount !== undefined ? customCartCount : computedCartCount;
+  const cartSubtotal = cartItems.reduce(
+    (sum, item) => sum + ((item.product?.price || 0) * item.quantity),
+    0
+  );
+  const wishlistCount = wishlistIds ? wishlistIds.length : 0;
+  const helplinePhone = storeConfig?.phone || '01895627138';
 
   // Close live search dropdown & profile menu when clicking outside
   useEffect(() => {
@@ -107,14 +120,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 text-gray-900 dark:text-white shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-1.5 sm:gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Left Group: Hamburger Menu + Logo + Brand Name Text */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={handleMenuClick}
             aria-label="Open Mobile Menu"
-            className="lg:hidden p-0.5 text-gray-800 dark:text-gray-100 hover:text-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors cursor-pointer group flex flex-col justify-center gap-1.5 items-start"
+            className="lg:hidden p-1 text-gray-800 dark:text-gray-100 hover:text-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors cursor-pointer group flex flex-col justify-center gap-1.5 items-start"
           >
             <span className="w-5 sm:w-6 h-0.5 bg-current rounded-full transition-all group-hover:w-6 group-hover:bg-[#FF6B00]" />
             <span className="w-3.5 sm:w-4 h-0.5 bg-current rounded-full transition-all group-hover:w-6 group-hover:bg-[#FF6B00]" />
@@ -123,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <Link
             href="/"
-            className="flex items-center gap-1.5 sm:gap-2 group shrink-0"
+            className="flex items-center gap-2 group shrink-0"
             title="ArdhiMart"
           >
             <Image
@@ -135,43 +148,51 @@ export const Header: React.FC<HeaderProps> = ({
               unoptimized
               className="h-7 sm:h-9 lg:h-10 w-auto object-contain transition-transform group-hover:scale-105"
             />
-            {/* Brand Name Text: PERFECT BALANCED SIZING */}
-            <span className="font-black text-lg sm:text-xl lg:text-2xl tracking-tight leading-none">
-              <span className="text-[#FF6B00]">Ardhi</span>
-              <span className="text-[#0F396F] dark:text-blue-400">Mart</span>
-            </span>
+            {/* Brand Name Text & Official Store Badge */}
+            <div className="flex flex-col">
+              <span className="font-black text-lg sm:text-xl lg:text-2xl tracking-tight leading-none">
+                <span className="text-[#FF6B00]">Ardhi</span>
+                <span className="text-[#0F396F] dark:text-blue-400">Mart</span>
+              </span>
+              <span className="hidden lg:inline-block text-[9px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mt-0.5">
+                Official Store
+              </span>
+            </div>
           </Link>
         </div>
 
         {/* Center: Full Interactive Search Bar Input (Desktop View) */}
-        <div ref={searchRef} className="hidden md:block flex-1 max-w-md mx-2 min-w-0 relative">
+        <div ref={searchRef} className="hidden md:block flex-1 max-w-md lg:max-w-xl xl:max-w-2xl mx-2 lg:mx-4 min-w-0 relative">
           <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setIsDropdownOpen(true);
-              }}
-              onFocus={() => setIsDropdownOpen(true)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSearchSubmit();
-                }
-              }}
-              placeholder="Search gifts, gadgets..."
-              className="w-full h-8 sm:h-9 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md pl-2.5 pr-8 text-[11px] sm:text-xs font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
-            />
-            {/* Search Icon Button on Right Side */}
-            <button
-              type="submit"
-              onClick={handleSearchSubmit}
-              aria-label="Search"
-              className="absolute right-0 top-0 bottom-0 px-2.5 text-gray-500 hover:text-[#FF6B00] dark:text-gray-400 dark:hover:text-[#FF6B00] flex items-center justify-center transition-colors cursor-pointer"
-            >
-              <Search className="w-4 h-4" />
-            </button>
+            <div className="relative w-full flex items-center">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsDropdownOpen(true);
+                }}
+                onFocus={() => setIsDropdownOpen(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSearchSubmit();
+                  }
+                }}
+                placeholder="Search gifts, smart gadgets, fashion & electronics..."
+                className="w-full h-9 sm:h-10 bg-gray-100/90 dark:bg-slate-800 border border-gray-200 dark:border-slate-700/80 rounded-xl pl-3.5 pr-20 lg:pr-24 text-xs font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-all shadow-2xs"
+              />
+              {/* Integrated Search Button on Desktop */}
+              <button
+                type="submit"
+                onClick={handleSearchSubmit}
+                aria-label="Search"
+                className="absolute right-1 top-1 bottom-1 px-3 lg:px-4 bg-gradient-to-r from-[#FF6B00] to-orange-500 hover:from-[#e05e00] hover:to-orange-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">Search</span>
+              </button>
+            </div>
           </form>
 
           {/* Live Autocomplete Suggestions Dropdown Panel */}
@@ -229,9 +250,54 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Right Actions: Mobile Search Toggle, Cart & Register/Account Button */}
-        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-          {/* Mobile Search Icon Toggle Button */}
+        {/* Right Actions: Helpline, Track Order, Wishlist, Cart & Profile/Login */}
+        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
+          
+          {/* 1. Helpline / 24/7 Support (Desktop Only: xl+) */}
+          <a
+            href={`tel:${helplinePhone}`}
+            className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800/80 transition-colors group"
+            title="Call 24/7 Customer Support"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center group-hover:scale-105 transition-transform">
+              <PhoneCall className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col text-left leading-tight">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">24/7 Helpline</span>
+              <span className="text-xs font-black text-gray-900 dark:text-white group-hover:text-[#FF6B00] transition-colors">{helplinePhone}</span>
+            </div>
+          </a>
+
+          {/* 2. Track Order (Desktop Only: lg+) */}
+          <Link
+            href="/track"
+            className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800/80 transition-colors group"
+            title="Track Your Parcel"
+          >
+            <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Truck className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col text-left leading-tight">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Parcel</span>
+              <span className="text-xs font-black text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">Track Order</span>
+            </div>
+          </Link>
+
+          {/* 3. Wishlist Button (Tablet & Desktop: sm+) */}
+          <Link
+            href="/account?tab=wishlist"
+            className="hidden sm:flex relative p-2 text-gray-700 dark:text-gray-300 hover:text-[#FF6B00] hover:bg-gray-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
+            title="View Wishlist"
+          >
+            <Heart className="w-5 h-5" />
+            {wishlistCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 bg-rose-500 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
+
+          {/* 4. Mobile Search Icon Toggle Button */}
           <button
             onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
             aria-label="Toggle Search Bar"
@@ -240,11 +306,11 @@ export const Header: React.FC<HeaderProps> = ({
             <Search className="w-5 h-5" />
           </button>
 
-          {/* Cart Icon Button */}
+          {/* 5. Cart Button with Subtotal on Desktop */}
           <button
             onClick={handleCartClick}
             aria-label="Open Cart"
-            className="p-1 sm:p-1.5 transition-transform active:scale-95 relative cursor-pointer flex items-center justify-center"
+            className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer group"
           >
             <div className="relative flex items-center justify-center">
               <Image 
@@ -252,13 +318,19 @@ export const Header: React.FC<HeaderProps> = ({
                 alt="Cart Bag" 
                 width={34} 
                 height={34} 
-                className="w-8 h-8 sm:w-8.5 sm:h-8.5 object-contain dark:brightness-0 dark:invert transition-transform hover:scale-110"
+                className="w-8 h-8 sm:w-8.5 sm:h-8.5 object-contain dark:brightness-0 dark:invert transition-transform group-hover:scale-105"
               />
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-[#FF6B00] text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-pulse">
+                <span className="absolute -top-1.5 -right-2 bg-[#FF6B00] text-white font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-pulse">
                   {cartCount}
                 </span>
               )}
+            </div>
+            <div className="hidden lg:flex flex-col text-left leading-tight">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">My Cart</span>
+              <span className="text-xs font-black text-[#FF6B00]">
+                {cartSubtotal > 0 ? `৳${cartSubtotal.toLocaleString()}` : '0 Items'}
+              </span>
             </div>
           </button>
 
@@ -493,44 +565,70 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       )}
 
-      {/* Sub-Navbar Horizontal Category & Quick Links Pill Bar (Attachment Style) */}
-      <div className="w-full border-t border-gray-100 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm select-none">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 sm:py-2">
+      {/* Sub-Navbar Horizontal Category & Quick Links Bar (Desktop Enhanced) */}
+      <div className="w-full border-t border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm select-none">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-4">
+          
+          {/* Left Category & Deal Links Scroll Area */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
-            {/* 1. HOME */}
+            {/* All Categories Button */}
             <Link
-              href="/"
-              className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+              href="/products"
+              className="px-3.5 py-1.5 rounded-lg bg-[#0F396F] hover:bg-[#0b2b54] text-white text-[11px] sm:text-xs font-black flex items-center gap-1.5 shrink-0 shadow-xs transition-colors uppercase tracking-wider"
             >
-              HOME
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>All Categories</span>
             </Link>
 
-            {/* 2. FLASH DEALS */}
+            {/* FLASH SALE (Glowing Badge) */}
             <Link
               href="/products?filter=flash_sale"
-              className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white text-[11px] sm:text-xs font-black flex items-center gap-1.5 shrink-0 shadow-xs transition-all uppercase tracking-wider animate-pulse"
             >
-              FLASH DEALS
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>FLASH SALE</span>
             </Link>
 
-            {/* 3. TRENDING */}
+            {/* HOT DEALS */}
+            <Link
+              href="/products?filter=best_deals"
+              className="px-3.5 py-1.5 rounded-lg border border-orange-500/40 bg-orange-500/10 text-[#FF6B00] hover:bg-[#FF6B00] hover:text-white text-[11px] sm:text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors uppercase tracking-wider"
+            >
+              <Flame className="w-3.5 h-3.5 text-[#FF6B00]" />
+              <span>Hot Deals</span>
+            </Link>
+
+            {/* TRENDING */}
             <Link
               href="/products?sort=trending"
-              className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+              className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-2xs uppercase tracking-wider shrink-0"
             >
               TRENDING
             </Link>
 
-            {/* 4. DYNAMIC CATEGORIES */}
+            {/* DYNAMIC CATEGORIES */}
             {categories && categories.length > 0 && categories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/category/${getCategorySlug(cat.name, cat.slug)}`}
-                className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] dark:hover:border-[#FF6B00] dark:hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)] uppercase tracking-wider shrink-0"
+                className="px-3.5 py-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-gray-800 dark:text-gray-200 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors whitespace-nowrap shadow-2xs uppercase tracking-wider shrink-0"
               >
                 {cat.name.toUpperCase()}
               </Link>
             ))}
+          </div>
+
+          {/* Desktop Right: Trust Guarantees */}
+          <div className="hidden lg:flex items-center gap-4 text-xs font-bold text-gray-500 dark:text-gray-400 shrink-0">
+            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+              <Truck className="w-3.5 h-3.5" />
+              <span>Free Delivery on ৳2,500+</span>
+            </div>
+            <span className="text-gray-300 dark:text-slate-700">•</span>
+            <div className="flex items-center gap-1.5 text-[#FF6B00]">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>100% Genuine Guarantee</span>
+            </div>
           </div>
         </div>
       </div>
