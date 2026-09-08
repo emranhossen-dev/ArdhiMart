@@ -74,11 +74,11 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     },
     {
       id: 'account',
-      label: 'Account',
+      label: user ? 'Account' : 'Login',
       icon: User,
-      href: '/account',
+      href: user ? '/account' : '/login',
       badge: effectiveWishlistCount > 0 ? effectiveWishlistCount : undefined,
-      isActive: pathname.startsWith('/account'),
+      isActive: user ? pathname.startsWith('/account') : pathname === '/login',
     },
   ];
 

@@ -382,6 +382,11 @@ export default function CheckoutPage() {
             };
             localStorage.setItem('ardhimart_last_order', JSON.stringify(orderSummary));
             localStorage.setItem('ardhimart_last_order_id', orderNum);
+
+            const prevOrdersStr = localStorage.getItem('ardhimart_user_orders');
+            const prevOrders = prevOrdersStr ? JSON.parse(prevOrdersStr) : [];
+            const updatedOrders = [orderSummary, ...prevOrders.filter((o: any) => o.id !== orderSummary.id && o.orderNumber !== orderSummary.orderNumber)];
+            localStorage.setItem('ardhimart_user_orders', JSON.stringify(updatedOrders));
           } catch (e) {}
         }
 

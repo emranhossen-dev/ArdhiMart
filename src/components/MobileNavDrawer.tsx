@@ -165,7 +165,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
 
               <button
                 onClick={() => {
-                  let target = '/account/orders/track/track';
+                  let target = '/account/orders/search/track';
                   if (typeof window !== 'undefined') {
                     try {
                       const lastId = localStorage.getItem('ardhimart_last_order_id');
