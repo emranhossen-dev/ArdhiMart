@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { m } from 'framer-motion';
 import { HeroBanner } from '@/types/store';
 
 interface HeroSectionProps {
@@ -118,6 +119,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
           <img
             src={slide.imageUrl}
             alt={slide.title}
+            fetchPriority={idx === 0 ? 'high' : 'low'}
+            loading={idx === 0 ? 'eager' : 'lazy'}
+            decoding={idx === 0 ? 'sync' : 'async'}
             className="w-full h-full object-cover object-center scale-105 transition-transform duration-[4000ms] ease-out"
           />
           {/* Subtle Dark Gradient Overlay for Maximum Readability */}
@@ -125,9 +129,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
         </div>
       ))}
 
-      {/* Slide Content Overlay */}
+      {/* Slide Content Overlay with GPU-Accelerated Framer Motion */}
       <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-end text-center pb-8 sm:pb-14">
-        <div className="max-w-2xl mx-auto space-y-3.5 flex flex-col items-center text-center">
+        <m.div
+          key={currentSlide}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          className="max-w-2xl mx-auto space-y-3.5 flex flex-col items-center text-center"
+        >
           {/* Badge */}
           {activeSlide.badge && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-black tracking-wide uppercase bg-amber-500 text-slate-950 shadow-md">
@@ -165,7 +175,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
               </Link>
             )}
           </div>
-        </div>
+        </m.div>
       </div>
 
       {/* Slide Navigation Pagination Dots */}
