@@ -39,6 +39,7 @@ export interface Product {
   isNew?: boolean;
   isNewArrival?: boolean;
   isFeatured?: boolean;
+  isHotDeal?: boolean;
   isTrending?: boolean;
   isFlashSale?: boolean;
   color?: string;

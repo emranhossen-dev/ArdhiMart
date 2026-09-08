@@ -33,10 +33,30 @@ function ProductsContent() {
     categories,
   } = useStore();
 
+  const initialSort =
+    sortParam === 'price-low' || sortParam === 'price_asc'
+      ? 'price-low'
+      : sortParam === 'price-high' || sortParam === 'price_desc'
+      ? 'price-high'
+      : sortParam === 'rating'
+      ? 'rating'
+      : sortParam === 'discount'
+      ? 'discount'
+      : 'featured';
+
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam || 'All');
-  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
+  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating' | 'discount'>(initialSort);
   const [maxPrice, setMaxPrice] = useState<number>(20000);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (sortParam) {
+      if (sortParam === 'price-low' || sortParam === 'price_asc') setSortBy('price-low');
+      else if (sortParam === 'price-high' || sortParam === 'price_desc') setSortBy('price-high');
+      else if (sortParam === 'rating') setSortBy('rating');
+      else if (sortParam === 'discount') setSortBy('discount');
+    }
+  }, [sortParam]);
 
   // If someone enters via /products?category=..., redirect to clean /category/[slug] URL
   useEffect(() => {
@@ -59,20 +79,85 @@ function ProductsContent() {
           (prod.brand && prod.brand.toLowerCase().includes(searchQueryParam.toLowerCase())) ||
           (prod.description && prod.description.toLowerCase().includes(searchQueryParam.toLowerCase()))
         : true;
-      const matchSectionFilter =
-        filterParam === 'featured'
-          ? prod.isFeatured === true
-          : sortParam === 'trending'
-          ? prod.isTrending === true
-          : sortParam === 'newest'
-          ? prod.isNew === true
-          : true;
+
+      // Section & Deal Filters
+      let matchSectionFilter = true;
+      if (filterParam === 'flash_sale' || filterParam === 'flash' || filterParam === 'flash_deals') {
+        const isExplicitFlash =
+          prod.isFlashSale === true ||
+          (prod.badge && prod.badge.toLowerCase().includes('flash')) ||
+          Boolean(prod.tags && prod.tags.some((t) => t.toLowerCase().includes('flash')));
+
+        const hasExplicitFlashAnywhere = products.some(
+          (p) =>
+            p.isFlashSale === true ||
+            (p.badge && p.badge.toLowerCase().includes('flash')) ||
+            Boolean(p.tags && p.tags.some((t) => t.toLowerCase().includes('flash')))
+        );
+
+        if (hasExplicitFlashAnywhere) {
+          matchSectionFilter = isExplicitFlash;
+        } else {
+          matchSectionFilter = Boolean(isExplicitFlash || (prod.comparePrice && prod.comparePrice > prod.price));
+        }
+      } else if (
+        filterParam === 'hot_deals' ||
+        filterParam === 'best_deals' ||
+        filterParam === 'featured' ||
+        filterParam === 'hot'
+      ) {
+        const isExplicitHotDeal =
+          prod.isHotDeal === true ||
+          prod.isFeatured === true ||
+          (prod.badge &&
+            (prod.badge.toLowerCase().includes('hot') ||
+              prod.badge.toLowerCase().includes('featured') ||
+              prod.badge.toLowerCase().includes('deal'))) ||
+          Boolean(
+            prod.tags &&
+              prod.tags.some((t) => ['hot_deals', 'hot deals', 'hot', 'featured'].includes(t.toLowerCase()))
+          );
+
+        const hasExplicitHotDealAnywhere = products.some(
+          (p) =>
+            p.isHotDeal === true ||
+            p.isFeatured === true ||
+            (p.badge &&
+              (p.badge.toLowerCase().includes('hot') ||
+                p.badge.toLowerCase().includes('featured') ||
+                p.badge.toLowerCase().includes('deal'))) ||
+            Boolean(
+              p.tags &&
+                p.tags.some((t) => ['hot_deals', 'hot deals', 'hot', 'featured'].includes(t.toLowerCase()))
+            )
+        );
+
+        if (hasExplicitHotDealAnywhere) {
+          matchSectionFilter = isExplicitHotDeal;
+        } else {
+          matchSectionFilter = Boolean(
+            isExplicitHotDeal ||
+              (prod.comparePrice && prod.comparePrice > prod.price) ||
+              prod.rating >= 4.5
+          );
+        }
+      } else if (sortParam === 'trending' || filterParam === 'trending') {
+        matchSectionFilter = prod.isTrending === true;
+      } else if (sortParam === 'newest' || filterParam === 'new' || filterParam === 'new_arrival') {
+        matchSectionFilter = prod.isNew === true || prod.isNewArrival === true;
+      }
+
       return matchCategory && matchPrice && matchSearch && matchSectionFilter;
     })
     .sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
       if (sortBy === 'rating') return b.rating - a.rating;
+      if (sortBy === 'discount') {
+        const discA = a.comparePrice && a.comparePrice > a.price ? a.comparePrice - a.price : 0;
+        const discB = b.comparePrice && b.comparePrice > b.price ? b.comparePrice - b.price : 0;
+        return discB - discA;
+      }
       return 0;
     });
 
@@ -87,6 +172,14 @@ function ProductsContent() {
         <span className="text-gray-900 dark:text-white font-semibold">
           {searchQueryParam
             ? `Search: "${searchQueryParam}"`
+            : filterParam === 'flash_sale' || filterParam === 'flash' || filterParam === 'flash_deals'
+            ? 'Flash Sale Deals ⚡'
+            : filterParam === 'hot_deals' || filterParam === 'best_deals' || filterParam === 'featured' || filterParam === 'hot'
+            ? 'Hot Deals 🔥'
+            : sortParam === 'trending' || filterParam === 'trending'
+            ? 'Trending Collections 🚀'
+            : sortParam === 'newest' || filterParam === 'new'
+            ? 'New Arrivals ✨'
             : selectedCategory !== 'All'
             ? selectedCategory
             : 'All Products'}
@@ -98,6 +191,14 @@ function ProductsContent() {
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           {searchQueryParam
             ? `Results for "${searchQueryParam}"`
+            : filterParam === 'flash_sale' || filterParam === 'flash' || filterParam === 'flash_deals'
+            ? '⚡ Flash Deals & Limited Time Offers'
+            : filterParam === 'hot_deals' || filterParam === 'best_deals' || filterParam === 'featured' || filterParam === 'hot'
+            ? '🔥 Hot Deals & Exclusive Savings'
+            : sortParam === 'trending' || filterParam === 'trending'
+            ? '🚀 Trending Collections'
+            : sortParam === 'newest' || filterParam === 'new'
+            ? '✨ New Arrivals'
             : selectedCategory !== 'All'
             ? `${selectedCategory} Collection`
             : 'All Products & Collections'}
@@ -151,6 +252,8 @@ function ProductsContent() {
                 : prev === 'price-low'
                 ? 'price-high'
                 : prev === 'price-high'
+                ? 'discount'
+                : prev === 'discount'
                 ? 'rating'
                 : 'featured'
             )
@@ -158,7 +261,17 @@ function ProductsContent() {
           className="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shadow-xs cursor-pointer"
         >
           <ArrowUpDown className="w-4 h-4" />
-          Sort ({sortBy === 'featured' ? 'Featured' : sortBy === 'price-low' ? 'Low → High' : sortBy === 'price-high' ? 'High → Low' : 'Top Rated'})
+          Sort ({
+            sortBy === 'featured'
+              ? 'Default'
+              : sortBy === 'price-low'
+              ? 'Low → High'
+              : sortBy === 'price-high'
+              ? 'High → Low'
+              : sortBy === 'discount'
+              ? 'Biggest Discount'
+              : 'Top Rated'
+          })
         </button>
       </div>
 
@@ -277,9 +390,10 @@ function ProductsContent() {
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="w-full bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white outline-none cursor-pointer"
                 >
-                  <option value="featured">Featured Collection</option>
+                  <option value="featured">Default / Hot Deals</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
+                  <option value="discount">Biggest Discount (% OFF)</option>
                   <option value="rating">Highest Rated</option>
                 </select>
               </div>

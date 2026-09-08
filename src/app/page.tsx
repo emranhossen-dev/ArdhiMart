@@ -43,12 +43,12 @@ export default function Home() {
         {/* 5. Product Showcases - based strictly on Admin Section Checkmarks */}
         {products.length === 0 ? null : (
           <>
-            {/* Featured Products Section - strictly products checked as Featured */}
+            {/* Hot Deals Section - strictly products checked as Hot Deals (formerly Featured) */}
             {featuredProducts.length > 0 && (
               <FeaturedProducts
-                title="Featured Products"
+                title="Hot Deals 🔥"
                 products={featuredProducts}
-                viewAllLink="/products?filter=featured"
+                viewAllLink="/products?filter=hot_deals"
               />
             )}
 

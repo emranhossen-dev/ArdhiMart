@@ -591,7 +591,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* HOT DEALS */}
             <Link
-              href="/products?filter=best_deals"
+              href="/products?filter=hot_deals"
               className="px-3.5 py-1.5 rounded-lg border border-orange-500/40 bg-orange-500/10 text-[#FF6B00] hover:bg-[#FF6B00] hover:text-white text-[11px] sm:text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors uppercase tracking-wider"
             >
               <Flame className="w-3.5 h-3.5 text-[#FF6B00]" />

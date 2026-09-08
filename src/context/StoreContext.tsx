@@ -60,13 +60,28 @@ export const mapApiProduct = (item: any): Product => {
   const isFlashSaleVal =
     tagsLower.includes('flash_sale') ||
     tagsLower.includes('flash sale') ||
+    tagsLower.includes('flash') ||
     keywordsLower.includes('flash_sale') ||
-    Boolean(item.isFlashSale);
+    keywordsLower.includes('flash sale') ||
+    keywordsLower.includes('flash') ||
+    Boolean(item.isFlashSale) ||
+    item.badge?.toLowerCase() === 'flash sale';
 
-  const isFeaturedVal =
+  const isHotDealVal =
+    tagsLower.includes('hot_deals') ||
+    tagsLower.includes('hot deals') ||
+    tagsLower.includes('hot_deal') ||
+    tagsLower.includes('hot') ||
     tagsLower.includes('featured') ||
+    keywordsLower.includes('hot_deals') ||
+    keywordsLower.includes('hot deals') ||
+    keywordsLower.includes('hot') ||
+    keywordsLower.includes('featured') ||
+    Boolean(item.isHotDeal) ||
     Boolean(item.isFeatured) ||
-    item.badge === 'Featured';
+    item.badge?.toLowerCase() === 'hot deals' ||
+    item.badge?.toLowerCase() === 'hot' ||
+    item.badge?.toLowerCase() === 'featured';
 
   const isTrendingVal =
     tagsLower.includes('trending') ||
@@ -82,22 +97,23 @@ export const mapApiProduct = (item: any): Product => {
 
   // Determine card badge: strictly standard short section badges only (never raw tags or product names)
   let finalBadge = '';
-  const ALLOWED_BADGES = ['flash sale', 'trending', 'featured', 'new', 'hot', 'best seller'];
+  const ALLOWED_BADGES = ['flash sale', 'trending', 'featured', 'hot deals', 'hot', 'new', 'best seller', 'special offer', '50% off'];
   const explicitBadge = (item.badge || '').trim();
 
   if (explicitBadge && ALLOWED_BADGES.includes(explicitBadge.toLowerCase())) {
     if (explicitBadge.toLowerCase() === 'flash sale') finalBadge = 'Flash Sale';
     else if (explicitBadge.toLowerCase() === 'trending') finalBadge = 'Trending';
-    else if (explicitBadge.toLowerCase() === 'featured') finalBadge = 'Featured';
+    else if (explicitBadge.toLowerCase() === 'featured' || explicitBadge.toLowerCase() === 'hot deals' || explicitBadge.toLowerCase() === 'hot') finalBadge = 'Hot Deals';
     else if (explicitBadge.toLowerCase() === 'new') finalBadge = 'New';
-    else if (explicitBadge.toLowerCase() === 'hot') finalBadge = 'Hot';
     else if (explicitBadge.toLowerCase() === 'best seller') finalBadge = 'Best Seller';
+    else if (explicitBadge.toLowerCase() === 'special offer') finalBadge = 'Special Offer';
+    else if (explicitBadge.toLowerCase() === '50% off') finalBadge = '50% OFF';
   } else if (isFlashSaleVal) {
     finalBadge = 'Flash Sale';
+  } else if (isHotDealVal) {
+    finalBadge = 'Hot Deals';
   } else if (isTrendingVal) {
     finalBadge = 'Trending';
-  } else if (isFeaturedVal) {
-    finalBadge = 'Featured';
   } else if (isNewVal) {
     finalBadge = 'New';
   } else {
@@ -115,7 +131,8 @@ export const mapApiProduct = (item: any): Product => {
     badge: finalBadge,
     isNew: isNewVal,
     isNewArrival: isNewVal,
-    isFeatured: isFeaturedVal,
+    isFeatured: isHotDealVal,
+    isHotDeal: isHotDealVal,
     isTrending: isTrendingVal,
     isFlashSale: isFlashSaleVal,
     image: item.image || '/images/ardhimart-smart-pen-holder.webp',
