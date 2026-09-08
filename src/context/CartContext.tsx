@@ -18,6 +18,8 @@ export interface Product {
   reviewCount: number;
   badge?: string;
   isNew?: boolean;
+  deliveryInsideDhaka?: number;
+  deliveryOutsideDhaka?: number;
 }
 
 export interface CartItem extends Product {
@@ -86,6 +88,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 category: item.product.category || '',
                 rating: item.product.rating || 5,
                 reviewCount: item.product.reviewsCount || 0,
+                deliveryInsideDhaka: item.product.deliveryInsideDhaka !== undefined && item.product.deliveryInsideDhaka !== null ? Number(item.product.deliveryInsideDhaka) : undefined,
+                deliveryOutsideDhaka: item.product.deliveryOutsideDhaka !== undefined && item.product.deliveryOutsideDhaka !== null ? Number(item.product.deliveryOutsideDhaka) : undefined,
                 quantity: item.quantity || 1,
                 variantColor: item.selectedVariant || '',
                 cartItemId: `${item.product.id}-${item.selectedVariant || ''}`,

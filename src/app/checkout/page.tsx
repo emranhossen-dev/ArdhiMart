@@ -88,8 +88,7 @@ const bdLocations: Record<string, Record<string, string[]>> = {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const [storeConfig] = useState(defaultStoreConfig);
-  const { cartItems, clearCart, updateQuantity, removeFromCart } = useStore();
+  const { cartItems, clearCart, updateQuantity, removeFromCart, storeConfig } = useStore();
   const [isMounted, setIsMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -143,8 +142,14 @@ export default function CheckoutPage() {
   const [selectedThana, setSelectedThana] = useState('Dhanmondi');
   const [streetAddress, setStreetAddress] = useState('');
 
-  // Delivery & Payment Selection
-  const [deliveryMethod, setDeliveryMethod] = useState<'inside' | 'outside'>('inside');
+  // Auto-detect delivery zone strictly from selected district
+  const isInsideDhaka = Boolean(
+    selectedDistrict && (
+      selectedDistrict.toLowerCase().includes('dhaka') ||
+      selectedDistrict.includes('ঢাকা')
+    )
+  );
+  const deliveryMethod = isInsideDhaka ? 'inside' : 'outside';
   const [paymentMethod] = useState<'COD'>('COD');
 
   const divisionsList = Object.keys(bdLocations);
@@ -159,24 +164,12 @@ export default function CheckoutPage() {
 
     const availableThanas = bdLocations[div]?.[firstDist] || [];
     setSelectedThana(availableThanas[0] || '');
-
-    if (div.includes('Dhaka') && firstDist.includes('Dhaka')) {
-      setDeliveryMethod('inside');
-    } else {
-      setDeliveryMethod('outside');
-    }
   };
 
   const handleDistrictChange = (dist: string) => {
     setSelectedDistrict(dist);
     const availableThanas = bdLocations[selectedDivision]?.[dist] || [];
     setSelectedThana(availableThanas[0] || '');
-
-    if (selectedDivision.includes('Dhaka') && dist.includes('Dhaka')) {
-      setDeliveryMethod('inside');
-    } else {
-      setDeliveryMethod('outside');
-    }
   };
 
   const cartSubtotal = activeOrderItems.length > 0
@@ -259,14 +252,36 @@ export default function CheckoutPage() {
     notifyInfo('কুপন বাতিল করা হয়েছে');
   };
 
+  // Fallback shipping fees from storeConfig if product doesn't specify
+  const fallbackInside = storeConfig?.deliveryInsideDhaka ?? (storeConfig?.flatShippingFee !== undefined ? Number(storeConfig.flatShippingFee) : 70);
+  const fallbackOutside = storeConfig?.deliveryOutsideDhaka ?? (storeConfig?.flatShippingFee !== undefined ? Number(storeConfig.flatShippingFee) : 130);
+
   const insideDeliveryFee = activeOrderItems.length > 0
-    ? Math.max(...activeOrderItems.map((i) => Number(i.product.deliveryInsideDhaka ?? 70)))
-    : 70;
+    ? Math.max(
+        ...activeOrderItems.map((i) => {
+          const val = i.product.deliveryInsideDhaka;
+          return val !== undefined && val !== null ? Number(val) : fallbackInside;
+        })
+      )
+    : 0;
+
   const outsideDeliveryFee = activeOrderItems.length > 0
-    ? Math.max(...activeOrderItems.map((i) => Number(i.product.deliveryOutsideDhaka ?? 130)))
-    : 130;
-  const shippingFee = deliveryMethod === 'inside' ? insideDeliveryFee : outsideDeliveryFee;
-  const grandTotal = Math.max(0, cartSubtotal + shippingFee - discountAmount);
+    ? Math.max(
+        ...activeOrderItems.map((i) => {
+          const val = i.product.deliveryOutsideDhaka;
+          return val !== undefined && val !== null ? Number(val) : fallbackOutside;
+        })
+      )
+    : 0;
+
+  // If 0 items selected/in cart: shipping fee is strictly 0!
+  const shippingFee = activeOrderItems.length === 0
+    ? 0
+    : (isInsideDhaka ? insideDeliveryFee : outsideDeliveryFee);
+
+  const grandTotal = activeOrderItems.length === 0
+    ? 0
+    : Math.max(0, cartSubtotal + shippingFee - discountAmount);
 
   // Helper to remove ordered items from cart, keeping unchecked ones for future checkout
   const finalizeCartItems = () => {
@@ -640,64 +655,38 @@ export default function CheckoutPage() {
                 className="w-full h-11 px-3.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00]"
               />
             </div>
+
+            {/* Auto-detected Delivery Area & Charge Notice */}
+            <div className="flex items-center justify-between p-3.5 bg-orange-50/70 dark:bg-slate-800/80 border border-[#FF6B00]/30 rounded-xl">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center shrink-0">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <span>ডেলিভারি এলাকা:</span>
+                    <span className="text-[#FF6B00]">
+                      {isInsideDhaka ? 'ঢাকা সিটির ভেতরে' : 'ঢাকার বাইরে (সারাদেশ)'}
+                    </span>
+                  </p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    {isInsideDhaka ? '২৪ ঘণ্টার মধ্যে দ্রুত এক্সপ্রেস ডেলিভারি' : '২-৩ দিনের মধ্যে কুরিয়ার হোম ডেলিভারি'}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right shrink-0 ml-2">
+                <span className="text-xs font-black text-[#FF6B00] block">
+                  {activeOrderItems.length === 0 ? '৳০' : `৳${shippingFee}`}
+                </span>
+                <span className="text-[10px] text-gray-400 block">
+                  স্বয়ংক্রিয় হিসাব
+                </span>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* 2. Delivery Charge Selection */}
-        <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
-            <Truck className="w-5 h-5 text-[#FF6B00]" />
-            <h2 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">
-              Delivery Method
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label
-              onClick={() => setDeliveryMethod('inside')}
-              className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all ${
-                deliveryMethod === 'inside'
-                  ? 'border-[#FF6B00] bg-orange-50/50 dark:bg-slate-800'
-                  : 'border-gray-200 dark:border-slate-800'
-              }`}
-            >
-              <div>
-                <span className="font-extrabold text-xs text-gray-900 dark:text-white block">
-                  Inside Dhaka City
-                </span>
-                <span className="text-[10px] text-gray-500 block">
-                  Express Delivery (24 Hours)
-                </span>
-              </div>
-              <span className="font-black text-xs text-[#FF6B00]">
-                ৳{insideDeliveryFee}
-              </span>
-            </label>
-
-            <label
-              onClick={() => setDeliveryMethod('outside')}
-              className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all ${
-                deliveryMethod === 'outside'
-                  ? 'border-[#FF6B00] bg-orange-50/50 dark:bg-slate-800'
-                  : 'border-gray-200 dark:border-slate-800'
-              }`}
-            >
-              <div>
-                <span className="font-extrabold text-xs text-gray-900 dark:text-white block">
-                  Outside Dhaka (All Bangladesh)
-                </span>
-                <span className="text-[10px] text-gray-500 block">
-                  Courier Delivery (2-3 Days)
-                </span>
-              </div>
-              <span className="font-black text-xs text-[#FF6B00]">
-                ৳{outsideDeliveryFee}
-              </span>
-            </label>
-          </div>
-        </section>
-
-        {/* 3. Payment Method: Cash on Delivery Only */}
+        {/* 2. Payment Method: Cash on Delivery Only */}
         <section className="bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-2.5">
             <CreditCard className="w-5 h-5 text-[#FF6B00]" />
@@ -889,8 +878,10 @@ export default function CheckoutPage() {
               <span className="font-bold text-gray-900 dark:text-white">৳{cartSubtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span>ডেলিভারি চার্জ (Delivery Fee)</span>
-              <span className="font-bold text-gray-900 dark:text-white">৳{shippingFee}</span>
+              <span>ডেলিভারি চার্জ ({isInsideDhaka ? 'ঢাকা সিটি' : 'ঢাকার বাইরে'})</span>
+              <span className="font-bold text-gray-900 dark:text-white">
+                {activeOrderItems.length === 0 ? '৳০' : `৳${shippingFee}`}
+              </span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
@@ -918,11 +909,19 @@ export default function CheckoutPage() {
 
           <button
             onClick={handlePlaceOrder}
-            disabled={isSubmitting}
-            className="w-full h-12 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer"
+            disabled={isSubmitting || activeOrderItems.length === 0}
+            className={`w-full h-12 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
+              activeOrderItems.length === 0
+                ? 'bg-gray-400 dark:bg-gray-700 cursor-not-allowed opacity-70'
+                : 'bg-[#FF6B00] hover:bg-[#e05e00]'
+            }`}
           >
             <Lock className="w-4 h-4" />
-            {isSubmitting ? 'Confirming Order...' : 'Confirm Order'}
+            {isSubmitting
+              ? 'Confirming Order...'
+              : activeOrderItems.length === 0
+              ? 'কোনো পণ্য সিলেক্ট করা নেই'
+              : 'অর্ডার কনফার্ম করুন (Confirm Order)'}
           </button>
         </div>
       </div>

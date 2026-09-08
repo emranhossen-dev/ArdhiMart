@@ -9,6 +9,11 @@ export const defaultStoreConfig: StoreConfig = {
   phone: "01895627138",
   email: "martardhi@gmail.com",
   address: "Mohammadpur, Dhaka-1207",
+  flatShippingFee: 120,
+  deliveryInsideDhaka: 70,
+  deliveryOutsideDhaka: 130,
+  freeShippingThreshold: 2000,
+  taxRate: 0,
 };
 
 export const defaultHeroBanner: HeroBanner = {
