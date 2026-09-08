@@ -285,7 +285,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* 3. Wishlist Button (Tablet & Desktop: sm+) */}
           <Link
-            href="/account?tab=wishlist"
+            href="/wishlist"
             className="hidden sm:flex relative p-2 text-gray-700 dark:text-gray-300 hover:text-[#FF6B00] hover:bg-gray-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
             title="View Wishlist"
           >
