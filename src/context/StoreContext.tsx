@@ -153,8 +153,8 @@ export const mapApiProduct = (item: any): Product => {
       : [],
     material: item.material || '',
     warranty: item.warranty || '',
-    deliveryInsideDhaka: item.deliveryInsideDhaka !== undefined && item.deliveryInsideDhaka !== null ? Number(item.deliveryInsideDhaka) : 70,
-    deliveryOutsideDhaka: item.deliveryOutsideDhaka !== undefined && item.deliveryOutsideDhaka !== null ? Number(item.deliveryOutsideDhaka) : 130,
+    deliveryInsideDhaka: item.deliveryInsideDhaka !== undefined && item.deliveryInsideDhaka !== null && item.deliveryInsideDhaka !== '' ? Number(item.deliveryInsideDhaka) : undefined,
+    deliveryOutsideDhaka: item.deliveryOutsideDhaka !== undefined && item.deliveryOutsideDhaka !== null && item.deliveryOutsideDhaka !== '' ? Number(item.deliveryOutsideDhaka) : undefined,
     sku: item.sku || '',
     urlSlug: item.urlSlug || item.slug || (item.title ? item.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') : '') || String(item.id),
     stock: item.stock !== undefined && item.stock !== null ? Number(item.stock) : 10,
@@ -212,6 +212,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           const parsed = JSON.parse(saved);
           return {
             ...defaultStoreConfig,
+            ...parsed,
+            flatShippingFee: parsed.flatShippingFee !== undefined ? Number(parsed.flatShippingFee) : 120,
+            freeShippingThreshold: parsed.freeShippingThreshold !== undefined ? Number(parsed.freeShippingThreshold) : 2000,
+            taxRate: parsed.taxRate !== undefined ? Number(parsed.taxRate) : 0,
             enableCardImageAutoSlide: parsed.enableCardImageAutoSlide !== undefined ? Boolean(parsed.enableCardImageAutoSlide) : true,
             enableGridCarouselAutoSlide: parsed.enableGridCarouselAutoSlide !== undefined ? Boolean(parsed.enableGridCarouselAutoSlide) : true,
             autoSlideSpeed: Number(parsed.autoSlideSpeed || 3000),
@@ -222,6 +226,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
     return {
       ...defaultStoreConfig,
+      flatShippingFee: 120,
+      freeShippingThreshold: 2000,
+      taxRate: 0,
       enableCardImageAutoSlide: true,
       enableGridCarouselAutoSlide: true,
       autoSlideSpeed: 3000,
@@ -237,13 +244,29 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         );
         if (res.ok) {
           const data = await res.json();
-          setStoreConfig((prev) => ({
-            ...prev,
-            enableCardImageAutoSlide: data.enableCardImageAutoSlide !== undefined ? Boolean(data.enableCardImageAutoSlide) : true,
-            enableGridCarouselAutoSlide: data.enableGridCarouselAutoSlide !== undefined ? Boolean(data.enableGridCarouselAutoSlide) : true,
-            autoSlideSpeed: Number(data.autoSlideSpeed || 3000),
-            enablePromoModal: data.enablePromoModal !== undefined ? Boolean(data.enablePromoModal) : true,
-          }));
+          setStoreConfig((prev) => {
+            const nextConfig = {
+              ...prev,
+              name: data.storeName || prev.name,
+              email: data.storeEmail || prev.email,
+              phone: data.storePhone || prev.phone,
+              currency: data.currency || prev.currency,
+              logoUrl: data.logoUrl || prev.logoUrl,
+              flatShippingFee: data.flatShippingFee !== undefined && data.flatShippingFee !== null && data.flatShippingFee !== '' ? Number(data.flatShippingFee) : prev.flatShippingFee,
+              freeShippingThreshold: data.freeShippingThreshold !== undefined && data.freeShippingThreshold !== null && data.freeShippingThreshold !== '' ? Number(data.freeShippingThreshold) : prev.freeShippingThreshold,
+              taxRate: data.taxRate !== undefined && data.taxRate !== null && data.taxRate !== '' ? Number(data.taxRate) : prev.taxRate,
+              enableCardImageAutoSlide: data.enableCardImageAutoSlide !== undefined ? Boolean(data.enableCardImageAutoSlide) : true,
+              enableGridCarouselAutoSlide: data.enableGridCarouselAutoSlide !== undefined ? Boolean(data.enableGridCarouselAutoSlide) : true,
+              autoSlideSpeed: Number(data.autoSlideSpeed || 3000),
+              enablePromoModal: data.enablePromoModal !== undefined ? Boolean(data.enablePromoModal) : true,
+            };
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem('ardhimart_store_config', JSON.stringify(nextConfig));
+              } catch (e) {}
+            }
+            return nextConfig;
+          });
         }
       } catch (e) {}
     };
@@ -373,6 +396,32 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               } catch (e) {}
             }
 
+            // Sync cart items with fresh product data (latest prices, delivery fees, titles, etc.)
+            setCartItems((prevItems) => {
+              let hasChanged = false;
+              const refreshed = prevItems.map((ci) => {
+                const fresh = mapped.find(
+                  (p: Product) => p.id === ci.product.id || (p.urlSlug && p.urlSlug === ci.product.id)
+                );
+                if (fresh) {
+                  hasChanged = true;
+                  return {
+                    ...ci,
+                    product: {
+                      ...ci.product,
+                      ...fresh,
+                    },
+                  };
+                }
+                return ci;
+              });
+              if (hasChanged) {
+                saveCartToStorage(refreshed);
+                return refreshed;
+              }
+              return prevItems;
+            });
+
             // Fetch categories REST API
             try {
               const catRes = await fetch(`${baseUrl}/categories`);
@@ -426,7 +475,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         .map((item: any): CartItem | null => {
           if (item && item.product && item.product.id) {
             return {
-              product: item.product,
+              product: {
+                ...item.product,
+                deliveryInsideDhaka: item.product.deliveryInsideDhaka !== undefined && item.product.deliveryInsideDhaka !== null && item.product.deliveryInsideDhaka !== '' ? Number(item.product.deliveryInsideDhaka) : undefined,
+                deliveryOutsideDhaka: item.product.deliveryOutsideDhaka !== undefined && item.product.deliveryOutsideDhaka !== null && item.product.deliveryOutsideDhaka !== '' ? Number(item.product.deliveryOutsideDhaka) : undefined,
+              },
               quantity: Math.max(1, Number(item.quantity) || 1),
               selectedVariant: item.selectedVariant || '',
             };
@@ -440,6 +493,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 image: item.image || '',
                 rating: Number(item.rating) || 5,
                 category: item.category || '',
+                deliveryInsideDhaka: item.deliveryInsideDhaka !== undefined && item.deliveryInsideDhaka !== null && item.deliveryInsideDhaka !== '' ? Number(item.deliveryInsideDhaka) : undefined,
+                deliveryOutsideDhaka: item.deliveryOutsideDhaka !== undefined && item.deliveryOutsideDhaka !== null && item.deliveryOutsideDhaka !== '' ? Number(item.deliveryOutsideDhaka) : undefined,
               },
               quantity: Math.max(1, Number(item.quantity) || 1),
               selectedVariant: item.selectedVariant || item.variantColor || '',

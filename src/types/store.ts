@@ -7,6 +7,11 @@ export interface StoreConfig {
   phone?: string;
   email?: string;
   address?: string;
+  flatShippingFee?: number;
+  deliveryInsideDhaka?: number;
+  deliveryOutsideDhaka?: number;
+  freeShippingThreshold?: number;
+  taxRate?: number;
   enableCardImageAutoSlide?: boolean;
   enableGridCarouselAutoSlide?: boolean;
   autoSlideSpeed?: number;
