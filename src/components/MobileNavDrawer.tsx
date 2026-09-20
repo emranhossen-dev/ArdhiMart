@@ -13,6 +13,7 @@ import {
   Search,
   Truck,
   PhoneCall,
+  MessageSquare,
   ChevronRight,
   Settings,
 } from 'lucide-react';
@@ -209,14 +210,29 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           </div>
 
           {/* Footer Contact */}
-          <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 space-y-1 text-xs">
-            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold">
-              <PhoneCall className="w-4 h-4 text-gray-500" />
-              <span>Customer Helpline</span>
+          <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 space-y-3 text-xs">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold">
+                <PhoneCall className="w-4 h-4 text-[#FF6B00]" />
+                <span>Customer Helpline</span>
+              </div>
+              <a
+                href="tel:01895627138"
+                className="text-gray-600 dark:text-gray-300 hover:text-[#FF6B00] font-semibold pl-6 block transition-colors"
+              >
+                01895627138 (10 AM - 10 PM)
+              </a>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium pl-6">
-              +880 1700-000000 (10 AM - 10 PM)
-            </p>
+
+            <a
+              href="https://wa.me/8801895627138?text=Hello%20ArdhiMart%2C%20I%20need%20assistance."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-xs"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>WhatsApp হেল্পলাইন</span>
+            </a>
           </div>
         </div>
       </div>

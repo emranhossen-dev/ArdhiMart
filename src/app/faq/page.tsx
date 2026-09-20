@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BottomNavBar from '@/components/BottomNavBar';
-import { ChevronDown, HelpCircle, Truck, CreditCard, ShieldCheck } from 'lucide-react';
+import { ChevronDown, HelpCircle, Truck, CreditCard, ShieldCheck, PhoneCall, MessageSquare } from 'lucide-react';
 
 interface FAQItem {
   q: string;
@@ -173,12 +173,24 @@ export default function FAQPage() {
           <p className="text-gray-300 text-sm font-medium mb-6 max-w-md mx-auto">
             আপনার প্রশ্নের উত্তর এখানে না পেলে সরাসরি আমাদের কাস্টমার সাপোর্ট টিমের সাথে যোগাযোগ করুন।
           </p>
-          <a
-            href="tel:+8801700000000"
-            className="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all shadow-lg hover:shadow-orange-500/50"
-          >
-            কল করুন হটলাইনে
-          </a>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="tel:01895627138"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all shadow-lg hover:shadow-orange-500/50"
+            >
+              <PhoneCall className="w-4 h-4" />
+              <span>কল করুন: 01895627138</span>
+            </a>
+            <a
+              href="https://wa.me/8801895627138?text=Hello%20ArdhiMart%2C%20I%20have%20an%20inquiry."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-lg hover:shadow-emerald-600/50"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>WhatsApp হেল্পলাইন</span>
+            </a>
+          </div>
         </div>
       </main>
 
