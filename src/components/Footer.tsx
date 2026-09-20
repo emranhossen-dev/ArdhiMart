@@ -8,6 +8,7 @@ import Image from 'next/image';
 import {
   Send,
   PhoneCall,
+  MessageSquare,
   Mail,
   MapPin,
   Heart,
@@ -88,6 +89,17 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                 <PhoneCall className="w-4 h-4 text-[#FF6B00] shrink-0" />
                 <a href={`tel:${storeConfig.phone || '01895627138'}`} className="hover:text-[#FF6B00] transition-colors">
                   {storeConfig.phone || '01895627138'} (10 AM - 10 PM)
+                </a>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <MessageSquare className="w-4 h-4 text-emerald-500 shrink-0" />
+                <a
+                  href={`https://wa.me/${(storeConfig.phone || '01895627138').replace(/^0/, '880').replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Hello ArdhiMart, I have an inquiry.')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-emerald-500 transition-colors"
+                >
+                  WhatsApp: {storeConfig.phone || '01895627138'}
                 </a>
               </div>
               <div className="flex items-center gap-2.5">

@@ -23,6 +23,10 @@ const MobileNavDrawer = dynamic(() => import('@/components/MobileNavDrawer'), {
   ssr: false,
 });
 
+const FloatingWhatsApp = dynamic(() => import('@/components/FloatingWhatsApp'), {
+  ssr: false,
+});
+
 const StoreShellInner: React.FC<{ children: ReactNode }> = ({ children }) => {
   const router = useRouter();
   const {
@@ -64,6 +68,9 @@ const StoreShellInner: React.FC<{ children: ReactNode }> = ({ children }) => {
       )}
 
       {children}
+
+      {/* Global Floating WhatsApp Support Button */}
+      <FloatingWhatsApp />
 
       {/* Global Slide-over Mobile Menu Navigation (Lazy Loaded on demand) */}
       {isMenuOpen && (

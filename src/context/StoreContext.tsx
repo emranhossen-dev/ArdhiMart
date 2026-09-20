@@ -213,6 +213,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           return {
             ...defaultStoreConfig,
             ...parsed,
+            phone: (parsed.phone && parsed.phone !== '01700000000') ? parsed.phone : defaultStoreConfig.phone,
             flatShippingFee: parsed.flatShippingFee !== undefined ? Number(parsed.flatShippingFee) : 120,
             freeShippingThreshold: parsed.freeShippingThreshold !== undefined ? Number(parsed.freeShippingThreshold) : 2000,
             taxRate: parsed.taxRate !== undefined ? Number(parsed.taxRate) : 0,
@@ -249,7 +250,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               ...prev,
               name: data.storeName || prev.name,
               email: data.storeEmail || prev.email,
-              phone: data.storePhone || prev.phone,
+              phone: (data.storePhone && data.storePhone !== '01700000000') ? data.storePhone : (prev.phone || defaultStoreConfig.phone),
               currency: data.currency || prev.currency,
               logoUrl: data.logoUrl || prev.logoUrl,
               flatShippingFee: data.flatShippingFee !== undefined && data.flatShippingFee !== null && data.flatShippingFee !== '' ? Number(data.flatShippingFee) : prev.flatShippingFee,

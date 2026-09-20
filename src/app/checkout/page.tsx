@@ -314,7 +314,7 @@ export default function CheckoutPage() {
       return;
     }
     if (!phone.trim() || phone.trim().length < 10) {
-      notifyError('সঠিক মোবাইল নম্বর আবশ্যক', 'অনুগ্রহ করে একটি সঠিক ১১ ডিজিটের মোবাইল নম্বর লিখুন (যেমন: 017XXXXXXXX)।');
+      notifyError('সঠিক মোবাইল নম্বর আবশ্যক', 'অনুগ্রহ করে একটি সঠিক ১১ ডিজিটের মোবাইল নম্বর লিখুন (যেমন: 018XXXXXXXX)।');
       return;
     }
     if (!streetAddress.trim()) {
@@ -625,7 +625,7 @@ export default function CheckoutPage() {
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="যেমন: 01700000000"
+                        placeholder="যেমন: 01895627138"
                         className="w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-semibold font-mono outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
                       />
                     </div>
