@@ -15,10 +15,6 @@ A fast, mobile-optimized, conversion-focused e-commerce storefront built with Ne
 
 ArdhiMart Storefront is designed for modern online shopping experiences. It features seamless one-page express checkout, instant search, dynamic flash deals, category navigation, real-time cart synchronization, and complete Meta Pixel integration.
 
-### Live Links and Demos
-- Live Storefront Website: [https://ardhimart.com](https://ardhimart.com)
-- Backend REST API: [https://ardhimart-backend.onrender.com/api/v1](https://ardhimart-backend.onrender.com/api/v1)
-
 ---
 
 ## UI Preview
