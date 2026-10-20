@@ -210,10 +210,15 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const saved = localStorage.getItem('ardhimart_store_settings');
         if (saved) {
           const parsed = JSON.parse(saved);
+          const rawName = parsed.name === 'Gift & Print Hub BD' ? defaultStoreConfig.name : (parsed.name || defaultStoreConfig.name);
+          const rawEmail = parsed.email === 'giftandprinthubbd@gmail.com' ? defaultStoreConfig.email : (parsed.email || defaultStoreConfig.email);
+          const rawPhone = (parsed.phone && parsed.phone !== '01700000000' && parsed.phone !== '01745346861') ? parsed.phone : defaultStoreConfig.phone;
           return {
             ...defaultStoreConfig,
             ...parsed,
-            phone: (parsed.phone && parsed.phone !== '01700000000') ? parsed.phone : defaultStoreConfig.phone,
+            name: rawName,
+            email: rawEmail,
+            phone: rawPhone,
             flatShippingFee: parsed.flatShippingFee !== undefined ? Number(parsed.flatShippingFee) : 120,
             freeShippingThreshold: parsed.freeShippingThreshold !== undefined ? Number(parsed.freeShippingThreshold) : 2000,
             taxRate: parsed.taxRate !== undefined ? Number(parsed.taxRate) : 0,
@@ -246,11 +251,14 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         if (res.ok) {
           const data = await res.json();
           setStoreConfig((prev) => {
+            const nextName = data.storeName && data.storeName !== 'Gift & Print Hub BD' ? data.storeName : prev.name;
+            const nextEmail = data.storeEmail && data.storeEmail !== 'giftandprinthubbd@gmail.com' ? data.storeEmail : prev.email;
+            const nextPhone = (data.storePhone && data.storePhone !== '01700000000' && data.storePhone !== '01745346861') ? data.storePhone : (prev.phone || defaultStoreConfig.phone);
             const nextConfig = {
               ...prev,
-              name: data.storeName || prev.name,
-              email: data.storeEmail || prev.email,
-              phone: (data.storePhone && data.storePhone !== '01700000000') ? data.storePhone : (prev.phone || defaultStoreConfig.phone),
+              name: nextName,
+              email: nextEmail,
+              phone: nextPhone,
               currency: data.currency || prev.currency,
               logoUrl: data.logoUrl || prev.logoUrl,
               flatShippingFee: data.flatShippingFee !== undefined && data.flatShippingFee !== null && data.flatShippingFee !== '' ? Number(data.flatShippingFee) : prev.flatShippingFee,
