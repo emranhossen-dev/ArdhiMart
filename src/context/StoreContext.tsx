@@ -281,8 +281,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     fetchLiveSettings();
-    const interval = setInterval(fetchLiveSettings, 15000);
-    return () => clearInterval(interval);
+    // No polling — settings rarely change, re-fetch on tab focus is enough
   }, []);
   
   // Clean live product state with instant localStorage fallback to prevent cold-start 404
@@ -333,37 +332,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return [];
   });
 
-  // Sync categories directly from NestJS PostgreSQL REST API
-  React.useEffect(() => {
-    const fetchLiveCategories = async () => {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
-        const res = await fetch(`${baseUrl}/categories`);
-        if (res.ok) {
-          const data = await res.json();
-          const dataArr = Array.isArray(data) ? data : (data && data.id ? [data] : null);
-          if (dataArr && dataArr.length > 0) {
-            const mapCategory = (c: any): Category => ({
-              id: c.id || `cat-${c.slug}`,
-              name: c.name,
-              slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-              image: c.image || '/images/ardhimart-smart-pen-holder.webp',
-              description: c.description || '',
-              itemCount: c.productCount || 0,
-              parentId: c.parentId || null,
-              children: Array.isArray(c.children) ? c.children.map(mapCategory) : []
-            });
-
-            setDbCategories(dataArr.map(mapCategory));
-          }
-        }
-      } catch (e) {}
-    };
-
-    fetchLiveCategories();
-    const interval = setInterval(fetchLiveCategories, 10000); // 10s refresh
-    return () => clearInterval(interval);
-  }, []);
+  // Categories are fetched together with products in the main fetchProducts effect below
+  // No separate category polling needed — eliminates duplicate API calls
 
   // Categories are strictly managed by admin in DB. Never dynamically synthesize categories from products!
   const categories = React.useMemo(() => {
@@ -390,9 +360,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const fetchProducts = async () => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
-        const res = await fetch(`${baseUrl}/products`, {
-          cache: 'no-store',
-        });
+        const res = await fetch(`${baseUrl}/products`);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && isMounted) {

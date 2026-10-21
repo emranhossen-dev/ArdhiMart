@@ -54,8 +54,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
     };
 
     fetchLiveBanners();
-    const interval = setInterval(fetchLiveBanners, 12000); // 12s live background re-sync
-    return () => clearInterval(interval);
+    // No polling — banners rarely change mid-session
   }, []);
 
   const defaultSlides: SlideItem[] = [

@@ -7,7 +7,6 @@ import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import MotionProvider from '@/components/MotionProvider';
 import PageNavigationLoader from '@/components/PageNavigationLoader';
-import EyesLoader from '@/components/EyesLoader';
 import { useRouter } from 'next/navigation';
 
 // Lazy load heavy modal & drawer overlays so mobile viewers download zero extra JS on initial paint
@@ -42,19 +41,7 @@ const StoreShellInner: React.FC<{ children: ReactNode }> = ({ children }) => {
     setIsMenuOpen,
     updateQuantity,
     removeFromCart,
-    isLoading,
   } = useStore();
-
-  const [showInitialLoader, setShowInitialLoader] = React.useState(true);
-
-  React.useEffect(() => {
-    if (!isLoading) {
-      const t = setTimeout(() => setShowInitialLoader(false), 200);
-      return () => clearTimeout(t);
-    }
-    const fallback = setTimeout(() => setShowInitialLoader(false), 2000);
-    return () => clearTimeout(fallback);
-  }, [isLoading]);
 
   return (
     <MotionProvider>
@@ -62,11 +49,7 @@ const StoreShellInner: React.FC<{ children: ReactNode }> = ({ children }) => {
         <PageNavigationLoader />
       </Suspense>
 
-      {/* Global Animated Eye Loading Screen during initial site/data load */}
-      {showInitialLoader && (
-        <EyesLoader fullScreen />
-      )}
-
+      {/* Page content renders immediately — individual sections handle their own skeleton states */}
       {children}
 
       {/* Global Floating WhatsApp Support Button */}

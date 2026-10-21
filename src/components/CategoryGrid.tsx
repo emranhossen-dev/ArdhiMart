@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Category } from '@/types/store';
 import { getCategorySlug } from '@/lib/slug';
@@ -17,13 +17,24 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Auto-slide permanently disabled per user preference
+  if (categories.length === 0) {
+    return (
+      <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-3">
+          <div className="h-6 w-44 rounded-lg skeleton-shimmer" />
+        </div>
+        <div className="flex gap-3 overflow-hidden py-2">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <div key={n} className="shrink-0 flex flex-col items-center gap-2 min-w-[62px]">
+              <div className="w-13 h-13 rounded-full skeleton-shimmer" />
+              <div className="w-12 h-3 rounded skeleton-shimmer" />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none">
@@ -81,3 +92,4 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
 };
 
 export default CategoryGrid;
+

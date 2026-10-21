@@ -12,6 +12,7 @@ import FeaturedProducts from '@/components/FeaturedProducts';
 import BottomNavBar from '@/components/BottomNavBar';
 import { useStore } from '@/context/StoreContext';
 import { getCategorySlug } from '@/lib/slug';
+import { ProductSkeletonGrid } from '@/components/LoadingSpinner';
 
 // Lazy load below-the-fold components to maximize mobile Initial Contentful Paint & Google PageSpeed
 const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), {
@@ -27,7 +28,7 @@ const PromotionalEntryModal = dynamic(() => import('@/components/PromotionalEntr
 });
 
 export default function Home() {
-  const { storeConfig, heroBanner, categories, products } = useStore();
+  const { storeConfig, heroBanner, categories, products, isLoading } = useStore();
 
   const featuredProducts = products.filter((p) => p.isFeatured === true);
   const trendingProducts = products.filter((p) => p.isTrending === true);
@@ -59,7 +60,24 @@ export default function Home() {
           viewport={{ once: true, margin: '-20px' }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
         >
-          <CategoryGrid categories={categories} />
+          {categories.length === 0 && isLoading ? (
+            /* Category skeleton */
+            <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-5 w-40 rounded-lg skeleton-shimmer" />
+              </div>
+              <div className="flex gap-3 overflow-hidden">
+                {[1,2,3,4,5,6].map((n) => (
+                  <div key={n} className="shrink-0 flex flex-col items-center gap-2">
+                    <div className="w-14 h-14 rounded-full skeleton-shimmer" />
+                    <div className="w-12 h-3 rounded skeleton-shimmer" />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <CategoryGrid categories={categories} />
+          )}
         </m.div>
 
         {/* 4. Flash Sale Section */}
@@ -73,7 +91,20 @@ export default function Home() {
         </m.div>
 
         {/* 5. Product Showcases - based strictly on Admin Section Checkmarks */}
-        {products.length === 0 ? null : (
+        {isLoading ? (
+          /* Product sections skeleton while data loads */
+          <section className="py-4 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+            {[1, 2].map((s) => (
+              <div key={s}>
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100 dark:border-slate-800">
+                  <div className="h-5 w-32 rounded skeleton-shimmer" />
+                  <div className="h-4 w-14 rounded skeleton-shimmer" />
+                </div>
+                <ProductSkeletonGrid count={4} />
+              </div>
+            ))}
+          </section>
+        ) : products.length === 0 ? null : (
           <>
             {/* Hot Deals Section */}
             {featuredProducts.length > 0 && (
@@ -180,3 +211,4 @@ export default function Home() {
     </div>
   );
 }
+
