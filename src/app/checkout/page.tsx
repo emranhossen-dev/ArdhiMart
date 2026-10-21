@@ -93,15 +93,27 @@ const bdLocations: Record<string, Record<string, string[]>> = {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, clearCart, updateQuantity, removeFromCart, storeConfig } = useStore();
+  const { cartItems, clearCart, removeFromCart, storeConfig } = useStore();
   const [isMounted, setIsMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Independent checkout items state — isolated from cartItems so checkout actions do not alter the user's cart
+  const [checkoutItems, setCheckoutItems] = useState<typeof cartItems>([]);
+  const hasInitializedRef = React.useRef(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    if (!hasInitializedRef.current && cartItems.length > 0) {
+      setCheckoutItems(cartItems.map((item) => ({ ...item, product: { ...item.product } })));
+      hasInitializedRef.current = true;
+    }
+  }, [cartItems]);
 
   // Track excluded/unchecked item IDs in checkout
   const [excludedItemIds, setExcludedItemIds] = useState<string[]>([]);
 
   // Filter only checked items for the active order
-  const activeOrderItems = cartItems.filter((item) => !excludedItemIds.includes(item.product.id));
+  const activeOrderItems = checkoutItems.filter((item) => !excludedItemIds.includes(item.product.id));
 
   const toggleItemSelection = (productId: string) => {
     setExcludedItemIds((prev) => {
@@ -109,7 +121,7 @@ export default function CheckoutPage() {
         ? prev.filter((id) => id !== productId)
         : [...prev, productId];
       if (typeof window !== 'undefined') {
-        const remainingSelected = cartItems
+        const remainingSelected = checkoutItems
           .map((i) => i.product.id)
           .filter((id) => !nextExcluded.includes(id));
         sessionStorage.setItem('ardhimart_checkout_selected_ids', JSON.stringify(remainingSelected));
@@ -120,22 +132,34 @@ export default function CheckoutPage() {
 
   const isItemSelected = (productId: string) => !excludedItemIds.includes(productId);
 
+  // Update checkout quantity locally — never drops below 1, never modifies global cart
+  const updateCheckoutQuantity = (productId: string, delta: number) => {
+    setCheckoutItems((prev) =>
+      prev.map((item) => {
+        if (item.product.id === productId) {
+          const nextQty = item.quantity + delta;
+          return { ...item, quantity: Math.max(1, nextQty) };
+        }
+        return item;
+      })
+    );
+  };
+
   useEffect(() => {
-    setIsMounted(true);
     if (typeof window !== 'undefined') {
       try {
         const saved = sessionStorage.getItem('ardhimart_checkout_selected_ids');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) {
-            const allCartIds = cartItems.map((i) => i.product.id);
-            const excluded = allCartIds.filter((id) => !parsed.includes(id));
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const allIds = (checkoutItems.length > 0 ? checkoutItems : cartItems).map((i) => i.product.id);
+            const excluded = allIds.filter((id) => !parsed.includes(id));
             setExcludedItemIds(excluded);
           }
         }
       } catch (e) {}
     }
-  }, [cartItems]);
+  }, [checkoutItems, cartItems]);
 
   // Form Fields State
   const [customerName, setCustomerName] = useState('');
@@ -290,7 +314,7 @@ export default function CheckoutPage() {
 
   // Helper to remove ordered items from cart, keeping unchecked ones for future checkout
   const finalizeCartItems = () => {
-    if (activeOrderItems.length >= cartItems.length) {
+    if (activeOrderItems.length >= checkoutItems.length) {
       clearCart();
     } else {
       activeOrderItems.forEach((item) => removeFromCart(item.product.id));
@@ -321,7 +345,7 @@ export default function CheckoutPage() {
       notifyError('ঠিকানা আবশ্যক', 'অনুগ্রহ করে আপনার বিস্তারিত বাসা/রোড বা এলাকা লিখুন।');
       return;
     }
-    if (cartItems.length === 0) {
+    if (checkoutItems.length === 0 && cartItems.length === 0) {
       notifyError('কার্ট খালি', 'আপনার শপিং ব্যাগে কোনো পণ্য নেই। অনুগ্রহ করে পণ্য যোগ করুন।');
       router.push('/products');
       return;
@@ -495,7 +519,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (cartItems.length === 0) {
+  if (checkoutItems.length === 0 && cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
         <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 flex items-center justify-between px-4 sm:px-8">
@@ -847,13 +871,13 @@ export default function CheckoutPage() {
                   </h3>
                 </div>
                 <span className="text-xs font-bold text-gray-400">
-                  মোট {cartItems.length} টি পণ্য
+                  মোট {checkoutItems.length} টি পণ্য
                 </span>
               </div>
 
               {/* Items List */}
               <div className="space-y-3 max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800 pr-1">
-                {cartItems.map((item) => {
+                {checkoutItems.map((item) => {
                   const isChecked = isItemSelected(item.product.id);
                   return (
                     <div
@@ -869,7 +893,7 @@ export default function CheckoutPage() {
                           checked={isChecked}
                           onChange={() => toggleItemSelection(item.product.id)}
                           className="w-4 h-4 rounded text-[#FF6B00] accent-[#FF6B00] cursor-pointer shrink-0"
-                          title={isChecked ? 'অর্ডার থেকে বাদ দিন' : 'অর্ডারে অন্তর্ভুক্ত করুন'}
+                          title={isChecked ? 'অর্ডার থেকে বাদ দিতে আনচেক করুন' : 'অর্ডারে অন্তর্ভুক্ত করতে চেকমার্ক দিন'}
                         />
 
                         <img
@@ -898,14 +922,14 @@ export default function CheckoutPage() {
                         <div className="flex items-center border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-slate-800">
                           <button
                             type="button"
-                            onClick={() => {
-                              if (item.quantity > 1) {
-                                updateQuantity(item.product.id, -1);
-                              } else {
-                                removeFromCart(item.product.id);
-                              }
-                            }}
-                            className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                            onClick={() => updateCheckoutQuantity(item.product.id, -1)}
+                            disabled={item.quantity <= 1}
+                            className={`w-6 h-6 flex items-center justify-center transition-colors ${
+                              item.quantity <= 1
+                                ? 'opacity-30 cursor-not-allowed text-gray-400 dark:text-gray-600'
+                                : 'hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer'
+                            }`}
+                            title={item.quantity <= 1 ? 'সর্বনিম্ন ১টি পণ্য থাকতে হবে। বাদ দিতে আনচেক করুন' : 'সংখ্যা কমান'}
                           >
                             <Minus className="w-3 h-3" />
                           </button>
@@ -914,8 +938,9 @@ export default function CheckoutPage() {
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.product.id, 1)}
+                            onClick={() => updateCheckoutQuantity(item.product.id, 1)}
                             className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                            title="সংখ্যা বাড়ান"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
@@ -924,15 +949,6 @@ export default function CheckoutPage() {
                         <span className="font-extrabold text-xs text-gray-900 dark:text-white min-w-[3.5rem] text-right">
                           ৳{(item.product.price * item.quantity).toLocaleString()}
                         </span>
-
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.product.id)}
-                          className="p-1 text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-md transition-colors cursor-pointer"
-                          title="মুছে ফেলুন"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
                       </div>
                     </div>
                   );
