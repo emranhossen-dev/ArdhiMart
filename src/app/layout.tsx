@@ -199,6 +199,32 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+
+        {/* Browser Permission Suppression Guard — Ensures zero prompts on landing */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  if (typeof window !== 'undefined') {
+                    if ('Notification' in window && typeof window.Notification.requestPermission === 'function') {
+                      window.Notification.requestPermission = function() { return Promise.resolve('denied'); };
+                    }
+                    if (navigator && navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition = function(s, e) {
+                        if (typeof e === 'function') e({ code: 1, message: 'Permission denied', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 });
+                      };
+                      navigator.geolocation.watchPosition = function(s, e) {
+                        if (typeof e === 'function') e({ code: 1, message: 'Permission denied', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 });
+                        return 0;
+                      };
+                    }
+                  }
+                } catch (err) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <FacebookPixel />
