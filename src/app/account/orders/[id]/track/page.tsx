@@ -75,8 +75,8 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
 
-      // 1. Direct ID lookup
-      const res = await fetch(`${baseUrl}/orders/${encodeURIComponent(cleanQuery)}`, {
+      // 1. Dedicated secure tracking endpoint (checks ID, Order Number, and Phone)
+      const res = await fetch(`${baseUrl}/orders/track/${encodeURIComponent(cleanQuery)}`, {
         cache: 'no-store',
       });
       if (res.ok) {
@@ -88,41 +88,10 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
         }
       }
 
-      // 2. Search orders by query
-      const listRes = await fetch(`${baseUrl}/orders?search=${encodeURIComponent(cleanQuery)}`, {
-        cache: 'no-store',
-      });
-      if (listRes.ok) {
-        const listData = await listRes.json();
-        if (Array.isArray(listData) && listData.length > 0) {
-          setOrderData(listData[0]);
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // 3. Fallback to all orders
-      const allRes = await fetch(`${baseUrl}/orders`, { cache: 'no-store' });
-      if (allRes.ok) {
-        const allData = await allRes.json();
-        if (Array.isArray(allData)) {
-          const match = allData.find(
-            (o: any) =>
-              String(o.id) === cleanQuery ||
-              String(o.orderNumber) === cleanQuery ||
-              String(o.customerPhone).includes(cleanQuery)
-          );
-          if (match) {
-            setOrderData(match);
-            setIsLoading(false);
-            return;
-          }
-        }
-      }
-
       if (!foundLocal) {
         setErrorMsg(`"${cleanQuery}" নম্বর দিয়ে কোনো অর্ডার খুঁজে পাওয়া যায়নি। অনুগ্রহ করে সঠিক অর্ডার আইডি বা মোবাইল নম্বর দিন।`);
       }
+
     } catch (err: any) {
       if (!foundLocal) {
         setErrorMsg('সার্ভারের সাথে যোগাযোগ করা সম্ভব হয়নি। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।');

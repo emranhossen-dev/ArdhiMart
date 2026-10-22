@@ -547,6 +547,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   // Multi-tab synchronization
+  // Multi-tab and same-tab synchronization
   React.useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'ardhimart_cart' || e.key === 'websites_cart') {
@@ -562,9 +563,22 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         } catch (err) {}
       }
     };
+
+    const handleLocalCartSync = () => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('ardhimart_cart') || localStorage.getItem('websites_cart');
+        setCartItems(parseStoredCartItems(saved));
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('cart_updated', handleLocalCartSync);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cart_updated', handleLocalCartSync);
+    };
   }, []);
+
 
   const { user } = useAuth();
 

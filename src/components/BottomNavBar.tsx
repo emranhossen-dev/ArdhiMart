@@ -83,8 +83,9 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full z-40 bg-[#FF6B00] border-t border-[#e05e00] h-16 flex items-center justify-around px-2 sm:hidden transition-colors shadow-2xl text-white">
+    <nav className="fixed bottom-0 left-0 w-full z-40 bg-[#FF6B00] border-t border-[#e05e00] h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] flex items-center justify-around px-2 sm:hidden transition-colors shadow-2xl text-white">
       {tabs.map((tab) => {
+
         const IconComponent = tab.icon;
         const active = tab.isActive;
 

@@ -9,7 +9,7 @@ import { HiOutlineAdjustmentsHorizontal, HiOutlineArchiveBoxXMark } from "react-
 export const ProductGrid: React.FC = () => {
   const { selectedCategory, setSelectedCategory, searchQuery, setSearchQuery, wishlist } =
     useCart();
-  const { products } = useStore();
+  const { products, wishlistIds } = useStore();
   const [sortBy, setSortBy] = useState<"featured" | "low" | "high" | "rating">("featured");
 
   const filteredProducts = products.filter((product: any) => {
@@ -19,8 +19,10 @@ export const ProductGrid: React.FC = () => {
 
     // Category Filter
     if (selectedCategory === "Wishlist") {
-      if (!wishlist.includes(product.id)) return false;
+      const isWishlisted = wishlistIds.includes(product.id) || wishlist.includes(product.id);
+      if (!isWishlisted) return false;
     } else if (selectedCategory !== "All") {
+
       if (productCategory.toLowerCase() !== selectedCategory.toLowerCase()) return false;
     }
 

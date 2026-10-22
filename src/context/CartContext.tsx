@@ -116,10 +116,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!isLoaded) return;
     try {
       localStorage.setItem("websites_cart", JSON.stringify(cart));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart_updated'));
+      }
     } catch (e) {
       console.error("Failed to save cart", e);
     }
   }, [cart, isLoaded]);
+
 
   // Save wishlist to localStorage
   useEffect(() => {

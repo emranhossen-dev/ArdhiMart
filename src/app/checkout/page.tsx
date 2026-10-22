@@ -161,15 +161,25 @@ export default function CheckoutPage() {
     }
   }, [checkoutItems, cartItems]);
 
-  // Form Fields State
+  // Form Fields State & Inline Validation
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
+  const [streetAddress, setStreetAddress] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    customerName?: string;
+    phone?: string;
+    streetAddress?: string;
+  }>({});
+
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
+  const phoneInputRef = React.useRef<HTMLInputElement>(null);
+  const addressInputRef = React.useRef<HTMLInputElement>(null);
 
   // Bangladesh Cascading Address States
   const [selectedDivision, setSelectedDivision] = useState('Dhaka (ঢাকা)');
   const [selectedDistrict, setSelectedDistrict] = useState('Dhaka (ঢাকা)');
   const [selectedThana, setSelectedThana] = useState('Dhanmondi');
-  const [streetAddress, setStreetAddress] = useState('');
+
 
   // Auto-detect delivery zone strictly from selected district
   const isInsideDhaka = Boolean(
@@ -332,30 +342,102 @@ export default function CheckoutPage() {
     }
   }, []);
 
+  // Auto-record lead / abandoned cart when customer types phone or leaves checkout
+  const syncAbandonedCart = async (explicitPhone?: string, explicitName?: string) => {
+
+    const targetPhone = (explicitPhone ?? phone).trim();
+    if (targetPhone.length < 8) return;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ardhimart-backend.onrender.com/api/v1';
+      const itemsPayload = activeOrderItems.map((i) => ({
+        productId: i.product.id,
+        productName: i.product.title,
+        quantity: i.quantity,
+        price: i.product.price,
+        image: i.product.image,
+      }));
+
+      await fetch(`${baseUrl}/abandoned-carts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: (explicitName ?? customerName).trim() || 'Interested Customer',
+          customerPhone: targetPhone,
+          cartItems: itemsPayload,
+          totalAmount: grandTotal,
+        }),
+      });
+    } catch (e) {
+      // Background sync, silently fail without blocking UX
+    }
+  };
+
+  // Debounced auto-record as soon as phone number is 11 digits
+  useEffect(() => {
+    const cleanPhone = phone.trim();
+    if (cleanPhone.length >= 11) {
+      const timer = setTimeout(() => {
+        syncAbandonedCart(cleanPhone, customerName);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [phone, customerName, grandTotal, activeOrderItems.length]);
+
   const handlePlaceOrder = async () => {
+    if (isSubmitting) return;
+
+    // 1. Perform Inline Form Validation (No blocking popups)
+    const newErrors: { customerName?: string; phone?: string; streetAddress?: string } = {};
+
     if (!customerName.trim()) {
-      notifyError('নাম আবশ্যক', 'অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন।');
-      return;
+      newErrors.customerName = 'আপনার পূর্ণ নাম লিখুন';
     }
-    if (!phone.trim() || phone.trim().length < 10) {
-      notifyError('সঠিক মোবাইল নম্বর আবশ্যক', 'অনুগ্রহ করে একটি সঠিক ১১ ডিজিটের মোবাইল নম্বর লিখুন (যেমন: 018XXXXXXXX)।');
-      return;
+
+    const cleanPhone = phone.trim();
+    if (!cleanPhone) {
+      newErrors.phone = 'মোবাইল নম্বর লিখুন';
+    } else if (cleanPhone.length < 11) {
+      newErrors.phone = 'সঠিক ১১ ডিজিটের মোবাইল নম্বর লিখুন (যেমন: 018XXXXXXXX)';
     }
+
     if (!streetAddress.trim()) {
-      notifyError('ঠিকানা আবশ্যক', 'অনুগ্রহ করে আপনার বিস্তারিত বাসা/রোড বা এলাকা লিখুন।');
+      newErrors.streetAddress = 'আপনার বিস্তারিত বাসা/রোড বা এলাকা লিখুন';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
+      // Auto-focus first erroneous input smoothly
+      if (newErrors.customerName) {
+        nameInputRef.current?.focus();
+        nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (newErrors.phone) {
+        phoneInputRef.current?.focus();
+        phoneInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (newErrors.streetAddress) {
+        addressInputRef.current?.focus();
+        addressInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Record lead in abandoned carts so admin can follow up even if customer gets stuck on validation
+      syncAbandonedCart();
       return;
     }
+
     if (checkoutItems.length === 0 && cartItems.length === 0) {
       notifyError('কার্ট খালি', 'আপনার শপিং ব্যাগে কোনো পণ্য নেই। অনুগ্রহ করে পণ্য যোগ করুন।');
       router.push('/products');
       return;
     }
+
     if (activeOrderItems.length === 0) {
       notifyError('কোনো পণ্য সিলেক্ট করা নেই', 'অর্ডার সম্পন্ন করতে কমপক্ষে ১টি পণ্য চেকমার্ক দিয়ে সিলেক্ট করুন।');
       return;
     }
 
     setIsSubmitting(true);
+    // Background record customer lead before order placement
+    syncAbandonedCart();
+
     const fullShippingAddress = `${streetAddress.trim()}, ${selectedThana}, ${selectedDistrict}, ${selectedDivision}`;
     const itemsPayload = activeOrderItems.map((i) => ({
       productId: i.product.id,
@@ -391,8 +473,8 @@ export default function CheckoutPage() {
 
       if (res.ok) {
         const orderData = await res.json().catch(() => null);
-        const orderNum = String(orderData?.orderNumber || orderData?.id || Math.floor(1000 + Math.random() * 9000));
-        const eventId = `order_${orderNum}`;
+        const orderNum = String(orderData?.orderNumber || orderData?.id || '');
+        const eventId = `order_${orderNum || Date.now()}`;
 
         // Facebook Pixel Purchase event with eventID deduplication
         fpixel.event(
@@ -407,99 +489,44 @@ export default function CheckoutPage() {
           { eventID: eventId }
         );
 
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && orderNum) {
           try {
-            const orderSummary = {
+            localStorage.setItem('ardhimart_last_order_id', orderNum);
+            const prevOrdersStr = localStorage.getItem('ardhimart_user_orders');
+            const prevOrders = prevOrdersStr ? JSON.parse(prevOrdersStr) : [];
+            const safeOrderSummary = {
               id: orderData?.id || orderNum,
               orderNumber: orderNum,
               totalAmount: orderData?.totalAmount || grandTotal,
-              subtotal: cartSubtotal,
-              shippingFee: shippingFee,
-              customerName: customerName.trim(),
-              customerPhone: phone.trim(),
-              shippingAddress: fullShippingAddress,
-              city: selectedDistrict,
-              items: itemsPayload,
-              paymentMethod: 'COD',
               status: orderData?.status || 'pending',
               createdAt: orderData?.createdAt || new Date().toISOString(),
             };
-            localStorage.setItem('ardhimart_last_order', JSON.stringify(orderSummary));
-            localStorage.setItem('ardhimart_last_order_id', orderNum);
-
-            const prevOrdersStr = localStorage.getItem('ardhimart_user_orders');
-            const prevOrders = prevOrdersStr ? JSON.parse(prevOrdersStr) : [];
-            const updatedOrders = [orderSummary, ...prevOrders.filter((o: any) => o.id !== orderSummary.id && o.orderNumber !== orderSummary.orderNumber)];
-            localStorage.setItem('ardhimart_user_orders', JSON.stringify(updatedOrders));
+            const updatedOrders = [
+              safeOrderSummary,
+              ...prevOrders.filter((o: any) => o.id !== safeOrderSummary.id && o.orderNumber !== safeOrderSummary.orderNumber),
+            ];
+            localStorage.setItem('ardhimart_user_orders', JSON.stringify(updatedOrders.slice(0, 10)));
           } catch (e) {}
         }
 
         finalizeCartItems();
         router.push(`/checkout/success?orderId=${encodeURIComponent(orderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
       } else {
-        const fallbackOrderNum = String(Math.floor(1000 + Math.random() * 9000));
-        fpixel.event('Purchase', {
-          content_ids: itemsPayload.map((item) => item.productId),
-          content_type: 'product',
-          value: grandTotal,
-          currency: 'BDT',
-          num_items: itemsPayload.length,
-        });
-
-        if (typeof window !== 'undefined') {
-          try {
-            const orderSummary = {
-              id: fallbackOrderNum,
-              orderNumber: fallbackOrderNum,
-              totalAmount: grandTotal,
-              subtotal: cartSubtotal,
-              shippingFee: shippingFee,
-              customerName: customerName.trim(),
-              customerPhone: phone.trim(),
-              shippingAddress: fullShippingAddress,
-              city: selectedDistrict,
-              items: itemsPayload,
-              paymentMethod: 'COD',
-              status: 'pending',
-              createdAt: new Date().toISOString(),
-            };
-            localStorage.setItem('ardhimart_last_order', JSON.stringify(orderSummary));
-            localStorage.setItem('ardhimart_last_order_id', fallbackOrderNum);
-          } catch (e) {}
-        }
-
-        finalizeCartItems();
-        router.push(`/checkout/success?orderId=${encodeURIComponent(fallbackOrderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
+        const errJson = await res.json().catch(() => null);
+        const serverMsg = errJson?.message;
+        const msg = Array.isArray(serverMsg) ? serverMsg.join(', ') : (serverMsg || 'অর্ডার সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে আপনার তথ্য যাচাই করে আবার চেষ্টা করুন।');
+        notifyError('অর্ডার সম্পন্ন হয়নি', msg);
       }
-    } catch (err) {
-      const fallbackOrderNum = String(Math.floor(1000 + Math.random() * 9000));
-      if (typeof window !== 'undefined') {
-        try {
-          const orderSummary = {
-            id: fallbackOrderNum,
-            orderNumber: fallbackOrderNum,
-            totalAmount: grandTotal,
-            subtotal: cartSubtotal,
-            shippingFee: shippingFee,
-            customerName: customerName.trim(),
-            customerPhone: phone.trim(),
-            shippingAddress: fullShippingAddress,
-            city: selectedDistrict,
-            items: itemsPayload,
-            paymentMethod: 'COD',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-          };
-          localStorage.setItem('ardhimart_last_order', JSON.stringify(orderSummary));
-          localStorage.setItem('ardhimart_last_order_id', fallbackOrderNum);
-        } catch (e) {}
-      }
-      finalizeCartItems();
-      router.push(`/checkout/success?orderId=${encodeURIComponent(fallbackOrderNum)}&amount=${encodeURIComponent(String(grandTotal))}`);
+    } catch (err: any) {
+      notifyError(
+        'নেটওয়ার্ক সমস্যা',
+        'সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন। আপনার কার্টের পণ্যগুলো নিরাপদ রয়েছে।'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   if (!isMounted) {
     return (
@@ -588,8 +615,9 @@ export default function CheckoutPage() {
       </header>
 
       {/* Main Checkout Container */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-36 lg:pb-12 space-y-6 sm:space-y-8">
         {/* Desktop Breadcrumbs & Title */}
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <nav className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1.5">
@@ -631,13 +659,27 @@ export default function CheckoutPage() {
                     </label>
                     <div className="relative">
                       <input
+                        ref={nameInputRef}
                         type="text"
                         value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
+                        onChange={(e) => {
+                          setCustomerName(e.target.value);
+                          if (fieldErrors.customerName) setFieldErrors((p) => ({ ...p, customerName: undefined }));
+                        }}
                         placeholder="যেমন: সাকিব আল হাসান"
-                        className="w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
+                        className={`w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border rounded-2xl text-xs sm:text-sm font-semibold outline-none transition-all ${
+                          fieldErrors.customerName
+                            ? 'border-red-500 ring-2 ring-red-400/20 bg-red-50/10'
+                            : 'border-gray-200 dark:border-slate-700 focus:border-[#FF6B00] dark:focus:border-[#FF6B00]'
+                        }`}
                       />
                     </div>
+                    {fieldErrors.customerName && (
+                      <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        {fieldErrors.customerName}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -646,13 +688,28 @@ export default function CheckoutPage() {
                     </label>
                     <div className="relative">
                       <input
+                        ref={phoneInputRef}
                         type="tel"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          if (fieldErrors.phone) setFieldErrors((p) => ({ ...p, phone: undefined }));
+                        }}
+                        onBlur={() => syncAbandonedCart(phone, customerName)}
                         placeholder="যেমন: 01895627138"
-                        className="w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-semibold font-mono outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
+                        className={`w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border rounded-2xl text-xs sm:text-sm font-semibold font-mono outline-none transition-all ${
+                          fieldErrors.phone
+                            ? 'border-red-500 ring-2 ring-red-400/20 bg-red-50/10'
+                            : 'border-gray-200 dark:border-slate-700 focus:border-[#FF6B00] dark:focus:border-[#FF6B00]'
+                        }`}
                       />
                     </div>
+                    {fieldErrors.phone && (
+                      <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        {fieldErrors.phone}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -724,13 +781,28 @@ export default function CheckoutPage() {
                     বিস্তারিত বাসা / রোড / এরিয়া ঠিকানা (Street Address) *
                   </label>
                   <input
+                    ref={addressInputRef}
                     type="text"
                     value={streetAddress}
-                    onChange={(e) => setStreetAddress(e.target.value)}
+                    onChange={(e) => {
+                      setStreetAddress(e.target.value);
+                      if (fieldErrors.streetAddress) setFieldErrors((p) => ({ ...p, streetAddress: undefined }));
+                    }}
                     placeholder="যেমন: বাসা #১২, রোড #৪, সেক্টর #১০ বা স্থানীয় ল্যান্ডমার্ক"
-                    className="w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-semibold outline-none focus:border-[#FF6B00] dark:focus:border-[#FF6B00] transition-colors"
+                    className={`w-full h-11 px-4 bg-gray-50 dark:bg-slate-800/80 border rounded-2xl text-xs sm:text-sm font-semibold outline-none transition-all ${
+                      fieldErrors.streetAddress
+                        ? 'border-red-500 ring-2 ring-red-400/20 bg-red-50/10'
+                        : 'border-gray-200 dark:border-slate-700 focus:border-[#FF6B00] dark:focus:border-[#FF6B00]'
+                    }`}
                   />
+                  {fieldErrors.streetAddress && (
+                    <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      {fieldErrors.streetAddress}
+                    </p>
+                  )}
                 </div>
+
 
                 {/* Auto-detected Delivery Area Notice */}
                 <div className="flex items-center justify-between p-4 bg-orange-50/70 dark:bg-slate-800/80 border border-[#FF6B00]/30 rounded-2xl">
@@ -1013,8 +1085,9 @@ export default function CheckoutPage() {
       </main>
 
       {/* Fixed Bottom Action Bar (Strictly Mobile < lg) */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 p-4 z-40 shadow-2xl">
+      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-800 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] z-40 shadow-2xl">
         <div className="max-w-2xl mx-auto space-y-2">
+
           <div className="flex justify-between items-center text-xs">
             <span className="text-gray-500 font-semibold">Total Payable Amount</span>
             <span className="font-black text-base text-[#FF6B00]">

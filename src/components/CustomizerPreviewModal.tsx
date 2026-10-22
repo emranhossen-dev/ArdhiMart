@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { ExtendedProduct } from "../data/products";
-import { useCart } from "../context/CartContext";
+import { useStore } from "@/context/StoreContext";
 
 interface CustomizerPreviewModalProps {
   product: ExtendedProduct | null;
@@ -15,7 +15,8 @@ export const CustomizerPreviewModal: React.FC<CustomizerPreviewModalProps> = ({
   product,
   onClose,
 }) => {
-  const { addToCart } = useCart();
+  const { addToCart } = useStore();
+
   const [customText, setCustomText] = useState("Your Name Here");
   const [selectedFont, setSelectedFont] = useState("font-serif");
   const [selectedColor, setSelectedColor] = useState("#fbbf24"); // Amber Gold
@@ -46,13 +47,10 @@ export const CustomizerPreviewModal: React.FC<CustomizerPreviewModalProps> = ({
   };
 
   const handleAddToCart = () => {
-    addToCart(product, {
-      variantColor: selectedColor,
-      variantSize: selectedFont,
-      quantity: 1,
-    });
+    addToCart(product as any, 1, `${selectedColor} | ${selectedFont}`);
     onClose();
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
