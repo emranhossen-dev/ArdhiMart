@@ -785,7 +785,7 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
-                    💵 কোনো অগ্রিম টাকা দেওয়ার প্রয়োজন নেই। পার্সেল হাতে পেয়ে ডেলিভারিম্যানকে পণ্য মূল্য পরিশোধ করবেন।
+                    কোনো অগ্রিম টাকা দেওয়ার প্রয়োজন নেই। পার্সেল হাতে পেয়ে ডেলিভারিম্যানকে পণ্য মূল্য পরিশোধ করবেন।
                   </p>
                 </div>
               </div>
@@ -1004,7 +1004,7 @@ export default function CheckoutPage() {
                   </span>
                 </button>
                 <p className="text-[11px] text-center text-gray-400 mt-2">
-                  🔒 ক্যাশ অন ডেলিভারি • পার্সেল হাতে পেয়ে মূল্য পরিশোধ করবেন
+                  ক্যাশ অন ডেলিভারি • পার্সেল হাতে পেয়ে মূল্য পরিশোধ করবেন
                 </p>
               </div>
             </section>

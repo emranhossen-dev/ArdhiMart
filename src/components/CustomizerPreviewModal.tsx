@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { X } from "lucide-react";
 import { ExtendedProduct } from "../data/products";
 import { useCart } from "../context/CartContext";
 
@@ -60,16 +61,17 @@ export const CustomizerPreviewModal: React.FC<CustomizerPreviewModalProps> = ({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center text-sm font-bold transition-colors"
+          aria-label="Close modal"
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
         >
-          ✕
+          <X className="w-4 h-4" />
         </button>
 
         {/* Left Side: Live Personalizer Mockup Preview */}
         <div className="w-full md:w-1/2 p-6 bg-zinc-950 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-800 relative">
           <div className="text-center mb-3">
             <span className="px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-extrabold uppercase tracking-wider">
-              ✨ Live Customizer Preview
+              Live Customizer Preview
             </span>
           </div>
 

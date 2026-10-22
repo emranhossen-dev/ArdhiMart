@@ -12,7 +12,7 @@ import {
   ShoppingCart,
   Trash2,
   ArrowRight,
-  Sparkles,
+  ShoppingBag,
   Star,
   CheckCircle2,
   PackageX
@@ -106,7 +106,7 @@ export default function WishlistPage() {
               href="/products"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4" />
               <span>Discover Trending Gadgets</span>
               <ArrowRight className="w-4 h-4" />
             </Link>

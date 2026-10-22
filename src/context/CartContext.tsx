@@ -200,7 +200,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isPresent = wishlist.includes(productId);
     if (isPresent) {
       setWishlist((prev) => prev.filter((id) => id !== productId));
-      toast("উইশলিস্ট থেকে সরানো হয়েছে", { icon: "❤️" });
+      toast("উইশলিস্ট থেকে সরানো হয়েছে");
     } else {
       setWishlist((prev) => [...prev, productId]);
       toast.success("উইশলিস্টে যোগ করা হয়েছে!");

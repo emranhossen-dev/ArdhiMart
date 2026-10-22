@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Gift, CheckCircle2, Sparkles, ArrowRight } from 'lucide-react';
+import { X, Gift, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 
 interface PromotionalEntryModalProps {
@@ -119,7 +119,7 @@ export const PromotionalEntryModal: React.FC<PromotionalEntryModalProps> = ({
         <div className="w-full relative rounded-2xl p-4 bg-gradient-to-br from-amber-500/15 via-rose-500/10 to-indigo-950/40 border border-amber-500/40 shadow-inner flex flex-col items-center justify-center text-center space-y-2 group">
           <div className="flex items-center justify-between w-full border-b border-amber-500/20 pb-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> ArdhiMart Privilege Card
+              <Gift className="w-3 h-3" /> ArdhiMart Privilege Card
             </span>
             <span className="text-[10px] font-extrabold text-slate-400">Next Order</span>
           </div>

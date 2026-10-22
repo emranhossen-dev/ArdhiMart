@@ -115,7 +115,7 @@ export default function Home() {
                 transition={{ duration: 0.35, ease: 'easeOut' }}
               >
                 <FeaturedProducts
-                  title="Hot Deals 🔥"
+                  title="Hot Deals"
                   products={featuredProducts}
                   viewAllLink="/products?filter=hot_deals"
                 />

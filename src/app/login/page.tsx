@@ -18,7 +18,7 @@ import {
   EyeOff,
   ShieldCheck,
   Truck,
-  Sparkles,
+  Star,
   CheckCircle2
 } from "lucide-react";
 
@@ -154,7 +154,14 @@ export default function LoginPage() {
             {/* Bottom Proof Note */}
             <div className="pt-4 border-t border-white/10 text-[11px] text-slate-400 relative z-10 flex items-center justify-between">
               <span>Trusted by 10,000+ Happy Shoppers</span>
-              <span className="font-bold text-white">★★★★★ 4.9/5</span>
+              <span className="font-bold text-white flex items-center gap-1">
+                <span className="flex text-amber-400">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  ))}
+                </span>
+                <span className="ml-0.5">4.9/5</span>
+              </span>
             </div>
           </div>
 

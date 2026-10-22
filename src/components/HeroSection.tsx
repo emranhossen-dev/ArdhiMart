@@ -59,7 +59,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
 
   const defaultSlides: SlideItem[] = [
     {
-      badge: banner?.badge || 'Smart Tech Collection ⚡',
+      badge: banner?.badge || 'Smart Tech Collection',
       title: banner?.title || 'Smart LED Digital Pen Holder',
       subtitle: banner?.subtitle || 'Premium desk organizer with digital clock, alarm & ambient LED light. Elevate your workspace with a modern touch!',
       imageUrl: banner?.imageUrl || '/images/ardhimart-smart-pen-holder.webp',
@@ -69,7 +69,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
       ctaSecondaryLink: banner?.ctaSecondaryLink || '/products',
     },
     {
-      badge: 'Mega Gift Hampers 🎁',
+      badge: 'Mega Gift Hampers',
       title: 'Surprise Gift Box for Your Loved Ones',
       subtitle: 'Make birthdays, anniversaries & special moments unforgettable with our curated luxury gift combos.',
       imageUrl: '/images/ardhimart-giftbox-valentine-set.webp',
@@ -79,7 +79,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banner }) => {
       ctaSecondaryLink: '/products',
     },
     {
-      badge: 'Exclusive Gift Deals 🌟',
+      badge: 'Exclusive Gift Deals',
       title: 'Unique Gifts & Trending Decor Items',
       subtitle: 'Special discounts on illuminated glass flower domes, cute plush dolls & trending aesthetic home decor!',
       imageUrl: '/images/ardhimart-giftbox-set.webp',

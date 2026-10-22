@@ -173,13 +173,13 @@ function ProductsContent() {
           {searchQueryParam
             ? `Search: "${searchQueryParam}"`
             : filterParam === 'flash_sale' || filterParam === 'flash' || filterParam === 'flash_deals'
-            ? 'Flash Sale Deals ⚡'
+            ? 'Flash Sale Deals'
             : filterParam === 'hot_deals' || filterParam === 'best_deals' || filterParam === 'featured' || filterParam === 'hot'
-            ? 'Hot Deals 🔥'
+            ? 'Hot Deals'
             : sortParam === 'trending' || filterParam === 'trending'
-            ? 'Trending Collections 🚀'
+            ? 'Trending Collections'
             : sortParam === 'newest' || filterParam === 'new'
-            ? 'New Arrivals ✨'
+            ? 'New Arrivals'
             : selectedCategory !== 'All'
             ? selectedCategory
             : 'All Products'}
@@ -192,13 +192,13 @@ function ProductsContent() {
           {searchQueryParam
             ? `Results for "${searchQueryParam}"`
             : filterParam === 'flash_sale' || filterParam === 'flash' || filterParam === 'flash_deals'
-            ? '⚡ Flash Deals & Limited Time Offers'
+            ? 'Flash Deals & Limited Time Offers'
             : filterParam === 'hot_deals' || filterParam === 'best_deals' || filterParam === 'featured' || filterParam === 'hot'
-            ? '🔥 Hot Deals & Exclusive Savings'
+            ? 'Hot Deals & Exclusive Savings'
             : sortParam === 'trending' || filterParam === 'trending'
-            ? '🚀 Trending Collections'
+            ? 'Trending Collections'
             : sortParam === 'newest' || filterParam === 'new'
-            ? '✨ New Arrivals'
+            ? 'New Arrivals'
             : selectedCategory !== 'All'
             ? `${selectedCategory} Collection`
             : 'All Products & Collections'}

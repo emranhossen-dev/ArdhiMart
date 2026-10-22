@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, Check } from 'lucide-react';
 
 export const TestimonialsSection: React.FC = () => {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -94,8 +94,8 @@ export const TestimonialsSection: React.FC = () => {
                   <h4 className="font-bold text-xs text-gray-900 dark:text-white">
                     {r.name}
                   </h4>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                    ✓ {r.role}
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold inline-flex items-center gap-0.5">
+                    <Check className="w-3 h-3" /> {r.role}
                   </span>
                 </div>
               </div>

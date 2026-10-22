@@ -17,7 +17,7 @@ export const defaultStoreConfig: StoreConfig = {
 };
 
 export const defaultHeroBanner: HeroBanner = {
-  badge: "Smart Tech Collection ⚡",
+  badge: "Smart Tech Collection",
   title: "Smart LED Digital Pen Holder",
   subtitle: "Premium desk organizer with digital clock, alarm & ambient LED light. Elevate your workspace with a modern touch!",
   imageUrl: "/images/ardhimart-smart-pen-holder.webp",

@@ -8,7 +8,7 @@ interface AnnouncementBarProps {
 }
 
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
-  text = '🎉 প্রতিটি অর্ডারের সাথে পাচ্ছেন ১০০৳ ফ্রি গিফট ভাউচার কার্ড (পরবর্তী অর্ডারে ব্যবহারযোগ্য)!',
+  text = 'প্রতিটি অর্ডারের সাথে পাচ্ছেন ১০০৳ ফ্রি গিফট ভাউচার কার্ড (পরবর্তী অর্ডারে ব্যবহারযোগ্য)!',
 }) => {
   const [isVisible, setIsVisible] = useState(true);
 

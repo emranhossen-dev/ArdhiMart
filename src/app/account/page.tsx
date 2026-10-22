@@ -369,7 +369,7 @@ function AccountContent() {
                       স্বাগতম ArdhiMart অ্যাকাউন্টে
                     </span>
                     <h2 className="text-xl sm:text-3xl font-black tracking-tight">
-                      হ্যালো, {user.displayName || 'সম্মানিত গ্রাহক'}! 👋
+                      হ্যালো, {user.displayName || 'সম্মানিত গ্রাহক'}!
                     </h2>
                     <p className="text-xs sm:text-sm text-orange-100 max-w-xl leading-relaxed">
                       আপনার অর্ডার অগ্রগতি ট্র্যাক করুন, পছন্দের গ্যাজেট সংরক্ষণ করুন এবং দ্রুত ক্যাশ অন ডেলিভারিতে অর্ডার প্লেস করুন।
@@ -732,7 +732,7 @@ function AccountContent() {
                           অ্যাপের থিম মোড (Appearance)
                         </h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          বর্তমান মোড: {theme === 'dark' ? 'ডার্ক মোড (Dark Mode 🌙)' : 'লাইট মোড (Light Mode ☀️)'}
+                          বর্তমান মোড: {theme === 'dark' ? 'ডার্ক মোড (Dark Mode)' : 'লাইট মোড (Light Mode)'}
                         </p>
                       </div>
                     </div>

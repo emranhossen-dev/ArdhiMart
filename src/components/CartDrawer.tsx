@@ -68,7 +68,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <span>
               {subtotal >= freeShippingThreshold ? (
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                  🎉 FREE Shipping Unlocked!
+                  FREE Shipping Unlocked!
                 </span>
               ) : (
                 <>Add {currency}{(freeShippingThreshold - subtotal).toLocaleString()} for Free Delivery</>

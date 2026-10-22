@@ -14,6 +14,7 @@ import {
   ArrowUpDown,
   X,
   Check,
+  Search,
 } from 'lucide-react';
 import { ProductCard, ProductSkeletonCard } from '@/components/ProductCard';
 import { getCategorySlug, isCategoryMatch } from '@/lib/slug';
@@ -154,7 +155,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="py-16 text-center space-y-4">
-            <div className="text-5xl">🔍</div>
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-gray-500 flex items-center justify-center mx-auto">
+              <Search className="w-8 h-8" />
+            </div>
             <p className="text-gray-700 dark:text-gray-300 text-base font-bold">
               &quot;{categoryDisplayName}&quot; — এই ক্যাটাগরিতে এখনো কোনো প্রোডাক্ট নেই।
             </p>

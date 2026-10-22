@@ -23,7 +23,6 @@ import {
   ShieldCheck,
   Truck,
   RotateCcw,
-  Sparkles
 } from 'lucide-react';
 
 export default function CartPage() {
